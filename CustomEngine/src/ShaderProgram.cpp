@@ -37,6 +37,11 @@ void ShaderProgram::use()
 	glUseProgram(m_shader); 
 }
 
+void ShaderProgram::unuse()
+{
+	glUseProgram(0); 
+}
+
 bool ShaderProgram::checkValidity() const
 {
 	int success; 

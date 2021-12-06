@@ -1,5 +1,6 @@
 #include "Game.h"
 
+
 // GL 3.0 + GLSL 130
 const char* glsl_version = "#version 130";
 
@@ -30,8 +31,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 Game::Game()
 : m_shaderdir(PROJECT_DIR"src\\shaders\\"), 
-  m_texturedir(PROJECT_DIR"data\\"),
-  VAO(0), VBO(0), EBO(0)
+  m_datadir(PROJECT_DIR"data\\"), 
+  m_texturedir(PROJECT_DIR"data\\")
 {
     // glfw: initialize and configure
     // ------------------------------
@@ -101,15 +102,25 @@ Game::Game()
     }; 
 
 
-    //unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), 
     // and then configure vertex attributes(s).
-    glBindVertexArray(VAO);
+    VAO = new VertexArrayBuffer(); 
+    VAO->bind(); 
+
 
     // Vertex Buffer 
-    VertexBuffer* VBO = new VertexBuffer(vertices, sizeof(vertices)); 
-    IndexBuffer* EBO = new IndexBuffer(indices, sizeof(indices)); 
+    VBO = new VertexBuffer(vertices, sizeof(vertices));
+
+    // Index Buffer 
+    unsigned int countIndices = sizeof(indices) / sizeof(unsigned int); 
+    EBO = new IndexBuffer(indices, countIndices);
+
+    // Set Layout 
+    VertexBufferLayout layout = VertexBufferLayout();
+    layout.Push<float>(3);
+    // Add Layout to VAO 
+    VAO->addBuffer(VBO, layout);
+     
 
     // 0. copy our vertices array in a buffer for OpenGL to use
     //glBindBuffer(GL_ARRAY_BUFFER, VBO); 
@@ -117,11 +128,9 @@ Game::Game()
     // 1. copy our index array in a element buffer for OpenGL to use
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    // 2. then set the vertex attributes pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0); 
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    //glEnableVertexAttribArray(0); 
     
 
     // Vertex & Fragment Shader
@@ -150,17 +159,32 @@ Game::Game()
     delete fragmentShader; 
 
     // Unbind all 
-    glBindVertexArray(0);
+    VAO->unbind(); 
     EBO->unbind();
     VBO->unbind(); 
-    glUseProgram(0); 
+    shaderProgram->unuse(); 
+
+
+    // texture load 
+    /*int width, height, nrChannels;
+    std::string imagecontainer = m_texturedir; 
+    imagecontainer += "container.jpg"; 
+    unsigned char* data = stbi_load(imagecontainer.c_str(), &width, &height, &nrChannels, 0);
+
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+
+    stbi_image_free(data);*/
+
 }
 
 Game::~Game()
 {
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
-    glDeleteVertexArrays(1, &VAO);
+    delete VAO;
     delete VBO; 
     delete EBO; 
     
@@ -259,11 +283,14 @@ void Game::RunGameLoop()
         int location = shaderProgram->getUniformLocation("u_Color");
         glUniform4f(location, clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         // Bind our Verex Array Object 
-        glBindVertexArray(VAO);
+        VAO->bind();
+        EBO->bind(); 
+       
 
         // 6 = number of indices, unsigned int indices 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-        glBindVertexArray(0);
+        glDrawElements(GL_TRIANGLES, EBO->getCount(), GL_UNSIGNED_INT, nullptr);
+        VAO->unbind();
+        EBO->unbind(); 
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

@@ -1,9 +1,10 @@
+#pragma once 
 #include <iostream> 
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
 class VertexBuffer
 {
+
 private:
 	unsigned int m_buffer;
 	GLenum m_usage; 
@@ -11,7 +12,7 @@ private:
 public:
 
 	VertexBuffer(const void* data, unsigned int size, GLenum usage = GL_STATIC_DRAW);
-	~VertexBuffer(); 
+	~VertexBuffer();
 
 	void setData(const void* data, unsigned int size, GLenum usage = GL_STATIC_DRAW);
 	GLenum getUsage() const; 

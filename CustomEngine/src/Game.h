@@ -5,22 +5,26 @@
 #include <imgui/imgui.h>
 #include <GLFW/glfw3.h>
 
+
 #include <iostream>
 #include <string>
 #include "ShaderProgram.h"
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
+#include "VertexArrayBuffer.h"
+
 
 class Game
 {
 public:
     ShaderProgram* shaderProgram; 
     std::string m_shaderdir; 
-    unsigned int VAO; 
-    VertexBuffer* VBO; 
+    VertexArrayBuffer* VAO;
+    VertexBuffer* VBO;
     IndexBuffer* EBO; 
 
     std::string m_texturedir; 
+    std::string m_datadir; 
    
 public:
     Game();

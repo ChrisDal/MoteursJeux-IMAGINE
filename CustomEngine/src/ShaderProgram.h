@@ -20,7 +20,7 @@ public:
 	// Use the create shader 
 	void use(); 
 	// Detach shader 
-	void unlink(); 
+	void unuse(); 
 	// check validity
 	bool checkValidity() const; 
 
