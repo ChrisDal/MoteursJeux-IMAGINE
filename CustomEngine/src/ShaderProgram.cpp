@@ -51,3 +51,15 @@ bool ShaderProgram::checkValidity() const
 	return false;
 }
 
+int ShaderProgram::getUniformLocation(const char* uniformname)
+{
+	int location = glGetUniformLocation(m_shader, uniformname);
+	if (location == -1)
+	{
+		std::cout << "WARNING::ShaderProgram::UniformLocation : \""
+			<< uniformname << "\" not use or not found." << std::endl;
+	}
+
+	return location; 
+}
+

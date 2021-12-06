@@ -24,5 +24,7 @@ public:
 	// check validity
 	bool checkValidity() const; 
 
+	int getUniformLocation(const char* uniformname); 
+
 };
 

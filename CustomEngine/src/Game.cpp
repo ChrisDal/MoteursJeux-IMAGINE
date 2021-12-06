@@ -146,6 +146,10 @@ Game::Game()
     delete vertexShader; 
     delete fragmentShader; 
 
+    
+
+    
+
 
 }
 
@@ -173,6 +177,8 @@ Game::~Game()
 
 void Game::RunGameLoop()
 {
+    
+    int location = shaderProgram->getUniformLocation("u_Color");
     
     
     // render loop
@@ -206,7 +212,7 @@ void Game::RunGameLoop()
         ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+        if (ImGui::Button("Wireframe Mode"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
             wireframeMode = !wireframeMode;
         ImGui::SameLine();
         ImGui::Text("counter = %d", counter);
@@ -245,6 +251,13 @@ void Game::RunGameLoop()
         // gl Use 
         shaderProgram->use(); 
         glBindVertexArray(VAO); 
+
+        // use color 
+        
+        
+        glUniform4f(location, clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+
+
         // 6 = number of indices, unsigned int indices 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
