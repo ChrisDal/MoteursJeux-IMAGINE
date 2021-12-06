@@ -24,7 +24,10 @@ public:
 	// check validity
 	bool checkValidity() const; 
 
+	// Uniform
 	int getUniformLocation(const char* uniformname); 
+	void setUniform4f(const char* uniformname, float x, float y, float z, float w); 
+	void setUniform4f(int location, float x, float y, float z, float w);
 
 };
 

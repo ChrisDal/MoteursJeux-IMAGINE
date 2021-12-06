@@ -63,3 +63,14 @@ int ShaderProgram::getUniformLocation(const char* uniformname)
 	return location; 
 }
 
+void ShaderProgram::setUniform4f(const char* uniformname, float x, float y, float z, float w)
+{
+	int loc = getUniformLocation(uniformname); 
+	glUniform4f(loc, x, y, z, w); 
+}
+
+void ShaderProgram::setUniform4f(int location, float x, float y, float z, float w)
+{
+	glUniform4f(location, x, y, z, w); 
+}
+

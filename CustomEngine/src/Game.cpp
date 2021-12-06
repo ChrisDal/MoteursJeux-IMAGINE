@@ -178,7 +178,7 @@ Game::~Game()
 void Game::RunGameLoop()
 {
     
-    int location = shaderProgram->getUniformLocation("u_Color");
+    
     
     
     // render loop
@@ -253,8 +253,7 @@ void Game::RunGameLoop()
         glBindVertexArray(VAO); 
 
         // use color 
-        
-        
+        int location = shaderProgram->getUniformLocation("u_Color");
         glUniform4f(location, clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 
 
