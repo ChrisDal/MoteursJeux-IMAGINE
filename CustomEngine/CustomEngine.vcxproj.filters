@@ -66,6 +66,12 @@
     <ClCompile Include="src\IndexBuffer.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="src\VertexBufferLayout.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependencies\include\imgui\imconfig.h">
@@ -989,6 +995,15 @@
     <ClInclude Include="src\IndexBuffer.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="src\VertexBufferLayout.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="dependencies\include\STB\stb_image.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="dependencies\lib\glfw3.lib" />
@@ -1413,5 +1428,34 @@
     </None>
     <None Include="src\shaders\basicFragmentShader.shader" />
     <None Include="src\shaders\basicVertexShader.shader" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="data\cube.png">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="data\grass.png">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="data\Heightmap_Mountain.png">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="data\Heightmap_Rocky.png">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="data\heightmap-1024x1024.png">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="data\rock.png">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="data\snowrocks.png">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="data\wall.jpg">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="data\container.jpg">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
   </ItemGroup>
 </Project>
