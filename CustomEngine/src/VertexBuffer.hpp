@@ -1,19 +1,22 @@
 #include <iostream> 
-#include "VertexArrayBuffer.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 class VertexBuffer
 {
 private:
 	unsigned int m_buffer;
+	GLenum m_usage; 
 
 public:
-	VertexBuffer(VertexArrayBuffer* vao) {
-		glGenBuffers(1, &m_buffer);
-	}
 
-	void bind() {
-		glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
-	}
+	VertexBuffer(const void* data, unsigned int size, GLenum usage = GL_STATIC_DRAW);
+	~VertexBuffer(); 
 
+	void setData(const void* data, unsigned int size, GLenum usage = GL_STATIC_DRAW);
+	GLenum getUsage() const; 
+
+	void bind() const;
+	void unbind() const;
 
 };

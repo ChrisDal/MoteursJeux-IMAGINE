@@ -8,6 +8,8 @@
 #include <iostream>
 #include <string>
 #include "ShaderProgram.h"
+#include "VertexBuffer.hpp"
+#include "IndexBuffer.hpp"
 
 class Game
 {
@@ -15,8 +17,8 @@ public:
     ShaderProgram* shaderProgram; 
     std::string m_shaderdir; 
     unsigned int VAO; 
-    unsigned int VBO; 
-    unsigned int EBO; 
+    VertexBuffer* VBO; 
+    IndexBuffer* EBO; 
 
     std::string m_texturedir; 
    

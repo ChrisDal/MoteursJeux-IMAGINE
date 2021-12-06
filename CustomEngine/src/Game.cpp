@@ -1,6 +1,5 @@
 #include "Game.h"
 
-
 // GL 3.0 + GLSL 130
 const char* glsl_version = "#version 130";
 
@@ -95,26 +94,29 @@ Game::Game()
 
     int nVertex = 9; 
 
+    float texCoords[] = {
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        0.5f, 1.0f
+    }; 
 
-    // Buffer Creation 
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
-    //unsigned int VBO; // vertex buffer object 
-    glGenBuffers(1, &VBO);
+
     //unsigned int VAO;
     glGenVertexArrays(1, &VAO);
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), 
     // and then configure vertex attributes(s).
     glBindVertexArray(VAO);
 
-    
+    // Vertex Buffer 
+    VertexBuffer* VBO = new VertexBuffer(vertices, sizeof(vertices)); 
+    IndexBuffer* EBO = new IndexBuffer(indices, sizeof(indices)); 
 
     // 0. copy our vertices array in a buffer for OpenGL to use
-    glBindBuffer(GL_ARRAY_BUFFER, VBO); 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); 
+    //glBindBuffer(GL_ARRAY_BUFFER, VBO); 
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); 
     // 1. copy our index array in a element buffer for OpenGL to use
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     // 2. then set the vertex attributes pointers
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0); 
@@ -141,16 +143,17 @@ Game::Game()
     shaderProgram = new ShaderProgram(); 
     shaderProgram->bindShaders(vertexShader, fragmentShader); 
     shaderProgram->link(); 
+    shaderProgram->use(); 
 
 
     delete vertexShader; 
     delete fragmentShader; 
 
-    
-
-    
-
-
+    // Unbind all 
+    glBindVertexArray(0);
+    EBO->unbind();
+    VBO->unbind(); 
+    glUseProgram(0); 
 }
 
 Game::~Game()
@@ -158,8 +161,8 @@ Game::~Game()
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    delete VBO; 
+    delete EBO; 
     
     delete shaderProgram; 
     
@@ -245,17 +248,18 @@ void Game::RunGameLoop()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
-
+        // ====================================================
         // Draw here 
+        //
         // 2. use our shader program when we want to render an object
-        // gl Use 
-        shaderProgram->use(); 
-        glBindVertexArray(VAO); 
+
+        shaderProgram->use();
 
         // use color 
         int location = shaderProgram->getUniformLocation("u_Color");
         glUniform4f(location, clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-
+        // Bind our Verex Array Object 
+        glBindVertexArray(VAO);
 
         // 6 = number of indices, unsigned int indices 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
