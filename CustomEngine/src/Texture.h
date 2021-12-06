@@ -1,7 +1,7 @@
 #pragma once
 #include <glad/glad.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include <STB/stb_image.h>
+#include "STB/stb_image.h"
+
 
 
 class Texture

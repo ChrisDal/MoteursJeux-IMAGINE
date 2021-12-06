@@ -5,13 +5,14 @@
 #include <imgui/imgui.h>
 #include <GLFW/glfw3.h>
 
-
 #include <iostream>
 #include <string>
+
 #include "ShaderProgram.h"
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
 #include "VertexArrayBuffer.h"
+#include "Texture.h"
 
 
 class Game

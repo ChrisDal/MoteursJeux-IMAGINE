@@ -88,6 +88,14 @@ Game::Game()
     -0.5f,  0.5f, 0.0f   // top left 
     };
 
+    float vertices2[] = {
+        // positions          // colors           // texture coords
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+    };
+
     unsigned int indices[] = {  // note that we start from 0!
     0, 1, 3,   // first triangle
     1, 2, 3    // second triangle
@@ -109,7 +117,8 @@ Game::Game()
 
 
     // Vertex Buffer 
-    VBO = new VertexBuffer(vertices, sizeof(vertices));
+    //VBO = new VertexBuffer(vertices, sizeof(vertices));
+    VBO = new VertexBuffer(vertices2, sizeof(vertices2));
 
     // Index Buffer 
     unsigned int countIndices = sizeof(indices) / sizeof(unsigned int); 
@@ -166,7 +175,7 @@ Game::Game()
 
 
     // texture load 
-    /*int width, height, nrChannels;
+    int width, height, nrChannels;
     std::string imagecontainer = m_texturedir; 
     imagecontainer += "container.jpg"; 
     unsigned char* data = stbi_load(imagecontainer.c_str(), &width, &height, &nrChannels, 0);
@@ -176,7 +185,7 @@ Game::Game()
     glGenerateMipmap(GL_TEXTURE_2D);
 
 
-    stbi_image_free(data);*/
+    stbi_image_free(data);
 
 }
 

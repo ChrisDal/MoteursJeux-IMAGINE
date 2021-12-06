@@ -33,8 +33,6 @@ Texture::Texture(const char* imagepath)
 	{
 		std::cout << "[STBI] Load Image Error : " << imagepath << std::endl;
 	}
-	
-	
 }
 
 Texture::~Texture()
