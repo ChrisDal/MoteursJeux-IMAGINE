@@ -170,7 +170,7 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\stbimage.cpp" />
+    <ClCompile Include="dependencies\include\STB\stbimage.cpp" />
     <ClCompile Include="src\VertexArrayBuffer.cpp" />
     <ClCompile Include="src\VertexBuffer.cpp" />
     <ClCompile Include="src\VertexBufferLayout.cpp" />
@@ -646,6 +646,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="data\awesomeface.png" />
     <Image Include="data\container.jpg" />
     <Image Include="data\cube.png">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

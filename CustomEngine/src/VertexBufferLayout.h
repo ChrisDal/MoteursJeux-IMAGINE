@@ -49,7 +49,7 @@ public:
 	void Push<float>(unsigned int count)
 	{
 		m_elements.push_back({ GL_FLOAT, count, GL_FALSE}); 
-		m_stride += sizeof(GLfloat); // size in bytes 
+		m_stride += count * sizeof(GLfloat); // size in bytes 
 	}
 
 	template<>

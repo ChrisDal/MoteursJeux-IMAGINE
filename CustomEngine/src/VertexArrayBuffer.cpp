@@ -33,13 +33,16 @@ void VertexArrayBuffer::addBuffer(const VertexBuffer& vbuffer, const VertexBuffe
 	for (int i = 0; i < elements.size() ; i++)
 	{
 		const VertexBufferElement& element = elements[i]; 
-		GLCall(glEnableVertexAttribArray(i));
+		
 		GLCall(glVertexAttribPointer(i, element.count, 
 									element.type, 
 									element.normalized, 
-									layout.getStride(), 
+									layout.getStride(), // in bytes
 									(const void*)offset));
-
+		
+		std::cout << "[Layout] Offset=" << offset << std::endl; 
+		GLCall(glEnableVertexAttribArray(i));
+		// in bytes 
 		offset += element.count * element.getSizeofType(element.type);
 	}
 
@@ -54,13 +57,15 @@ void VertexArrayBuffer::addBuffer(const VertexBuffer* vbuffer, const VertexBuffe
 	for (int i = 0; i < elements.size(); i++)
 	{
 		const VertexBufferElement& element = elements[i];
-		GLCall(glEnableVertexAttribArray(i));
-		GLCall(glVertexAttribPointer(i, element.count,
-			element.type,
-			element.normalized,
-			element.count * element.getSizeofType(element.type),
-			(const void*)offset));
 
+		GLCall(glVertexAttribPointer(i, element.count,
+									element.type,
+									element.normalized,
+									layout.getStride(), // in bytes
+									(const void*)offset));
+
+		GLCall(glEnableVertexAttribArray(i));
+		// in bytes 
 		offset += element.count * element.getSizeofType(element.type);
 	}
 

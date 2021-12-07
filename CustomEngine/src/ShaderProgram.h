@@ -28,6 +28,7 @@ public:
 	int getUniformLocation(const char* uniformname); 
 	void setUniform4f(const char* uniformname, float x, float y, float z, float w); 
 	void setUniform4f(int location, float x, float y, float z, float w);
+	void setUniform1i(const char* name, int location);
 
 };
 

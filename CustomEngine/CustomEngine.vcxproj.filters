@@ -72,7 +72,7 @@
     <ClCompile Include="src\Texture.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\stbimage.cpp">
+    <ClCompile Include="dependencies\include\STB\stbimage.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1458,6 +1458,9 @@
       <Filter>Fichiers de ressources</Filter>
     </Image>
     <Image Include="data\container.jpg">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="data\awesomeface.png">
       <Filter>Fichiers de ressources</Filter>
     </Image>
   </ItemGroup>

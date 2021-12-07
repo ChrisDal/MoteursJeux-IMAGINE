@@ -80,13 +80,16 @@ Game::Game()
         return;
     }
 
+    // stbi image loading preset 
+    stbi_set_flip_vertically_on_load(true);
+
     // --------------------------
-    float vertices[] = {
+    /*float vertices[] = {
      0.5f,  0.5f, 0.0f,  // top right
      0.5f, -0.5f, 0.0f,  // bottom right
     -0.5f, -0.5f, 0.0f,  // bottom left
     -0.5f,  0.5f, 0.0f   // top left 
-    };
+    };*/
 
     float vertices2[] = {
         // positions          // colors           // texture coords
@@ -126,7 +129,10 @@ Game::Game()
 
     // Set Layout 
     VertexBufferLayout layout = VertexBufferLayout();
-    layout.Push<float>(3);
+    layout.Push<float>(3); // layout position 
+    layout.Push<float>(3); // layout color
+    layout.Push<float>(2); // layout texture
+    
     // Add Layout to VAO 
     VAO->addBuffer(VBO, layout);
      
@@ -175,17 +181,12 @@ Game::Game()
 
 
     // texture load 
-    int width, height, nrChannels;
-    std::string imagecontainer = m_texturedir; 
-    imagecontainer += "container.jpg"; 
-    unsigned char* data = stbi_load(imagecontainer.c_str(), &width, &height, &nrChannels, 0);
+    std::string imagecontainer = m_texturedir;
+    imagecontainer += "container.jpg";
+    boxTexture = new Texture(imagecontainer.c_str()); 
 
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-
-    stbi_image_free(data);
+    std::string imageface = m_texturedir + std::string("awesomeface.png"); 
+    faceTexture = std::make_unique<Texture>(imageface.c_str(), 1); 
 
 }
 
@@ -198,6 +199,7 @@ Game::~Game()
     delete EBO; 
     
     delete shaderProgram; 
+    delete boxTexture;
     
     
     // glfw: terminate, clearing all previously allocated GLFW resources.
@@ -213,9 +215,6 @@ Game::~Game()
 
 void Game::RunGameLoop()
 {
-    
-    
-    
     
     // render loop
     // -----------
@@ -285,13 +284,20 @@ void Game::RunGameLoop()
         // Draw here 
         //
         // 2. use our shader program when we want to render an object
+        shaderProgram->setUniform1i("texture1", 0);
+        shaderProgram->setUniform1i("texture2", 1);
 
         shaderProgram->use();
-
+        
         // use color 
-        int location = shaderProgram->getUniformLocation("u_Color");
-        glUniform4f(location, clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        // Bind our Verex Array Object 
+        //int location = shaderProgram->getUniformLocation("u_Color");
+        //glUniform4f(location, clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        
+        // bind texture 
+        boxTexture->bind(0); 
+        faceTexture->bind(1); 
+        
+        // Bind our Vertex Array Object 
         VAO->bind();
         EBO->bind(); 
        
@@ -300,6 +306,7 @@ void Game::RunGameLoop()
         glDrawElements(GL_TRIANGLES, EBO->getCount(), GL_UNSIGNED_INT, nullptr);
         VAO->unbind();
         EBO->unbind(); 
+        boxTexture->unbind();
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

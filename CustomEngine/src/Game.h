@@ -24,6 +24,11 @@ public:
     VertexBuffer* VBO;
     IndexBuffer* EBO; 
 
+
+    // Texture 
+    Texture* boxTexture; 
+    std::unique_ptr<Texture> faceTexture;
+
     std::string m_texturedir; 
     std::string m_datadir; 
    

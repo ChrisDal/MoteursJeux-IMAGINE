@@ -79,3 +79,7 @@ void ShaderProgram::setUniform4f(int location, float x, float y, float z, float 
 	glUniform4f(location, x, y, z, w); 
 }
 
+void ShaderProgram::setUniform1i(const char* name, int location)
+{
+	glUniform1i(this->getUniformLocation(name), location);
+}
