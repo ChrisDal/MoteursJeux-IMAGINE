@@ -1,11 +1,16 @@
 #pragma once
+#include <glad/glad.h>
 #include <ostream>
 #include <glm/vec3.hpp> // glm::vec3
 #include <glm/vec4.hpp> // glm::vec4
 #include <glm/mat3x3.hpp> // glm::mat4
 #include <glm/mat4x4.hpp> // glm::mat4
-#include <glm/ext/matrix_transform.hpp> // perspective, translate, rotate
+
+#include <glm/gtc/type_ptr.hpp>
 #include "Rotoform.h"
+
+
+namespace SpaceEngine{
 
 class Transform
 {
@@ -164,8 +169,15 @@ public:
 	glm::mat4x4 combine_with(Transform MatIn);
 	Transform tfm_combine_with(Transform MatIn);
 
-	friend std::ostream& operator<<(std::ostream& stream, const Transform& transfo); 
+	// use with openGL 
+	inline const GLfloat* getTransformGL() const { return glm::value_ptr(m_transform); }
+
+	
 
 
 };
+
+};
+
+std::ostream& operator<<(std::ostream& stream, const SpaceEngine::Transform& transfo);
 

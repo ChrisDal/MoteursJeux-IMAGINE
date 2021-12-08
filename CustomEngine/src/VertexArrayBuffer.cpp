@@ -13,12 +13,12 @@ VertexArrayBuffer::~VertexArrayBuffer()
 	glDeleteVertexArrays(1, &m_buffer);
 }
 
-void VertexArrayBuffer::bind()
+void VertexArrayBuffer::bind() const
 {
 	glBindVertexArray(m_buffer); 
 }
 
-void VertexArrayBuffer::unbind()
+void VertexArrayBuffer::unbind() const
 {
 	glBindVertexArray(0); 
 }
@@ -48,11 +48,11 @@ void VertexArrayBuffer::addBuffer(const VertexBuffer& vbuffer, const VertexBuffe
 
 }
 
-void VertexArrayBuffer::addBuffer(const VertexBuffer* vbuffer, const VertexBufferLayout& layout)
+void VertexArrayBuffer::addBuffer(const VertexBuffer* vbuffer, const VertexBufferLayout* layout)
 {
 	this->bind();   // bind VAO 
 	vbuffer->bind(); // bind Vertex Buffer
-	const std::vector<VertexBufferElement> elements = layout.getElements();
+	const std::vector<VertexBufferElement> elements = layout->getElements();
 	unsigned int offset = 0;
 	for (int i = 0; i < elements.size(); i++)
 	{
@@ -61,7 +61,7 @@ void VertexArrayBuffer::addBuffer(const VertexBuffer* vbuffer, const VertexBuffe
 		GLCall(glVertexAttribPointer(i, element.count,
 									element.type,
 									element.normalized,
-									layout.getStride(), // in bytes
+									layout->getStride(), // in bytes
 									(const void*)offset));
 
 		GLCall(glEnableVertexAttribArray(i));

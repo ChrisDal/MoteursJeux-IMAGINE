@@ -13,6 +13,7 @@
 #include "IndexBuffer.hpp"
 #include "VertexArrayBuffer.h"
 #include "Texture.h"
+#include "Renderer.h"
 
 
 class Game
@@ -31,6 +32,9 @@ public:
 
     std::string m_texturedir; 
     std::string m_datadir; 
+
+    // Renderer 
+    Renderer m_renderer; 
    
 public:
     Game();

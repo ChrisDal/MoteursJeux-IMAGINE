@@ -1,4 +1,9 @@
 #include "Game.h"
+#include "Engine/Transform.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 // GL 3.0 + GLSL 130
@@ -83,6 +88,9 @@ Game::Game()
     // stbi image loading preset 
     stbi_set_flip_vertically_on_load(true);
 
+    // enable Depth 
+    glEnable(GL_DEPTH_TEST);
+
     // --------------------------
     /*float vertices[] = {
      0.5f,  0.5f, 0.0f,  // top right
@@ -134,7 +142,7 @@ Game::Game()
     layout.Push<float>(2); // layout texture
     
     // Add Layout to VAO 
-    VAO->addBuffer(VBO, layout);
+    VAO->addBuffer(VBO, &layout);
      
 
     // 0. copy our vertices array in a buffer for OpenGL to use
@@ -235,7 +243,8 @@ void Game::RunGameLoop()
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         
-        static float f = 0.0f;
+        static glm::vec3 frotate = glm::vec3(0.0f, 0.0f, 0.0f); 
+        static glm::vec3 ftranslate = glm::vec3(0.0f, 0.0f, 0.0f); 
         static int counter = 0;
         static bool wireframeMode = false; 
         
@@ -244,7 +253,12 @@ void Game::RunGameLoop()
 
         ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
 
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("rotationX", &frotate.x, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("rotationY", &frotate.y, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("rotationZ", &frotate.z, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("translationX", &ftranslate.x, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("translationY", &ftranslate.y, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("translationZ", &ftranslate.z, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
         if (ImGui::Button("Wireframe Mode"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -276,36 +290,77 @@ void Game::RunGameLoop()
         glfwGetFramebufferSize(m_Window, &display_w, &display_h);
 
         glViewport(0, 0, display_w, display_h);
+        m_renderer.Clear(); 
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        //=================================================
+        //GLM Transformations
+
+        SpaceEngine::Transform transformation; 
+        transformation.addRotation(frotate.x, 0.f, frotate.z);
+        transformation.Translate(ftranslate.x, ftranslate.y, ftranslate.z);
+
+        SpaceEngine::Transform transfo_extern;
+        transfo_extern.Translate(0.5f, 0.0, 0.0);
+        transfo_extern.addRotation(0.0f, frotate.y, 0.0f);
+        //transformation.addHomogenousScale(0.5f); 
+       
+
+
+        glm::vec4 vec(0.5f, 0.0f, 0.0f, 1.0f);
+        //glm::mat4 trans = glm::mat4(1.0f);
+        //trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
+        //trans = glm::rotate(trans, glm::radians(f), glm::vec3(0.0, 0.0, 1.0)); 
+        //trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+        
+        vec = transformation.getMatrixTransform() * vec;
+
+        //-----------------
+        // Model Matrix 
+        //-----------------
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        //-----------------
+        // View Matrix 
+        //-----------------
+        // note that we're translating the scene in the reverse direction of where we want to move
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+        //-----------------
+        // Projection Matrix 
+        //-----------------
+        glm::mat4 projection;
+        float ratio = (float)SCR_WIDTH / (float)SCR_HEIGHT; 
+        projection = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
+
+
+        // MVP Matrix 
+        glm::mat4 mvp = projection * view * model; 
+        
+        //=================================================
+
+        
         
         // ====================================================
         // Draw here 
-        //
+       
         // 2. use our shader program when we want to render an object
         shaderProgram->setUniform1i("texture1", 0);
         shaderProgram->setUniform1i("texture2", 1);
-
-        shaderProgram->use();
         
-        // use color 
-        //int location = shaderProgram->getUniformLocation("u_Color");
-        //glUniform4f(location, clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         
+        // Transformations 
+        shaderProgram->setMat4("u_mvp", glm::value_ptr(mvp));
+        shaderProgram->setMat4("u_transform", glm::value_ptr(transformation.getMatrixTransform()));
+        shaderProgram->setMat4("u_transformexterne", glm::value_ptr(transfo_extern.getMatrixTransform()));
+  
         // bind texture 
-        boxTexture->bind(0); 
-        faceTexture->bind(1); 
-        
-        // Bind our Vertex Array Object 
-        VAO->bind();
-        EBO->bind(); 
-       
+        boxTexture->bind(0);
+        faceTexture->bind(1);
 
-        // 6 = number of indices, unsigned int indices 
-        glDrawElements(GL_TRIANGLES, EBO->getCount(), GL_UNSIGNED_INT, nullptr);
-        VAO->unbind();
-        EBO->unbind(); 
+        m_renderer.Draw(VAO, EBO, shaderProgram); 
+
         boxTexture->unbind();
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -317,6 +372,8 @@ void Game::RunGameLoop()
         // glfwPoll
     }
 }
+
+
 
 
 

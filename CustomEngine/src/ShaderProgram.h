@@ -16,11 +16,11 @@ public:
 	void bindShader(Shader* shader); 
 	void bindShaders(Shader* vertexshader, Shader* fragmentshader); 
 	// Link all the attachs shader into one program
-	void link(); 
+	void link() const; 
 	// Use the create shader 
-	void use(); 
+	void use() const ; 
 	// Detach shader 
-	void unuse(); 
+	void unuse() const; 
 	// check validity
 	bool checkValidity() const; 
 
@@ -29,6 +29,7 @@ public:
 	void setUniform4f(const char* uniformname, float x, float y, float z, float w); 
 	void setUniform4f(int location, float x, float y, float z, float w);
 	void setUniform1i(const char* name, int location);
+	void setMat4(const char* mat4name, const GLfloat* data);
 
 };
 

@@ -27,17 +27,17 @@ void ShaderProgram::bindShaders(Shader* vertexshader, Shader* fragmentshader)
 	glAttachShader(m_shader, fragmentshader->getShader());
 }
 
-void ShaderProgram::link()
+void ShaderProgram::link() const
 {
 	glLinkProgram(m_shader); 
 }
 
-void ShaderProgram::use()
+void ShaderProgram::use() const
 {
 	glUseProgram(m_shader); 
 }
 
-void ShaderProgram::unuse()
+void ShaderProgram::unuse() const
 {
 	glUseProgram(0); 
 }
@@ -82,4 +82,11 @@ void ShaderProgram::setUniform4f(int location, float x, float y, float z, float 
 void ShaderProgram::setUniform1i(const char* name, int location)
 {
 	glUniform1i(this->getUniformLocation(name), location);
+}
+
+void ShaderProgram::setMat4(const char* mat4name, const GLfloat* data)
+{
+	int loc = getUniformLocation(mat4name);
+	// send at location loc , 1 matrix, not in column major order, data
+	glUniformMatrix4fv(loc, 1, GL_FALSE, data);
 }

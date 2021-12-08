@@ -15,11 +15,11 @@ public:
 	VertexArrayBuffer(); 
 	~VertexArrayBuffer(); 
 
-	void bind(); 
-	void unbind(); 
+	void bind() const; 
+	void unbind() const;
 
 	void addBuffer(const VertexBuffer& vbuffer, const VertexBufferLayout& layout);
-	void addBuffer(const VertexBuffer* vbuffer, const VertexBufferLayout& layout); 
+	void addBuffer(const VertexBuffer* vbuffer, const VertexBufferLayout* layout); 
 
 };
 

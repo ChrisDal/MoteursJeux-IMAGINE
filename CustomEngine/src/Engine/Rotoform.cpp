@@ -57,7 +57,7 @@ Rotoform::Rotoform(const Rotoform& source)
     m_rotx = source.m_rotx;
     m_roty = source.m_roty;
     m_rotz = source.m_rotz;
-    m_rotation = m_rotz * m_roty * m_rotx;
+    m_rotation = m_roty * m_rotx * m_rotz;
 
 }
 
@@ -71,7 +71,7 @@ Rotoform& Rotoform::operator=(const Rotoform& source)
     m_rotx = source.m_rotx;
     m_roty = source.m_roty;
     m_rotz = source.m_rotz;
-    m_rotation = m_rotz * m_roty * m_rotx;
+    m_rotation = m_roty * m_rotx * m_rotz;
 
 
     return *this;
@@ -85,7 +85,7 @@ Rotoform::Rotoform(Rotoform&& source)
     m_rotx = source.m_rotx;
     m_roty = source.m_roty;
     m_rotz = source.m_rotz;
-    m_rotation = m_rotz * m_roty * m_rotx;
+    m_rotation = m_roty * m_rotx * m_rotz;
 
     source.resetRotation();
 
@@ -116,26 +116,40 @@ inline float Rotoform::degreeToRad(const float& theta) {
 inline glm::mat3x3 Rotoform::getMat3rotationX_rad(float eta)
 {
     return glm::mat3x3(1.0, 0.0, 0.0,
+                    0.0, std::cos(eta), std::sin(eta),
+                    0.0, -std::sin(eta), std::cos(eta));
+    
+    /*return glm::mat3x3(1.0, 0.0, 0.0,
                 0.0, std::cos(eta), -std::sin(eta),
-                0.0, std::sin(eta), std::cos(eta));
+                0.0, std::sin(eta), std::cos(eta));*/
 
 }
 
 // Rotation around Y from an angle in eta
 inline glm::mat3x3 Rotoform::getMat3rotationY_rad(float eta)
 {
-    return glm::mat3x3( std::cos(eta), 0.0, std::sin(eta),
+    
+    return glm::mat3x3(std::cos(eta), 0.0, -std::sin(eta),
+                        0.0, 1.0, 0.0,
+                        std::sin(eta), 0.0, std::cos(eta));
+    
+    /*return glm::mat3x3( std::cos(eta), 0.0, std::sin(eta),
                        0.0, 1.0, 0.0,
-                       -std::sin(eta), 0.0, std::cos(eta) );
+                       -std::sin(eta), 0.0, std::cos(eta) );*/
 
 }
 
 // Rotation around Z from an angle in radians
 inline glm::mat3x3 Rotoform::getMat3rotationZ_rad(float eta)
 {
-    return glm::mat3x3(std::cos(eta), -std::sin(eta), 0.0,
+    
+    return glm::mat3x3(std::cos(eta), std::sin(eta), 0.0,
+                        -std::sin(eta), std::cos(eta), 0.0,
+                        0.0, 0.0, 1.0);
+    
+    /*return glm::mat3x3(std::cos(eta), -std::sin(eta), 0.0,
                        std::sin(eta), std::cos(eta), 0.0,
-                       0.0, 0.0, 1.0 );
+                       0.0, 0.0, 1.0 );*/
     
 }
 
@@ -144,17 +158,24 @@ inline glm::mat3x3 Rotoform::getMat3rotationX(float angle)
 {
     float thetaRad = degreeToRad(angle);
     return glm::mat3x3(1.0, 0.0, 0.0,
+        0.0, std::cos(thetaRad), std::sin(thetaRad),
+        0.0, -std::sin(thetaRad), std::cos(thetaRad)); 
+
+    /*return glm::mat3x3(1.0, 0.0, 0.0,
                         0.0, std::cos(thetaRad), -std::sin(thetaRad),
-                        0.0, std::sin(thetaRad), std::cos(thetaRad));
+                        0.0, std::sin(thetaRad), std::cos(thetaRad));*/
 }
 
 // Rotation around Y from an angle in degrees
 inline glm::mat3x3 Rotoform::getMat3rotationY(float angle)
 {
     float thetaRad = degreeToRad(angle);
-    return glm::mat3x3(std::cos(thetaRad), 0.0, std::sin(thetaRad),
+    return glm::mat3x3(std::cos(thetaRad), 0.0, -std::sin(thetaRad),
+                        0.0, 1.0, 0.0,
+                        std::sin(thetaRad), 0.0, std::cos(thetaRad));
+    /*return glm::mat3x3(std::cos(thetaRad), 0.0, std::sin(thetaRad),
                        0.0, 1.0, 0.0,
-                       -std::sin(thetaRad), 0.0, std::cos(thetaRad));
+                       -std::sin(thetaRad), 0.0, std::cos(thetaRad));*/
 
 }
 
@@ -162,9 +183,13 @@ inline glm::mat3x3 Rotoform::getMat3rotationY(float angle)
 inline glm::mat3x3 Rotoform::getMat3rotationZ(float angle)
 {
     float thetaRad = degreeToRad(angle);
-    return glm::mat3x3(std::cos(thetaRad), -std::sin(thetaRad), 0.0,
+    return glm::mat3x3(std::cos(thetaRad), std::sin(thetaRad), 0.0,
+                        -std::sin(thetaRad), std::cos(thetaRad), 0.0,
+                        0.0, 0.0, 1.0);
+
+    /*return glm::mat3x3(std::cos(thetaRad), -std::sin(thetaRad), 0.0,
                        std::sin(thetaRad), std::cos(thetaRad), 0.0,
-                       0.0, 0.0, 1.0 );
+                       0.0, 0.0, 1.0 );*/
 }
 
 
@@ -296,13 +321,13 @@ void Rotoform::addRotationZ_rad(float eta)
 // Add Global rotation = rotate previous matrix , in degrees
 void Rotoform::addRotation(float alpha, float beta, float gamma)
 {
-    if (alpha != 0.0)
+    if (alpha != 0.0f)
         addRotationX(alpha);
 
-    if (beta != 0.0)
+    if (beta != 0.0f)
         addRotationY(beta);
 
-    if (gamma != 0.0)
+    if (gamma != 0.0f)
         addRotationZ(gamma);
 
     // update Rotation matrix
@@ -431,8 +456,8 @@ std::ostream& operator<<(std::ostream& stream, const Rotoform& rotation)
     stream << "Rotation : (";
     for (unsigned int i = 0; i < 9; i++)
     {
-        stream << rotation.m_rotation(int(i / 3), i % 3) << ",";
-        if ((i + 1) % 3 == 0 && i > 0)
+        stream << rotation.m_rotation[i % 3][int(i / 3)] << ",";
+        if ((i + 1) % 3 == 0 && i > 0 && i < 8)
         {
             stream << ")\n         : (";
         }
