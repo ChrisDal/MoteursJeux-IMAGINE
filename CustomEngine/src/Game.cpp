@@ -10,8 +10,8 @@
 const char* glsl_version = "#version 130";
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+unsigned int SCR_WIDTH = 800;
+unsigned int SCR_HEIGHT = 600;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 
@@ -31,6 +31,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+    SCR_WIDTH = width; 
+    SCR_HEIGHT = height; 
 }
 
 
@@ -91,6 +93,9 @@ Game::Game()
     // enable Depth 
     glEnable(GL_DEPTH_TEST);
 
+
+    
+
     // --------------------------
     /*float vertices[] = {
      0.5f,  0.5f, 0.0f,  // top right
@@ -144,24 +149,22 @@ Game::Game()
     // Add Layout to VAO 
     VAO->addBuffer(VBO, &layout);
      
-
-    // 0. copy our vertices array in a buffer for OpenGL to use
-    //glBindBuffer(GL_ARRAY_BUFFER, VBO); 
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); 
-    // 1. copy our index array in a element buffer for OpenGL to use
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    //glEnableVertexAttribArray(0); 
-    
-
     // Vertex & Fragment Shader
     std::string vertexsource = m_shaderdir; 
     vertexsource += "basicVertexShader.shader";
 
     std::string fragmentsource = m_shaderdir; 
     fragmentsource += "basicFragmentShader.shader";
+
+    // Renderer Initialisation 
+    // -------------------------
+
+    // Shader Program : by Default 
+    m_renderer.createShaderProg(vertexsource, fragmentsource);
+
+
+
+
 
     std::cout << fragmentsource << std::endl; 
 
@@ -171,7 +174,7 @@ Game::Game()
     vertexShader->checkValidity(); 
     fragmentShader->checkValidity();
 
-    // create shader Programe 
+    // create shader Program 
     shaderProgram = new ShaderProgram(); 
     shaderProgram->bindShaders(vertexShader, fragmentShader); 
     shaderProgram->link(); 
@@ -293,8 +296,7 @@ void Game::RunGameLoop()
         m_renderer.Clear(); 
 
         //=================================================
-        //GLM Transformations
-
+        // GLM Transformations
         SpaceEngine::Transform transformation; 
         transformation.addRotation(frotate.x, 0.f, frotate.z);
         transformation.Translate(ftranslate.x, ftranslate.y, ftranslate.z);
@@ -303,8 +305,9 @@ void Game::RunGameLoop()
         transfo_extern.Translate(0.5f, 0.0, 0.0);
         transfo_extern.addRotation(0.0f, frotate.y, 0.0f);
         //transformation.addHomogenousScale(0.5f); 
-       
 
+        SpaceEngine::Transform worldMatrix;
+        transformation.setAsIdentity(); 
 
         glm::vec4 vec(0.5f, 0.0f, 0.0f, 1.0f);
         //glm::mat4 trans = glm::mat4(1.0f);
@@ -313,12 +316,6 @@ void Game::RunGameLoop()
         //trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
         
         vec = transformation.getMatrixTransform() * vec;
-
-        //-----------------
-        // Model Matrix 
-        //-----------------
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
         //-----------------
         // View Matrix 
@@ -336,24 +333,24 @@ void Game::RunGameLoop()
 
 
         // MVP Matrix 
-        glm::mat4 mvp = projection * view * model; 
+        glm::mat4 mvp = projection * view; 
         
         //=================================================
 
         
         
-        // ====================================================
+        // =================================================
         // Draw here 
        
         // 2. use our shader program when we want to render an object
         shaderProgram->setUniform1i("texture1", 0);
         shaderProgram->setUniform1i("texture2", 1);
         
-        
         // Transformations 
-        shaderProgram->setMat4("u_mvp", glm::value_ptr(mvp));
-        shaderProgram->setMat4("u_transform", glm::value_ptr(transformation.getMatrixTransform()));
-        shaderProgram->setMat4("u_transformexterne", glm::value_ptr(transfo_extern.getMatrixTransform()));
+        /*shaderProgram->setMat4("u_mvp", glm::value_ptr(mvp));
+        shaderProgram->setMat4("u_internal_tsfm_matrix", glm::value_ptr(transformation.getMatrixTransform()));
+        shaderProgram->setMat4("u_worldmatrix", glm::value_ptr(worldMatrix.getMatrixTransform()));
+        shaderProgram->setMat4("u_transform_matrix", glm::value_ptr(transfo_extern.getMatrixTransform()));*/
   
         // bind texture 
         boxTexture->bind(0);

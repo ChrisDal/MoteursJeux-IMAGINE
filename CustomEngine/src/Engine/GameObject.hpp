@@ -1,15 +1,16 @@
 #pragma once
 
-#include <vector>
-#include "GeometryEngine.h"
-#include "Transform.h"
 #include <glm/vec2.hpp> // glm::vec3
 #include <glm/vec3.hpp> // glm::vec3
 #include <glm/vec4.hpp> // glm::vec4
 #include <glm/mat3x3.hpp> // glm::mat4
 #include <glm/mat4x4.hpp> // glm::mat4
 
-#include "Vdata.h"
+#include <vector>
+#include "Transform.h"
+#include "Mesh.h"
+#include "Rendering/VertexData.h"
+#include "Rendering/ShaderProgram.h"
 #include "Octree.hpp"
 
 class SceneNode;
@@ -26,16 +27,10 @@ private:
     std::vector<GameObject*> m_children;
     SceneNode* m_parent;
 
-    // data to draw - Cube geometry
-    std::vector<VertexData> m_vertices;
-    std::vector<glm::vec3> bbox;
-    std::vector<GLushort> m_indices;
-    unsigned int m_nVertex;
-    unsigned int indexCount;
+    // Mesh
+    Mesh* m_mesh; 
 
-    GeometryEngine* m_geom;
-    VertexData* m_pvertices;
-    GLushort* m_pindices;
+    // -----------
 
     short int m_ntexture;
 
@@ -47,21 +42,15 @@ private:
     Octree* m_meshtree = nullptr;
 
 
-    // ------------------------------
-    // Transformation will go private
-    // ------------------------------
-    Transform m_transfo; // transformation en temps réel repere world
-    Transform m_internal; // transformation repere interne
-    glm::mat4x4 m_world;   // transformation at time T=0 , position in world
+    // -----------------
+    // Transformations
+    // -------------------
+    SpaceEngine::Transform m_transfo;   // transformation en temps réel repere world
+    SpaceEngine::Transform m_internal;  // transformation repere interne
+    glm::mat4x4 m_world;                // transformation at time T=0 , position in world
 
 
 protected:
-
-    // OpenGL Render data
-    unsigned int getNVertex() const { return  m_nVertex; }
-    unsigned int getIndexCount() const { return indexCount; }
-    VertexData* getVertices() { return m_vertices.data(); }
-    GLushort* getIndices() { return  m_indices.data(); }
 
     // init mesh data
     void initDummyCube(float textureindex = 1.0f);
@@ -84,9 +73,9 @@ public:
     ~GameObject();
 
     // Define Transformation
-    void setTransformation(Transform transfo, bool internal = false);
-    void addTransformation(const Transform& transfo, bool internal = false);
-    Transform getTransformation(bool internal = false) const;
+    void setTransformation(SpaceEngine::Transform transfo, bool internal = false);
+    void addTransformation(const SpaceEngine::Transform& transfo, bool internal = false);
+    SpaceEngine::Transform getTransformation(bool internal = false) const;
 
 
     // Transformation in memory
@@ -103,7 +92,6 @@ public:
     glm::vec3 Position() const;
     void Position(float x, float y, float z);
 
-
     // Print game object informations
     void print();
 
@@ -113,22 +101,18 @@ public:
     bool loadMesh(const std::string& filename);
 
     // Rendering
-    void initRendering();
-    void render(QOpenGLShaderProgram* program);
-    GeometryEngine* getGeomEng() const;
-
+    Mesh* getMesh() const { return m_mesh; }
+  
     // Collisions 
     bool isCollidingWithTerrain(GameObject* other);
-
-
 
     // ID and tag check
     int getId() const { return m_id; }
     std::string getTag() const { return m_tag; }
     void setTag(std::string _tag) { m_tag = _tag; }
     bool isMainCamera() { return m_tag.compare("MainCamera") == 0; }
-    bool isTerrain() { return m_tag.compare("Terrain") == 0; }
-    bool isPlayer() { return m_tag.compare("Player") == 0; }
+    bool isTerrain()    { return m_tag.compare("Terrain") == 0; }
+    bool isPlayer()     { return m_tag.compare("Player") == 0; }
     Octree* getOctree() { return m_meshtree; }
 
     glm::vec3 getNearestPos(int x, int y);

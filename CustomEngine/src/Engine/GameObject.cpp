@@ -8,10 +8,10 @@ int GameObject::g_id = 0;
 // Constructos
 GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId,
     std::string filename, std::string tag)
-    : m_nVertex(0), indexCount(0),
+    : m_mesh(nullptr),
     m_ntexture(textureId),
     m_filename(filename),
-    m_tag(tag), m_internal(Transform())
+    m_tag(tag), m_internal(SpaceEngine::Transform())
 {
     m_position = glm::vec3(center);
     // matrice de transformation interne
@@ -24,10 +24,10 @@ GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId
 
 GameObject::GameObject(SceneNode* parent, glm::vec3 center, short int textureId,
     std::string filename, std::string tag)
-    : m_nVertex(0), indexCount(0),
+    : m_mesh(nullptr),
     m_ntexture(textureId),
     m_filename(filename),
-    m_tag(tag), m_internal(Transform())
+    m_tag(tag), m_internal(SpaceEngine::Transform())
 {
 
     parent->addObject(this);
@@ -44,10 +44,10 @@ GameObject::GameObject(SceneNode* parent, glm::vec3 center, short int textureId,
 
 // for prog
 GameObject::GameObject(glm::vec3 center, short int textureId, std::string filename, std::string tag)
-    : m_nVertex(0), indexCount(0),
+    : m_mesh(nullptr), 
     m_ntexture(textureId),
     m_filename(filename),
-    m_tag(tag), m_internal(Transform())
+    m_tag(tag), m_internal(SpaceEngine::Transform())
 
 {
     m_position = glm::vec3(center);
@@ -59,8 +59,8 @@ GameObject::GameObject(glm::vec3 center, short int textureId, std::string filena
 };
 
 GameObject::GameObject(float x, float y, float z)
-    : m_nVertex(0), indexCount(0), m_ntexture(-1),
-    m_tag("Default"), m_internal(Transform())
+    : m_ntexture(-1), m_mesh(nullptr),
+    m_tag("Default"), m_internal(SpaceEngine::Transform())
 {
     m_position = glm::vec3(x, y, z);
     m_world = glm::translate(glm::mat4x4(1.0f), m_position);
@@ -71,7 +71,11 @@ GameObject::GameObject(float x, float y, float z)
 
 GameObject::~GameObject()
 {
-    delete m_geom;
+    if (m_mesh != nullptr)
+    {
+        delete m_mesh; 
+    }
+
     if (m_meshtree != nullptr)
     {
         delete m_meshtree;
@@ -87,10 +91,10 @@ void GameObject::applyTransformation()
 
     m_transfo.applyOnPoint(m_position, m_position);
 
-    for (unsigned int k = 0; k < m_nVertex; k++)
+    /*for (unsigned int k = 0; k < m_nVertex; k++)
     {
-        m_transfo.applyOnPoint(m_vertices[k].position, m_position);
-    }
+        m_transfo.applyOnPoint(m_vertices[k].positions, m_position);
+    }*/
 
 }
 
@@ -152,7 +156,7 @@ GameObject& GameObject::Scale(float sx, float sy, float sz, bool internal)
 // ---------------------------------------
 // Define Transformations
 // ---------------------------------------
-void GameObject::setTransformation(Transform transfo, bool internal)
+void GameObject::setTransformation(SpaceEngine::Transform transfo, bool internal)
 {
     if (internal)
     {
@@ -166,7 +170,7 @@ void GameObject::setTransformation(Transform transfo, bool internal)
 }
 
 
-void GameObject::addTransformation(const Transform& transfo, bool internal)
+void GameObject::addTransformation(const SpaceEngine::Transform& transfo, bool internal)
 {
     if (internal)
     {
@@ -183,7 +187,7 @@ void GameObject::addTransformation(const Transform& transfo, bool internal)
 
 // True: transfo apply on object space
 // False: transfo apply in local space (node)
-Transform GameObject::getTransformation(bool internal) const {
+SpaceEngine::Transform GameObject::getTransformation(bool internal) const {
 
     if (internal)
     {
@@ -216,8 +220,8 @@ void GameObject::Position(float x, float y, float z)
 glm::vec4 GameObject::getWorldPosition()
 {
     glm::vec3 pos = this->Position();
-    Transform t_interne = this->getTransformation(true);
-    Transform t_externe = this->getTransformation();
+    SpaceEngine::Transform t_interne = this->getTransformation(true);
+    SpaceEngine::Transform t_externe = this->getTransformation();
     glm::mat4x4 worldmat = this->getWorldMat();
 
     pos = t_interne.applyToPoint(pos, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -241,34 +245,44 @@ glm::mat4x4 GameObject::getTransformationAllIn()
 // ---------------------------------------
 void GameObject::print()
 {
-    std::cout << "[GameObj" << m_id << "] Position " << m_position.x <<','<<m_position.y<<","<<m_position.z << "\n";
+    std::cout << "[GameObj" << m_id << "] Position " << m_position.x <<','<< m_position.y << "," << m_position.z << "\n";
 }
 
 
 // ---------------------------------------
+// Typemesh : 
+// ----------
+// 0 : Cube 
+// 1 : Cube
+// 2 : Cube
+// 3 : Plane
+
 void GameObject::initMesh(int typemesh)
 {
 
     if (m_filename.empty())
     {
+        if (m_mesh != nullptr) { m_mesh->clear(); }
+        m_mesh = new Mesh(); 
+
         if (m_ntexture > -1 && m_ntexture < 2)
         {
-            initDummyCube(static_cast<float>(m_ntexture));
+            m_mesh->initCube();
         }
         else if (m_ntexture == 3)
         {
-            initPlane(128);
+            m_mesh->initPlane();
             std::cout << "LOG Init Grass Terrain\n";
             setTag("Terrain");
         }
         else if (typemesh == 0)
         {
-            initDummyCube(0.0);
+            m_mesh->initCube();
             std::cout << "LOG Init Dummy Dice\n";
         }
         else
         {
-            initDummyCube(0.0);
+            m_mesh->initCube();
             std::cout << "Default: Dummy Dice\n";
         }
     }
@@ -281,14 +295,12 @@ void GameObject::initMesh(int typemesh)
             std::cout << "Default: Dummy Dice\n";
         }
 
-
-
     }
 
 
     if (isTerrain())
     {
-        glm::mat4x4 mattfm = getTransformationAllIn();
+        /*glm::mat4x4 mattfm = getTransformationAllIn();
         setbbox();
         glm::vec4 avec = mattfm * glm::vec4(bbox[0], 0.0f);
         glm::vec4 bvec = mattfm * glm::vec4(bbox[1], 0.0f);
@@ -300,10 +312,10 @@ void GameObject::initMesh(int typemesh)
 
         for (const VertexData& pv : m_vertices)
         {
-            glm::vec4 tvec = mattfm * glm::vec4(pv.position, 1.0f);
+            glm::vec4 tvec = mattfm * glm::vec4(pv.positions, 1.0f);
             Point3D c(tvec[0], tvec[1], tvec[2]);
             m_meshtree->insert(c);
-        }
+        }*/
     }
 
 
@@ -315,69 +327,7 @@ void GameObject::initMesh(int typemesh)
 // init mesh data
 void GameObject::initDummyCube(float textureIndex) {
 
-
-    // Vertex data for face 0
-    m_vertices.push_back({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec2(0.0f, 0.0f), textureIndex });  // v0
-    m_vertices.push_back({ glm::vec3(1.0f, -1.0f,  1.0f), glm::vec2(0.33f, 0.0f), textureIndex }); // v1
-    m_vertices.push_back({ glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec2(0.0f, 0.5f),  textureIndex }); // v2
-    m_vertices.push_back({ glm::vec3(1.0f,  1.0f,  1.0f), glm::vec2(0.33f, 0.5f), textureIndex }); // v3
-
-   // Vertex data for face 1
-    m_vertices.push_back({ glm::vec3(1.0f, -1.0f,  1.0f), glm::vec2(0.0f, 0.5f), textureIndex }); // v4
-    m_vertices.push_back({ glm::vec3(1.0f, -1.0f, -1.0f), glm::vec2(0.33f, 0.5f), textureIndex }); // v5
-    m_vertices.push_back({ glm::vec3(1.0f,  1.0f,  1.0f), glm::vec2(0.0f, 1.0f),  textureIndex });  // v6
-    m_vertices.push_back({ glm::vec3(1.0f,  1.0f, -1.0f), glm::vec2(0.33f, 1.0f), textureIndex }); // v7
-
-   // Vertex data for face 2
-    m_vertices.push_back({ glm::vec3(1.0f, -1.0f, -1.0f), glm::vec2(0.66f, 0.5f), textureIndex }); // v8
-    m_vertices.push_back({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec2(1.0f, 0.5f),  textureIndex }); // v9
-    m_vertices.push_back({ glm::vec3(1.0f,  1.0f, -1.0f), glm::vec2(0.66f, 1.0f),textureIndex }); // v10
-    m_vertices.push_back({ glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec2(1.0f, 1.0f), textureIndex }); // v11
-
-   // Vertex data for face 3
-    m_vertices.push_back({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec2(0.66f, 0.0f),textureIndex }); // v12
-    m_vertices.push_back({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec2(1.0f, 0.0f), textureIndex }); // v13
-    m_vertices.push_back({ glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec2(0.66f, 0.5f),textureIndex }); // v14
-    m_vertices.push_back({ glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec2(1.0f, 0.5f), textureIndex }); // v15
-
-   // Vertex data for face 4
-    m_vertices.push_back({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec2(0.33f, 0.0f), textureIndex }); // v16
-    m_vertices.push_back({ glm::vec3(1.0f, -1.0f, -1.0f), glm::vec2(0.66f, 0.0f), textureIndex }); // v17
-    m_vertices.push_back({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec2(0.33f, 0.5f), textureIndex }); // v18
-    m_vertices.push_back({ glm::vec3(1.0f, -1.0f,  1.0f), glm::vec2(0.66f, 0.5f), textureIndex }); // v19
-
-   // Vertex data for face 5
-    m_vertices.push_back({ glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec2(0.33f, 0.5f), textureIndex }); // v20
-    m_vertices.push_back({ glm::vec3(1.0f,  1.0f,  1.0f), glm::vec2(0.66f, 0.5f), textureIndex }); // v21
-    m_vertices.push_back({ glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec2(0.33f, 1.0f), textureIndex }); // v22
-    m_vertices.push_back({ glm::vec3(1.0f,  1.0f, -1.0f), glm::vec2(0.66f, 1.0f), textureIndex }); // v23
-
-    m_nVertex = m_vertices.size();
-
-
-
-    // Sommets
-    int ki = 0;
-    for (unsigned int k = 0; k < m_nVertex; k++)
-    {
-        m_indices.push_back(k);
-        ki++;
-        if (((k + 1) % 4 == 0) && k > 0)
-        {
-            m_indices.push_back(k);
-            m_indices.push_back(k + 1);
-            ki++;
-            ki++;
-        }
-    }
-
-    // set pointers
-    m_pvertices = &m_vertices[0];
-    m_pindices = &m_indices[0];
-
-    m_nVertex = m_vertices.size();
-    indexCount = m_indices.size();
-
+    
 }
 
 
@@ -467,19 +417,19 @@ void GameObject::setbbox()
     bbox.clear();
     bbox.reserve(2);
 
-    glm::vec3 minbbox = m_vertices[0].position;
-    glm::vec3 maxbbox = m_vertices[0].position;
+    glm::vec3 minbbox = m_vertices[0].positions;
+    glm::vec3 maxbbox = m_vertices[0].positions;
 
     for (const VertexData& pv : m_vertices)
     {
         for (unsigned int k = 0; k < 3; k++)
         {
-            if (pv.position[k] < minbbox[k]) {
-                minbbox[k] = pv.position[k];
+            if (pv.positions[k] < minbbox[k]) {
+                minbbox[k] = pv.positions[k];
             }
 
-            if (pv.position[k] > maxbbox[k]) {
-                maxbbox[k] = pv.position[k];
+            if (pv.positions[k] > maxbbox[k]) {
+                maxbbox[k] = pv.positions[k];
             }
         }
 
@@ -527,22 +477,6 @@ glm::mat4x4 GameObject::getMatTransformation()
     return m_transfo.getMatrixTransform();
 }
 
-void GameObject::initRendering()
-{
-    m_geom = new GeometryEngine();
-    m_geom->bindBuffers(getNVertex(), getVertices(), getIndices(), getIndexCount());
-}
-
-void GameObject::render(QOpenGLShaderProgram* program)
-{
-    m_geom->drawAnyDynamicGeometry(program, this);
-}
-
-
-GeometryEngine* GameObject::getGeomEng() const
-{
-    return m_geom;
-}
 
 bool GameObject::isCollidingWithTerrain(GameObject* other)
 {
@@ -658,8 +592,8 @@ glm::vec3 GameObject::getNearestPos(int x, int y)
 
     int n = std::sqrt(terrainSize);
 
-    glm::vec4 A = mattfm * glm::vec4(m_vertices[0].position, 1.0f);
-    glm::vec4 B = mattfm * glm::vec4(m_vertices.at(m_vertices.size() - 1).position, 1.0f);
+    glm::vec4 A = mattfm * glm::vec4(m_vertices[0].positions, 1.0f);
+    glm::vec4 B = mattfm * glm::vec4(m_vertices.at(m_vertices.size() - 1).positions, 1.0f);
     float dxy = (B[0] - A[0]) / float(n);
 
     int nx = std::abs(x - A[0]);
@@ -674,7 +608,7 @@ glm::vec3 GameObject::getNearestPos(int x, int y)
 
     int k = ny * n + nx;
 
-    glm::vec4 pos_world = mattfm * glm::vec4(m_vertices.at(k).position, 1.0f);
+    glm::vec4 pos_world = mattfm * glm::vec4(m_vertices.at(k).positions, 1.0f);
     std::cout << "Position k=" << k << "/" << m_vertices.size() - 1; 
     std::cout << " Vector = " << pos_world.x << "," << pos_world.y << "," << pos_world.z;
     std::cout << std::endl; 

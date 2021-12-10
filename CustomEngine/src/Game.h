@@ -8,12 +8,12 @@
 #include <iostream>
 #include <string>
 
-#include "ShaderProgram.h"
-#include "VertexBuffer.hpp"
-#include "IndexBuffer.hpp"
-#include "VertexArrayBuffer.h"
-#include "Texture.h"
-#include "Renderer.h"
+#include "Engine/Rendering/ShaderProgram.h"
+#include "Engine/Rendering/VertexBuffer.hpp"
+#include "Engine/Rendering/IndexBuffer.hpp"
+#include "Engine/Rendering/VertexArrayBuffer.h"
+#include "Engine/Rendering/Texture.h"
+#include "Engine/Rendering/Renderer.h"
 
 
 class Game

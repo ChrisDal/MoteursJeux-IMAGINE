@@ -56,7 +56,7 @@ bool ShaderProgram::checkValidity() const
 	return false;
 }
 
-int ShaderProgram::getUniformLocation(const char* uniformname)
+int ShaderProgram::getUniformLocation(const char* uniformname) const
 {
 	int location = glGetUniformLocation(m_shader, uniformname);
 	if (location == -1)
@@ -79,12 +79,12 @@ void ShaderProgram::setUniform4f(int location, float x, float y, float z, float 
 	glUniform4f(location, x, y, z, w); 
 }
 
-void ShaderProgram::setUniform1i(const char* name, int location)
+void ShaderProgram::setUniform1i(const char* name, int location) const 
 {
 	glUniform1i(this->getUniformLocation(name), location);
 }
 
-void ShaderProgram::setMat4(const char* mat4name, const GLfloat* data)
+void ShaderProgram::setMat4(const char* mat4name, const GLfloat* data) const
 {
 	int loc = getUniformLocation(mat4name);
 	// send at location loc , 1 matrix, not in column major order, data

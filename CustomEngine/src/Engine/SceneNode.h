@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include "GameObject.hpp"
+#include "Rendering/ShaderProgram.h"
 
 
 class SceneNode
@@ -15,8 +16,8 @@ private:
     // Space  
     glm::vec3 m_origin;
     glm::vec3 m_position;
-    Transform m_tsfm_world;    // position and orientation and scaling at Time t=0
-    Transform m_tsfm_internal; // Internal transformation RT
+    SpaceEngine::Transform m_tsfm_world;    // position and orientation and scaling at Time t=0
+    SpaceEngine::Transform m_tsfm_internal; // Internal transformation RT
 
     // ID
     int m_nid = -1;
@@ -65,8 +66,8 @@ public:
     glm::vec3 getPosition() const;
     glm::mat4x4 getMatInternalTransform();
     glm::mat4x4 getMatWorldTransform();
-    Transform getInternalTransform() const;
-    Transform getWorldTransform();
+    SpaceEngine::Transform getInternalTransform() const;
+    SpaceEngine::Transform getWorldTransform();
 
     // Interface
     void Rotate(float alpha, float beta, float gamma, bool internal = false);
@@ -83,7 +84,7 @@ public:
     // Rendering
     // ------------
     void sceneInit(SceneNode* sNode);   //init object render
-    void render(SceneNode* sNode, QOpenGLShaderProgram* shader); // render objects
+    void render(SceneNode* sNode, ShaderProgram* shader); // render objects
 
 
     std::string getId() const;
