@@ -15,6 +15,8 @@
 #include "Engine/Rendering/Texture.h"
 #include "Engine/Rendering/Renderer.h"
 
+#include "Engine/SceneNode.h"
+
 
 class Game
 {
@@ -35,6 +37,10 @@ public:
 
     // Renderer 
     Renderer m_renderer; 
+
+    // Game Objects 
+    GameObject* m_gmo; 
+    SceneNode* m_scene;
    
 public:
     Game();

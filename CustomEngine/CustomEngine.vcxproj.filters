@@ -87,6 +87,9 @@
     <ClCompile Include="src\Engine\GameObject.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="src\Engine\SceneNode.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependencies\include\imgui\imconfig.h">
@@ -1034,6 +1037,9 @@
     <ClInclude Include="src\Engine\GameObject.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="src\Engine\SceneNode.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="dependencies\lib\glfw3.lib" />
@@ -1458,6 +1464,8 @@
     </None>
     <None Include="src\shaders\basicFragmentShader.shader" />
     <None Include="src\shaders\basicVertexShader.shader" />
+    <None Include="src\shaders\basicFragShader.shader" />
+    <None Include="src\shaders\basicVShader.shader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="data\cube.png">

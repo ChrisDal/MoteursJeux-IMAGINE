@@ -11,7 +11,7 @@
 #include "Mesh.h"
 #include "Rendering/VertexData.h"
 #include "Rendering/ShaderProgram.h"
-#include "Octree.hpp"
+//#include "Octree.hpp"
 
 class SceneNode;
 
@@ -29,6 +29,7 @@ private:
 
     // Mesh
     Mesh* m_mesh; 
+    SpaceEngine::boundingBox m_bbox; 
 
     // -----------
 
@@ -39,7 +40,7 @@ private:
     std::string m_tag;
 
     // Octree Data structure
-    Octree* m_meshtree = nullptr;
+    //Octree* m_meshtree = nullptr;
 
 
     // -----------------
@@ -55,7 +56,7 @@ protected:
     // init mesh data
     void initDummyCube(float textureindex = 1.0f);
     void initPlane(unsigned int terrainSize);
-
+    // BoundingBox 
     void setbbox();
 
 public:
@@ -113,7 +114,8 @@ public:
     bool isMainCamera() { return m_tag.compare("MainCamera") == 0; }
     bool isTerrain()    { return m_tag.compare("Terrain") == 0; }
     bool isPlayer()     { return m_tag.compare("Player") == 0; }
-    Octree* getOctree() { return m_meshtree; }
+    
+    //Octree* getOctree() { return m_meshtree; }
 
     glm::vec3 getNearestPos(int x, int y);
 

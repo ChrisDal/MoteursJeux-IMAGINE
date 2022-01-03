@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Engine/Transform.h"
+#include "Engine/GameObject.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -39,7 +40,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 Game::Game()
 : m_shaderdir(PROJECT_DIR"src\\shaders\\"), 
   m_datadir(PROJECT_DIR"data\\"), 
-  m_texturedir(PROJECT_DIR"data\\")
+  m_texturedir(PROJECT_DIR"data\\"), 
+  m_renderer((float)SCR_WIDTH, (float)SCR_HEIGHT)
 {
     // glfw: initialize and configure
     // ------------------------------
@@ -94,8 +96,6 @@ Game::Game()
     glEnable(GL_DEPTH_TEST);
 
 
-    
-
     // --------------------------
     /*float vertices[] = {
      0.5f,  0.5f, 0.0f,  // top right
@@ -125,7 +125,7 @@ Game::Game()
         0.5f, 1.0f
     }; 
 
-
+	/* TO REMOVE 
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), 
     // and then configure vertex attributes(s).
     VAO = new VertexArrayBuffer(); 
@@ -162,10 +162,6 @@ Game::Game()
     // Shader Program : by Default 
     m_renderer.createShaderProg(vertexsource, fragmentsource);
 
-
-
-
-
     std::cout << fragmentsource << std::endl; 
 
     Shader* vertexShader = new Shader(vertexsource.c_str(), GL_VERTEX_SHADER);
@@ -188,7 +184,7 @@ Game::Game()
     VAO->unbind(); 
     EBO->unbind();
     VBO->unbind(); 
-    shaderProgram->unuse(); 
+    shaderProgram->unuse();
 
 
     // texture load 
@@ -198,6 +194,36 @@ Game::Game()
 
     std::string imageface = m_texturedir + std::string("awesomeface.png"); 
     faceTexture = std::make_unique<Texture>(imageface.c_str(), 1); 
+	
+	*/
+	
+	// Renderer 
+	// ---------
+	// Vertex & Fragment Shader
+    std::string vertexsource = m_shaderdir; 
+    vertexsource += "basicVShader.shader";
+
+    std::string fragmentsource = m_shaderdir; 
+    fragmentsource += "basicFragShader.shader";
+
+    // Renderer Initialisation 
+    // -------------------------
+
+    // Shader Program : by Default 
+    m_renderer.createShaderProg(vertexsource, fragmentsource);
+
+    std::cout << fragmentsource << std::endl; 
+	
+	
+	
+	
+
+    // Game Object  
+    // -------------
+    m_scene = new SceneNode();
+    m_gmo = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
+    m_gmo->initMesh(0);
+                        
 
 }
 
@@ -205,12 +231,13 @@ Game::~Game()
 {
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
-    delete VAO;
-    delete VBO; 
-    delete EBO; 
+    if (VAO != nullptr){ delete VAO; }
+    if (VBO != nullptr){ delete VBO; }
+    if (EBO != nullptr) { delete EBO; } 
+    if (shaderProgram != nullptr) { delete shaderProgram; }
+    //delete boxTexture;
+    delete m_scene; 
     
-    delete shaderProgram; 
-    delete boxTexture;
     
     
     // glfw: terminate, clearing all previously allocated GLFW resources.
@@ -259,9 +286,9 @@ void Game::RunGameLoop()
         ImGui::SliderFloat("rotationX", &frotate.x, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::SliderFloat("rotationY", &frotate.y, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::SliderFloat("rotationZ", &frotate.z, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("translationX", &ftranslate.x, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("translationY", &ftranslate.y, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("translationZ", &ftranslate.z, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("translationX", &ftranslate.x, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("translationY", &ftranslate.y, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("translationZ", &ftranslate.z, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
         if (ImGui::Button("Wireframe Mode"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -298,8 +325,8 @@ void Game::RunGameLoop()
         //=================================================
         // GLM Transformations
         SpaceEngine::Transform transformation; 
-        transformation.addRotation(frotate.x, 0.f, frotate.z);
-        transformation.Translate(ftranslate.x, ftranslate.y, ftranslate.z);
+        transformation.addRotation(frotate.x, frotate.y, frotate.z);
+        //transformation.Translate(ftranslate.x, ftranslate.y, ftranslate.z);
 
         SpaceEngine::Transform transfo_extern;
         transfo_extern.Translate(0.5f, 0.0, 0.0);
@@ -307,7 +334,7 @@ void Game::RunGameLoop()
         //transformation.addHomogenousScale(0.5f); 
 
         SpaceEngine::Transform worldMatrix;
-        transformation.setAsIdentity(); 
+        worldMatrix.setAsIdentity();
 
         glm::vec4 vec(0.5f, 0.0f, 0.0f, 1.0f);
         //glm::mat4 trans = glm::mat4(1.0f);
@@ -316,7 +343,9 @@ void Game::RunGameLoop()
         //trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
         
         vec = transformation.getMatrixTransform() * vec;
-
+		
+		/*
+		
         //-----------------
         // View Matrix 
         //-----------------
@@ -333,7 +362,7 @@ void Game::RunGameLoop()
 
 
         // MVP Matrix 
-        glm::mat4 mvp = projection * view; 
+        glm::mat4 mvp = projection * view; */
         
         //=================================================
 
@@ -343,22 +372,34 @@ void Game::RunGameLoop()
         // Draw here 
        
         // 2. use our shader program when we want to render an object
-        shaderProgram->setUniform1i("texture1", 0);
-        shaderProgram->setUniform1i("texture2", 1);
+        /*shaderProgram->setUniform1i("texture1", 0);
+        shaderProgram->setUniform1i("texture2", 1);*/
         
         // Transformations 
         /*shaderProgram->setMat4("u_mvp", glm::value_ptr(mvp));
         shaderProgram->setMat4("u_internal_tsfm_matrix", glm::value_ptr(transformation.getMatrixTransform()));
         shaderProgram->setMat4("u_worldmatrix", glm::value_ptr(worldMatrix.getMatrixTransform()));
         shaderProgram->setMat4("u_transform_matrix", glm::value_ptr(transfo_extern.getMatrixTransform()));*/
-  
+        
+        // Exemple with BOX 
         // bind texture 
-        boxTexture->bind(0);
+        /*boxTexture->bind(0);
         faceTexture->bind(1);
-
         m_renderer.Draw(VAO, EBO, shaderProgram); 
+        boxTexture->unbind();*/
 
-        boxTexture->unbind();
+
+        // To Transform into 
+        /*Mesh testmesh = Mesh(); 
+        testmesh.initCube(); 
+        m_renderer.Draw(&testmesh, -1);*/
+
+
+        // translation of camera 
+        m_renderer.setviewprojMat((float)SCR_WIDTH, (float)SCR_HEIGHT, ftranslate, true); 
+        // Transformation = rotation 
+        m_gmo->setTransformation(transformation); 
+        m_renderer.Draw(m_gmo, GL_TRIANGLE_STRIP, -1); 
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

@@ -165,6 +165,7 @@
     <ClCompile Include="dependencies\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\Engine\GameObject.cpp" />
     <ClCompile Include="src\Engine\Rotoform.cpp" />
+    <ClCompile Include="src\Engine\SceneNode.cpp" />
     <ClCompile Include="src\Engine\Transform.cpp" />
     <ClCompile Include="src\Engine\Rendering\IndexBuffer.cpp" />
     <ClCompile Include="src\Engine\Mesh.cpp" />
@@ -482,6 +483,7 @@
     <ClInclude Include="dependencies\include\KHR\khrplatform.h" />
     <ClInclude Include="src\Engine\GameObject.hpp" />
     <ClInclude Include="src\Engine\Rotoform.h" />
+    <ClInclude Include="src\Engine\SceneNode.h" />
     <ClInclude Include="src\Engine\Transform.h" />
     <ClInclude Include="src\Engine\Rendering\IndexBuffer.hpp" />
     <ClInclude Include="src\Engine\Mesh.h" />
@@ -643,8 +645,10 @@
     <None Include="src\shaders\basicFragmentShader.shader">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
+    <None Include="src\shaders\basicVShader.shader" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\shaders\basicFragShader.shader" />
     <None Include="src\shaders\basicVertexShader.shader">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>

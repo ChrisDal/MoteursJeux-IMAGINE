@@ -8,6 +8,20 @@
 #include "Rendering/Texture.h"
 #include "Rendering/ShaderProgram.h"
 
+
+namespace SpaceEngine {
+
+	struct boundingBox
+	{
+		glm::vec3 minbbox; 
+		glm::vec3 maxbbox; 
+	};
+	
+	// Visualise Bounding Box 
+	
+
+}
+
 class Mesh
 {
 
@@ -22,10 +36,8 @@ private:
 	ShaderProgram* m_shader = nullptr; // if not 
 
 	// Data to draw - Cube geometry
-	std::vector<VertexData> m_vertices;
-	std::vector<glm::vec3>  m_bbox;
-	std::vector<GLushort>   m_indices;
 	std::vector<Texture>    m_textures; 
+	// Size count 
 	unsigned int m_nVertex;
 	unsigned int indexCount;
 
@@ -37,11 +49,11 @@ private:
 
 protected: 
 
-	// OpenGL Render data
-	unsigned int getNVertex() const { return  m_nVertex; }
-	unsigned int getIndexCount() const { return indexCount; }
-	VertexData* getVertices() { return m_vertices.data(); }
-	GLushort* getIndices() { return  m_indices.data(); }
+	// mesh data
+	std::vector<VertexData>	  vertices;
+	std::vector<unsigned int> indices;
+	std::vector<Texture>      textures;
+	SpaceEngine::boundingBox  bbox;   // Bounding box of mesh 
 
 public:
 
@@ -61,10 +73,18 @@ public:
 	void loadMesh(const char* filename); 
 	void clear(); 
 
-	// mesh data
-	std::vector<VertexData>	  vertices;
-	std::vector<unsigned int> indices;
-	std::vector<Texture>      textures;
+	// Bounding Box 
+	void setBbox(); 
+	SpaceEngine::boundingBox getBbox() const {
+		return bbox;
+	};
+
+	// OpenGL Render data
+	unsigned int getNVertex() const { return  m_nVertex; }
+	unsigned int getIndexCount() const { return indexCount; }
+	VertexData* getVertices() { return vertices.data(); }
+	VertexData getVertices(int index) { return vertices[index];  } // no modifyable
+	unsigned* getIndices() { return  indices.data(); }
 
 
 	void Draw(); 

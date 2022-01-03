@@ -44,7 +44,7 @@ GameObject::GameObject(SceneNode* parent, glm::vec3 center, short int textureId,
 
 // for prog
 GameObject::GameObject(glm::vec3 center, short int textureId, std::string filename, std::string tag)
-    : m_mesh(nullptr), 
+    : m_mesh(nullptr), m_parent(nullptr), 
     m_ntexture(textureId),
     m_filename(filename),
     m_tag(tag), m_internal(SpaceEngine::Transform())
@@ -76,10 +76,10 @@ GameObject::~GameObject()
         delete m_mesh; 
     }
 
-    if (m_meshtree != nullptr)
+    /*if (m_meshtree != nullptr)
     {
         delete m_meshtree;
-    }
+    }*/
 
     std::cout << "Delete GameObj " << getId() << "\n";
 };
@@ -289,9 +289,12 @@ void GameObject::initMesh(int typemesh)
     else
     {
         // load mesh
+        m_mesh = new Mesh(m_filename.c_str()); 
         if (!loadMesh(m_filename))
         {
-            initDummyCube(0.0);
+            delete m_mesh; 
+            m_mesh = new Mesh(); 
+            m_mesh->initCube();
             std::cout << "Default: Dummy Dice\n";
         }
 
@@ -318,9 +321,6 @@ void GameObject::initMesh(int typemesh)
         }*/
     }
 
-
-
-
 };
 
 // ---------------------------------------
@@ -336,7 +336,7 @@ void GameObject::initDummyCube(float textureIndex) {
 
 void GameObject::initPlane(unsigned int terrainSize)
 {
-    QImage heightmap(":/heightmap-1024x1024.png");
+    /*QImage heightmap(":/heightmap-1024x1024.png");
 
 
     // afficher une surface plane (16*16 sommets) composée de triangles.
@@ -407,40 +407,17 @@ void GameObject::initPlane(unsigned int terrainSize)
     m_pindices = &m_indices[0];
     // Set size
     m_nVertex = m_vertices.size();
-    this->indexCount = m_indices.size();
+    this->indexCount = m_indices.size();*/
 }
 
 
 void GameObject::setbbox()
 {
-
-    bbox.clear();
-    bbox.reserve(2);
-
-    glm::vec3 minbbox = m_vertices[0].positions;
-    glm::vec3 maxbbox = m_vertices[0].positions;
-
-    for (const VertexData& pv : m_vertices)
-    {
-        for (unsigned int k = 0; k < 3; k++)
-        {
-            if (pv.positions[k] < minbbox[k]) {
-                minbbox[k] = pv.positions[k];
-            }
-
-            if (pv.positions[k] > maxbbox[k]) {
-                maxbbox[k] = pv.positions[k];
-            }
-        }
-
-    }
-
-    glm::vec3 dxy = 0.3f * (maxbbox - minbbox);
-
-    bbox.push_back(minbbox - dxy);
-    bbox.push_back(maxbbox + dxy);
-
-
+    m_mesh->setBbox(); 
+    m_bbox =  m_mesh->getBbox();
+    // In GameObject Repere
+    m_bbox.minbbox = m_internal.getMatrixTransform() * glm::vec4(m_bbox.minbbox, 1.0); 
+    m_bbox.maxbbox = m_internal.getMatrixTransform() * glm::vec4(m_bbox.minbbox, 1.0);
 }
 
 
@@ -451,7 +428,7 @@ bool GameObject::loadMesh(const std::string& filename)
     std::vector<std::vector<unsigned int>> faces;
 
 
-    bool successobj = OBJIO::open(filename, vertices, faces, true, false);
+    /*bool successobj = OBJIO::open(filename, vertices, faces, true, false);
     if (!successobj)
     {
         std::cout << "Failed to open => dummy Cube";
@@ -465,9 +442,9 @@ bool GameObject::loadMesh(const std::string& filename)
             glm::vec2 textvec = glm::vec2(vertices[k].x(), vertices[k].y());
             m_vertices.push_back({ vertices[k], textvec, -1.0 });
         }
-    }
+    }*/
 
-    return successobj;
+    return false;
 
 }
 
@@ -489,9 +466,9 @@ bool GameObject::isCollidingWithTerrain(GameObject* other)
     // projection on a the box 
     /*Octree* meshtree = other->getOctree();
     Point3D* a = meshtree->getLimit(true);
-    Point3D* b = meshtree->getLimit(false); */
+    Point3D* b = meshtree->getLimit(false);
     Point3D gmoPos = Point3D(getWorldPosition()[0], getWorldPosition()[1], getWorldPosition()[2]);
-    Point3D gmoPos_proj = gmoPos;
+    Point3D gmoPos_proj = gmoPos; */
     /*
     // Reprojection inside the meshtree
     if ( ! meshtree->insideBounds(gmoPos))
@@ -571,11 +548,11 @@ bool GameObject::isCollidingWithTerrain(GameObject* other)
 
                                    }*/
 
-    glm::vec3 point = other->getNearestPos(gmoPos.x, gmoPos.y);
+    //glm::vec3 point = other->getNearestPos(gmoPos.x, gmoPos.y);
 
-    return gmoPos.z <= point.z;
+    //return gmoPos.z <= point.z;
 
-    //return false;
+    return false;
 
 }
 
@@ -588,12 +565,12 @@ glm::vec3 GameObject::getNearestPos(int x, int y)
     }
 
     glm::mat4x4 mattfm = getTransformationAllIn();
-    int terrainSize = m_vertices.size();
+    int terrainSize = this->m_mesh->getNVertex();
 
     int n = std::sqrt(terrainSize);
 
-    glm::vec4 A = mattfm * glm::vec4(m_vertices[0].positions, 1.0f);
-    glm::vec4 B = mattfm * glm::vec4(m_vertices.at(m_vertices.size() - 1).positions, 1.0f);
+    glm::vec4 A = mattfm * glm::vec4(m_mesh->getVertices(0).positions, 1.0f);
+    glm::vec4 B = mattfm * glm::vec4(m_mesh->getVertices(terrainSize - 1).positions, 1.0f);
     float dxy = (B[0] - A[0]) / float(n);
 
     int nx = std::abs(x - A[0]);
@@ -608,8 +585,8 @@ glm::vec3 GameObject::getNearestPos(int x, int y)
 
     int k = ny * n + nx;
 
-    glm::vec4 pos_world = mattfm * glm::vec4(m_vertices.at(k).positions, 1.0f);
-    std::cout << "Position k=" << k << "/" << m_vertices.size() - 1; 
+    glm::vec4 pos_world = mattfm * glm::vec4(m_mesh->getVertices(k).positions, 1.0f);
+    std::cout << "Position k=" << k << "/" << terrainSize - 1;
     std::cout << " Vector = " << pos_world.x << "," << pos_world.y << "," << pos_world.z;
     std::cout << std::endl; 
 

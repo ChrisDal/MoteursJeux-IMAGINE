@@ -20,10 +20,12 @@ bool GLLogCall(const char* function, const char* file, int line)
 };
 
 
-Renderer::Renderer()
-	: m_id(0)
+Renderer::Renderer(float _w, float _h)
+	: m_id(0), vpmat(glm::mat4(1.0f))
 {
-
+	//glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+	// glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
+	setviewprojMat(_w, _h, glm::vec3(0.0, 0.0, -10.0f), true); 
 }
 
 void Renderer::Clear() const
@@ -122,9 +124,12 @@ void Renderer::Draw(GameObject* gmo, GLenum mode, int shadertype) const
 	// set internal transform matrix
 	SpaceEngine::Transform t_interne = gmo->getTransformation(true);
 	chosenShader->setMat4("u_internal_tsfm_matrix", glm::value_ptr(t_interne.getMatrixTransform()));
-
+	
+	// View Proj Matrix 
+	chosenShader->setMat4("u_vp", glm::value_ptr(vpmat));
+	unsigned int idcount = meshobject->getIndicesCount(); 
 	// DRAW CALL 
-	GLCall(glDrawElements(GL_TRIANGLES, meshobject->getIndicesCount(), GL_UNSIGNED_INT, nullptr));
+	GLCall(glDrawElements(mode, idcount, GL_UNSIGNED_INT, nullptr));
 }
 
 void Renderer::Draw(Mesh* mesh, int shaderType) const
@@ -143,19 +148,50 @@ void Renderer::Draw(Mesh* mesh, int shaderType) const
 	this->Draw(mesh, chosenShader); 
 }
 
+
+
 void Renderer::createShaderProg(const std::string& vertexshad, const std::string& fragmentshad)
 { 
 	// vertex & fragment shader
 	Shader vertexShader = Shader(vertexshad.c_str(), GL_VERTEX_SHADER); 
-	Shader fragmentShader = Shader(vertexshad.c_str(), GL_FRAGMENT_SHADER);
+	Shader fragmentShader = Shader(fragmentshad.c_str(), GL_FRAGMENT_SHADER);
 
 	vertexShader.checkValidity();
 	fragmentShader.checkValidity();
 
 	// create shaderProgram 
-	m_shaderprograms.push_back(ShaderProgram()); 
+	m_shaderprograms.emplace_back(); 
 	m_shaderprograms[m_shaderprograms.size()-1].bindShaders(&vertexShader, &fragmentShader);
 
 	// link 
 	m_shaderprograms[m_shaderprograms.size()-1].link();
 } 
+
+void Renderer::setviewprojMat(float width, float height, const glm::vec3& transview, bool orthographic){
+	
+	//-----------------
+	// View Matrix 
+	//-----------------
+
+	//glm::mat4 view = glm::mat4(1.0f);
+	glm::mat4 view = glm::translate(glm::mat4(1.0f), transview);
+
+	//-----------------
+	// Projection Matrix 
+	//-----------------
+	glm::mat4 projection;
+	float ratio = width / height; 
+	if (orthographic) // TODO 
+	{
+		projection = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
+	}
+	else 
+	{
+		projection = glm::perspective(glm::radians(35.0f), ratio, 0.1f, 100.0f);
+	}
+
+
+	// Set View-Projection Matrix 
+	vpmat = projection * view; 
+	
+}
