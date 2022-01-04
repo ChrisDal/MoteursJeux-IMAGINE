@@ -158,7 +158,12 @@ void Renderer::Draw(SceneNode* scene) const
 {
 	for (int k = 0; k < scene->getObjectNumber(); k++)
 	{
-		this->Draw(scene->getObject(k), -1);
+		BasicGameObject* obj = scene->getObject(k); 
+		if (obj->hasMesh())
+		{
+			this->Draw(static_cast<GameObject*>(obj), -1);
+		}
+		
 	}
 
 	for (int i = 0; i < scene->getChildrenNumber(); i++)

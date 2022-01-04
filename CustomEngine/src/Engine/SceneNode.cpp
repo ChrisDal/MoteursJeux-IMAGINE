@@ -204,6 +204,13 @@ void SceneNode::Scale(float sx, float sy, float sz, bool internal) {
     }
 }
 
+void SceneNode::setPosition(float x, float y, float z)
+{
+    glm::vec3 translation = m_position - glm::vec3(x, y, z); 
+    Translate(translation.x, translation.y, translation.z);
+    m_position = glm::vec3(x, y, z); 
+}
+
 
 glm::vec3 SceneNode::getPosition() const
 {
@@ -215,18 +222,20 @@ glm::vec3 SceneNode::getPosition() const
 // ===================
 // GAME OBJECTS 
 // ===================
-void SceneNode::addObject(GameObject* gmo)
+void SceneNode::addObject(BasicGameObject* gmo)
 {
     m_objects.push_back(gmo);
 }
 
 
-std::vector<GameObject*> SceneNode::getObjects()
+
+
+std::vector<BasicGameObject*> SceneNode::getObjects()
 {
     return m_objects;
 }
 
-GameObject* SceneNode::getObject(int x)
+BasicGameObject* SceneNode::getObject(int x)
 {
     return m_objects.at(x);
 }
@@ -317,6 +326,22 @@ void SceneNode::render(SceneNode* sNode, ShaderProgram* shader)
     }*/
 
     return;
+}
+
+void SceneNode::Update(float deltatime)
+{
+    for (int k = 0; k < getObjectNumber(); k++)
+    {
+        getObject(k)->Update(deltatime);
+    }
+
+    for (int i = 0; i < getChildrenNumber(); i++)
+    {
+        getNode(i)->Update(deltatime);
+    }
+
+
+
 }
 
 

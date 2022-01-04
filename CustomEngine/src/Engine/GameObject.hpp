@@ -7,25 +7,25 @@
 #include <glm/mat4x4.hpp> // glm::mat4
 
 #include <vector>
-#include "Transform.h"
+#include "BasicGameObject.h"
 #include "Mesh.h"
 #include "Rendering/VertexData.h"
 #include "Rendering/ShaderProgram.h"
-//#include "Octree.hpp"
+
 
 class SceneNode;
 
-class GameObject
+class GameObject : public BasicGameObject
 {
 private:
 
-    int m_id = -1;
+    /*int m_id = -1;
 
     glm::vec3 m_position = glm::vec3(0.0, 0.0, 0.0);
 
     // Hierarchie
     std::vector<GameObject*> m_children;
-    SceneNode* m_parent;
+    SceneNode* m_parent;*/
 
     // Mesh
     Mesh* m_mesh; 
@@ -37,7 +37,7 @@ private:
 
     //obj file
     std::string m_filename;
-    std::string m_tag;
+    //std::string m_tag;
 
     // Octree Data structure
     //Octree* m_meshtree = nullptr;
@@ -46,9 +46,9 @@ private:
     // -----------------
     // Transformations
     // -------------------
-    SpaceEngine::Transform m_transfo;   // transformation en temps réel repere world
+    /*SpaceEngine::Transform m_transfo;   // transformation en temps réel repere world
     SpaceEngine::Transform m_internal;  // transformation repere interne
-    glm::mat4x4 m_world;                // transformation at time T=0 , position in world
+    glm::mat4x4 m_world;                // transformation at time T=0 , position in world*/
 
 
 protected:
@@ -60,7 +60,7 @@ protected:
     void setbbox();
 
 public:
-    static int g_id;
+    //static int g_id;
 
     GameObject(SceneNode* parent, glm::vec3 center,
         short int textureId = -1, std::string filename = "",
@@ -72,13 +72,13 @@ public:
     GameObject(glm::vec3 center, short int textureId = -1, std::string filename = "", std::string tag = "Default");
     GameObject(float x, float y, float z);
     ~GameObject();
-
+    /*
     // Define Transformation
     void setTransformation(SpaceEngine::Transform transfo, bool internal = false);
     void addTransformation(const SpaceEngine::Transform& transfo, bool internal = false);
     SpaceEngine::Transform getTransformation(bool internal = false) const;
 
-
+    
     // Transformation in memory
     void applyTransformation();
     glm::mat4x4 getMatTransformation();
@@ -91,10 +91,11 @@ public:
     GameObject& Translate(float tx, float ty, float tz, bool internal = false);
     GameObject& Scale(float sx, float sy, float sz, bool internal = false);
     glm::vec3 Position() const;
-    void Position(float x, float y, float z);
+    void Position(float x, float y, float z);*/
 
     // Print game object informations
-    void print();
+    void print() override;
+    bool hasMesh() override { return true; }
 
     // Mesh
     void initMesh(int typemesh);
@@ -103,17 +104,19 @@ public:
 
     // Rendering
     Mesh* getMesh() const { return m_mesh; }
+    // Update 
+    void Update(float deltatime) override; 
   
     // Collisions 
     bool isCollidingWithTerrain(GameObject* other);
 
     // ID and tag check
-    int getId() const { return m_id; }
+    /*int getId() const { return m_id; }
     std::string getTag() const { return m_tag; }
     void setTag(std::string _tag) { m_tag = _tag; }
     bool isMainCamera() { return m_tag.compare("MainCamera") == 0; }
     bool isTerrain()    { return m_tag.compare("Terrain") == 0; }
-    bool isPlayer()     { return m_tag.compare("Player") == 0; }
+    bool isPlayer()     { return m_tag.compare("Player") == 0; }*/
     
     //Octree* getOctree() { return m_meshtree; }
 

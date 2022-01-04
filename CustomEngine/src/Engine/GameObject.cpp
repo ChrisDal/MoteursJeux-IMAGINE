@@ -11,26 +11,26 @@ GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId
     : m_mesh(nullptr),
     m_ntexture(textureId),
     m_filename(filename),
-    m_tag(tag), m_internal(SpaceEngine::Transform())
+    BasicGameObject(parent, center, tag)
 {
-    m_position = glm::vec3(center);
+    /*m_position = glm::vec3(center);
     // matrice de transformation interne
     m_internal.setAsIdentity();
     m_internal.setTranslate(m_position);
     // matrice de transformation monde
     m_world = glm::translate(glm::mat4x4(1.0f), parent->Position());
-    m_id = ++g_id;
+    m_id = ++g_id;*/
 };
 
 GameObject::GameObject(SceneNode* parent, glm::vec3 center, short int textureId,
     std::string filename, std::string tag)
-    : m_mesh(nullptr),
+    : BasicGameObject(parent, center, tag),
+    m_mesh(nullptr),
     m_ntexture(textureId),
-    m_filename(filename),
-    m_tag(tag), m_internal(SpaceEngine::Transform())
+    m_filename(filename)
 {
 
-    parent->addObject(this);
+    /*parent->addObject(this);
     m_parent = parent;
     m_position = glm::vec3(center);
     // Change of world matrix place object in node parent
@@ -39,33 +39,32 @@ GameObject::GameObject(SceneNode* parent, glm::vec3 center, short int textureId,
     m_internal.setAsIdentity();
     m_internal.setTranslate(m_position);
 
-    m_id = ++g_id;
+    m_id = ++g_id;*/
 };
 
 // for prog
 GameObject::GameObject(glm::vec3 center, short int textureId, std::string filename, std::string tag)
-    : m_mesh(nullptr), m_parent(nullptr), 
+    : m_mesh(nullptr),
     m_ntexture(textureId),
     m_filename(filename),
-    m_tag(tag), m_internal(SpaceEngine::Transform())
-
+    BasicGameObject((SceneNode*)nullptr, center, tag)
 {
-    m_position = glm::vec3(center);
+    /*m_position = glm::vec3(center);
     m_world = glm::translate(glm::mat4x4(1.0f), m_position); 
     m_internal.setAsIdentity();
     m_internal.setTranslate(m_position);
-    m_id = ++g_id;
+    m_id = ++g_id;*/
 
 };
 
 GameObject::GameObject(float x, float y, float z)
     : m_ntexture(-1), m_mesh(nullptr),
-    m_tag("Default"), m_internal(SpaceEngine::Transform())
+    BasicGameObject()
 {
-    m_position = glm::vec3(x, y, z);
+    /*m_position = glm::vec3(x, y, z);
     m_world = glm::translate(glm::mat4x4(1.0f), m_position);
     m_internal.setAsIdentity();
-    m_id = ++g_id;
+    m_id = ++g_id;*/
 
 };
 
@@ -83,7 +82,7 @@ GameObject::~GameObject()
 
     std::cout << "Delete GameObj " << getId() << "\n";
 };
-
+/*
 // ---------------------------------------
 // Apply transformation in memory
 void GameObject::applyTransformation()
@@ -91,10 +90,6 @@ void GameObject::applyTransformation()
 
     m_transfo.applyOnPoint(m_position, m_position);
 
-    /*for (unsigned int k = 0; k < m_nVertex; k++)
-    {
-        m_transfo.applyOnPoint(m_vertices[k].positions, m_position);
-    }*/
 
 }
 
@@ -209,7 +204,8 @@ glm::mat4x4 GameObject::getWorldMat()
 
 
 
-glm::vec3 GameObject::Position() const { return m_position; }
+//glm::vec3 GameObject::Position() const { return m_position; }
+
 void GameObject::Position(float x, float y, float z)
 {
     m_position = glm::vec3(x, y, z);
@@ -239,7 +235,7 @@ glm::mat4x4 GameObject::getTransformationAllIn()
     glm::mat4x4 worldmat = this->getWorldMat();
 
     return t_externe * worldmat * t_interne;
-}
+}*/
 
 
 // ---------------------------------------
@@ -455,12 +451,22 @@ bool GameObject::loadMesh(const std::string& filename)
 
 }
 
-
+/*
 glm::mat4x4 GameObject::getMatTransformation()
 {
     return m_transfo.getMatrixTransform();
-}
+}*/
 
+
+void GameObject::Update(float deltatime)
+{
+    // Pass 
+    // Make object rotate in degrees
+    glm::vec3 velocity = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 rotaVec  = glm::vec3(0.0f, 0.0f, 5.0f); 
+    glm::vec3 finalrot = deltatime * ( velocity * rotaVec);
+    Rotate(finalrot.x, finalrot.y, finalrot.z, true);
+}
 
 bool GameObject::isCollidingWithTerrain(GameObject* other)
 {

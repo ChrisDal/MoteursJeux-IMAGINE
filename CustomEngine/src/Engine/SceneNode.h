@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 
-#include "GameObject.hpp"
+#include "BasicGameObject.h"
 #include "Rendering/ShaderProgram.h"
 
 
@@ -12,7 +12,7 @@ private:
     // Tree
     SceneNode* m_parent = nullptr;
     std::vector<SceneNode*> m_children;
-    std::vector<GameObject*> m_objects;
+    std::vector<BasicGameObject*> m_objects;
 
     // Space  
     glm::vec3 m_origin;
@@ -52,9 +52,9 @@ public:
     int getChildrenNumber() const; // child is a node
 
     // Game Objects of node
-    void addObject(GameObject* gmo);
-    std::vector<GameObject*> getObjects();
-    GameObject* getObject(int x);
+    void addObject(BasicGameObject* gmo);
+    std::vector<BasicGameObject*> getObjects();
+    BasicGameObject* getObject(int x);
     int getObjectNumber() const; // Game object is an object 
 
     // -----------------
@@ -86,6 +86,9 @@ public:
     // ------------
     void sceneInit(SceneNode* sNode);   //init object render
     void render(SceneNode* sNode, ShaderProgram* shader); // render objects
+
+    // Update 
+    void Update(float deltatime); 
 
 
     std::string getId() const;

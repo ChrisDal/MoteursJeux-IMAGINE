@@ -14,6 +14,7 @@ const char* glsl_version = "#version 130";
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+static constexpr float APP_MAX_FRAMERATE{ 60.0f };
 
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -41,7 +42,9 @@ Game::Game()
 : m_shaderdir(PROJECT_DIR"src\\shaders\\"), 
   m_datadir(PROJECT_DIR"data\\"), 
   m_texturedir(PROJECT_DIR"data\\"), 
-  m_renderer((float)SCR_WIDTH, (float)SCR_HEIGHT)
+  m_renderer((float)SCR_WIDTH, (float)SCR_HEIGHT), 
+  m_lastTime(std::chrono::steady_clock::now()), 
+  m_startTime(std::chrono::steady_clock::now())
 {
     // GLFW and ImGui initialisation 
     initWindow(); 
@@ -78,7 +81,7 @@ Game::Game()
     m_renderer.createShaderProg(vertexsource, fragmentsource);
     std::cout << fragmentsource << std::endl; 
 	
-    // Game Object  
+    // Scene Init  
     // -------------
     m_scene = new SceneNode();
     GameObject * player = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
@@ -178,11 +181,17 @@ Game::~Game()
 
 void Game::RunGameLoop()
 {
+    double frameTime{ 1.0f / APP_MAX_FRAMERATE }; // in seconds 
+    m_lastTime = std::chrono::steady_clock::now();
     
     // render loop
     // -----------
     while (!glfwWindowShouldClose(m_Window))
     {
+        m_startTime = std::chrono::steady_clock::now();
+        double deltaTime = 0.001 * std::chrono::duration_cast<std::chrono::milliseconds>(m_startTime - m_lastTime).count();
+
+        m_lastTime = m_startTime;
 
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -195,86 +204,19 @@ void Game::RunGameLoop()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         
-        static glm::vec3 frotate = glm::vec3(0.0f, 0.0f, 0.0f); 
-        static glm::vec3 ftranslate = glm::vec3(0.0f, 0.0f, 0.0f); 
-        static int counter = 0;
-        static bool wireframeMode = false; 
-        static bool orthoprojection = false; 
-        
-
-        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-
-        ImGui::SliderFloat("rotationX", &frotate.x, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("rotationY", &frotate.y, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("rotationZ", &frotate.z, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("translationX", &ftranslate.x, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("translationY", &ftranslate.y, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("translationZ", &ftranslate.z, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-        // /Buttons return true when clicked (most widgets return true when edited/activated)
-        if (ImGui::Button("Wireframe Mode"))                            
-            wireframeMode = !wireframeMode;
-        ImGui::SameLine();
-        if (ImGui::Button("Orthographic Camera"))
-            orthoprojection = !orthoprojection;
-        
-        ImGui::End();
-
-        // ImGui example menu overlay 
-        static bool show_app_simple_overlay = true;
-        const float DISTANCE = 10.0f;
-        static int corner = 3;
-        ImGuiIO& io = ImGui::GetIO();
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-        if (corner != -1)
-        {
-            window_flags |= ImGuiWindowFlags_NoMove;
-            ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
-            ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
-            ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-        }
-        ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
-        if (ImGui::Begin("Example: Simple overlay", &show_app_simple_overlay, window_flags))
-        {
-            ImGui::Text("Simple overlay\n" "in the corner of the screen.\n" "(right-click to change position)");
-            ImGui::Separator();
-            if (ImGui::IsMousePosValid())
-            {
-                ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
-            }
-            else {
-                ImGui::Text("Mouse Position: <invalid>");
-            }
-                
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-            if (ImGui::BeginPopupContextWindow())
-            {
-                if (ImGui::MenuItem("Custom", NULL, corner == -1)) corner = -1;
-                if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
-                if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
-                if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
-                if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
-                if (&show_app_simple_overlay && ImGui::MenuItem("Close")) show_app_simple_overlay = false;
-                ImGui::EndPopup();
-            }
-        }
-        ImGui::End();
         
         // input
         // -----
         processInput(m_Window);
-        m_renderer.setPolymode( ! wireframeMode); 
-        
+
+        // Update Game 
+        // -----------
+        Update(static_cast<float>(deltaTime));
 
         // IMGUI rendering
         // -----------------
+        RenderDebugMenu();
         ImGui::Render();
 
         // Render : Game LOOP 
@@ -342,7 +284,7 @@ void Game::RunGameLoop()
 
 
         // translation of camera 
-        m_renderer.setviewprojMat((float)SCR_WIDTH, (float)SCR_HEIGHT, ftranslate, orthoprojection);
+        
         // Transformation 
         m_renderer.Draw(m_scene); 
 
@@ -353,6 +295,9 @@ void Game::RunGameLoop()
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(m_Window);
         // glfwPoll
+
+
+
     }
 }
 
@@ -360,5 +305,90 @@ void Game::RunGameLoop()
 
 
 
+void Game::Update(float deltaTime)
+{
+    m_scene->Update(deltaTime); 
+}
 
+void Game::RenderDebugMenu() {
+
+    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+
+    static glm::vec3 frotate = glm::vec3(0.0f, 0.0f, 0.0f);
+    static glm::vec3 ftranslate = glm::vec3(0.0f, 0.0f, 0.0f);
+    static int counter = 0;
+    static bool wireframeMode = false;
+    static bool orthoprojection = false;
+
+
+    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+
+    ImGui::SliderFloat("rotationX", &frotate.x, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("rotationY", &frotate.y, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("rotationZ", &frotate.z, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("translationX", &ftranslate.x, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("translationY", &ftranslate.y, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("translationZ", &ftranslate.z, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+    // /Buttons return true when clicked (most widgets return true when edited/activated)
+    if (ImGui::Button("Wireframe Mode"))
+        wireframeMode = !wireframeMode;
+    ImGui::SameLine();
+    if (ImGui::Button("Orthographic Camera"))
+        orthoprojection = !orthoprojection;
+
+    ImGui::End();
+
+
+
+    // ImGui example menu overlay 
+    static bool show_app_simple_overlay = true;
+    const float DISTANCE = 10.0f;
+    static int corner = 3;
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+    if (corner != -1)
+    {
+        window_flags |= ImGuiWindowFlags_NoMove;
+        ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
+        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+    }
+    ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+    if (ImGui::Begin("Example: Simple overlay", &show_app_simple_overlay, window_flags))
+    {
+        ImGui::Text("Simple overlay\n" "in the corner of the screen.\n" "(right-click to change position)");
+        ImGui::Separator();
+        if (ImGui::IsMousePosValid())
+        {
+            ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
+        }
+        else {
+            ImGui::Text("Mouse Position: <invalid>");
+        }
+
+
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+        if (ImGui::BeginPopupContextWindow())
+        {
+            if (ImGui::MenuItem("Custom", NULL, corner == -1)) corner = -1;
+            if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
+            if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
+            if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
+            if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
+            if (&show_app_simple_overlay && ImGui::MenuItem("Close")) show_app_simple_overlay = false;
+            ImGui::EndPopup();
+        }
+    }
+    ImGui::End();
+
+    m_renderer.setPolymode(!wireframeMode);
+    m_renderer.setviewprojMat((float)SCR_WIDTH, (float)SCR_HEIGHT, 
+                            ftranslate, orthoprojection);
+    
+
+}
 
