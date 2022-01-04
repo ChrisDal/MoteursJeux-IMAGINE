@@ -19,13 +19,6 @@ class GameObject : public BasicGameObject
 {
 private:
 
-    /*int m_id = -1;
-
-    glm::vec3 m_position = glm::vec3(0.0, 0.0, 0.0);
-
-    // Hierarchie
-    std::vector<GameObject*> m_children;
-    SceneNode* m_parent;*/
 
     // Mesh
     Mesh* m_mesh; 
@@ -37,18 +30,9 @@ private:
 
     //obj file
     std::string m_filename;
-    //std::string m_tag;
 
     // Octree Data structure
     //Octree* m_meshtree = nullptr;
-
-
-    // -----------------
-    // Transformations
-    // -------------------
-    /*SpaceEngine::Transform m_transfo;   // transformation en temps réel repere world
-    SpaceEngine::Transform m_internal;  // transformation repere interne
-    glm::mat4x4 m_world;                // transformation at time T=0 , position in world*/
 
 
 protected:
@@ -72,26 +56,7 @@ public:
     GameObject(glm::vec3 center, short int textureId = -1, std::string filename = "", std::string tag = "Default");
     GameObject(float x, float y, float z);
     ~GameObject();
-    /*
-    // Define Transformation
-    void setTransformation(SpaceEngine::Transform transfo, bool internal = false);
-    void addTransformation(const SpaceEngine::Transform& transfo, bool internal = false);
-    SpaceEngine::Transform getTransformation(bool internal = false) const;
 
-    
-    // Transformation in memory
-    void applyTransformation();
-    glm::mat4x4 getMatTransformation();
-    glm::mat4x4 getWorldMat();
-    glm::vec4 getWorldPosition();
-    glm::mat4x4 getTransformationAllIn();
-
-    // Interface
-    GameObject& Rotate(float alpha, float beta, float gamma, bool internal = false);
-    GameObject& Translate(float tx, float ty, float tz, bool internal = false);
-    GameObject& Scale(float sx, float sy, float sz, bool internal = false);
-    glm::vec3 Position() const;
-    void Position(float x, float y, float z);*/
 
     // Print game object informations
     void print() override;
@@ -110,14 +75,6 @@ public:
     // Collisions 
     bool isCollidingWithTerrain(GameObject* other);
 
-    // ID and tag check
-    /*int getId() const { return m_id; }
-    std::string getTag() const { return m_tag; }
-    void setTag(std::string _tag) { m_tag = _tag; }
-    bool isMainCamera() { return m_tag.compare("MainCamera") == 0; }
-    bool isTerrain()    { return m_tag.compare("Terrain") == 0; }
-    bool isPlayer()     { return m_tag.compare("Player") == 0; }*/
-    
     //Octree* getOctree() { return m_meshtree; }
 
     glm::vec3 getNearestPos(int x, int y);

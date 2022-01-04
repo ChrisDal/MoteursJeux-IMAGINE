@@ -3,6 +3,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
+
 void Mesh::setupMesh()
 {
 	m_vao = new VertexArrayBuffer(); 
@@ -42,13 +43,9 @@ Mesh::Mesh(const char* filename)
 	
 	// switch according to type 
 	int typefile = - 1; 
-	if (typefile == 0)
+	if (loadMesh(filename))
 	{
-		// obj == Load obj 
-	}
-	else if (typefile == 1)
-	{
-		// off == load off
+		std::cout << "Loaded \n"; 
 	}
 	else
 	{
@@ -247,13 +244,123 @@ void Mesh::debugMesh() const
 	std::cout << std::endl;
 }
 
-
-void Mesh::loadMesh(const char* filename)
+//http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/
+// From TP LoadMesh Created  by Brian Summa
+bool Mesh::loadMesh(const char* filename)
 {
 	this->clear();
+	bool hasUV = false;
+	bool hasNormals = false; 
+	
 
 
-	// Load mesh file
+	std::ifstream myfile(filename); 
+
+	// v : vertices 
+	// f : faces 
+	// vn : normals 
+	// vt : uv vertices textures 
+
+	std::vector < glm::vec3 > vert;
+	std::vector < unsigned int > ind;
+	std::vector < glm::vec2 > uvs;
+	std::vector < glm::vec3 > norms;
+	
+	if (myfile)
+	{
+		std::string line; 
+		while (getline(myfile, line)) 
+		{
+			std::istringstream sline(line);
+			if ( line[0] == 'v' )
+			{
+				if (line[1] == 't')
+				{
+					float x, y;
+					char c, c2;
+					sline >> c >> c2 >> x >> y;
+					uvs.push_back(glm::vec2(x, y));
+
+					hasUV = true; 
+				}
+				else if (line[1] == 'n')
+				{
+					float x, y, z;
+					char c, c2;
+					sline >> c >> c2 >> x >> y >> z;
+					norms.push_back(glm::vec3(x, y, z));
+					hasNormals = true; 
+				}
+				else
+				{
+					float x, y, z;
+					char c;
+					sline >> c >> x >> y >> z;
+					vert.push_back(glm::vec3(x, y, z));
+				}
+				
+			}
+			else if (line[0] == 'f')
+			{
+				int x, y, z; 
+				char c; 
+				sline >> c >> x >> y >> z;
+				ind.push_back(x-1); 
+				ind.push_back(y-1); 
+				ind.push_back(z-1); 
+			}
+			
+		}
+	}
+
+	
+	std::cout << "Total " << vert.size() << " vertices\n";
+	std::cout << "Total " << norms.size() << " normals\n";
+
+
+	
+	for (unsigned int i = 0; i < vert.size(); i++) {
+
+		VertexData vdata; 
+		if (hasNormals && hasUV) {
+			vdata = { vert[i], norms[i], uvs[i] };
+		}
+		else if (hasNormals && !hasUV)
+		{
+			vdata = { vert[i], norms[i], glm::vec2(0.0, 0.0) };
+		}
+		else if ( !hasNormals && !hasUV)
+		{
+			vdata = { vert[i],glm::vec3(1.0f, 0.0f, 0.0f),glm::vec2(0.0, 0.0) };
+		}
+		else if (!hasNormals && hasUV)
+		{
+			vdata = { vert[i],glm::vec3(1.0f, 0.0f, 0.0f), uvs[i] };
+		}
+		
+		if (vert[i].x < bbox.minbbox.x) { bbox.minbbox.x = vert[i].x; }
+		if (vert[i].y < bbox.minbbox.y) { bbox.minbbox.y = vert[i].y; }
+		if (vert[i].z < bbox.minbbox.z) { bbox.minbbox.z = vert[i].z; }
+		if (vert[i].x > bbox.maxbbox.x) { bbox.maxbbox.x = vert[i].x; }
+		if (vert[i].y > bbox.maxbbox.y) { bbox.maxbbox.y = vert[i].y; }
+		if (vert[i].z > bbox.maxbbox.z) { bbox.maxbbox.z = vert[i].z; }
+
+		this->vertices.push_back(vdata); 
+		
+	}
+
+	bbox.center = bbox.minbbox + 0.5f * (bbox.maxbbox - bbox.minbbox);
+	float scale = std::max(bbox.maxbbox.x - bbox.minbbox.x, bbox.maxbbox.y - bbox.minbbox.y);
+	glm::mat4 model_view = glm::translate(glm::mat4(1.0f), -bbox.center);
+	model_view = glm::scale(model_view, glm::vec3(1.0 / scale,           //Make the extents 0-1
+		1.0 / scale,
+		1.0 / scale));  //Orient Model About Center
+	this->indices = ind; 
+
+	setPrimitives(GL_TRIANGLES);
+	setupMesh();
+
+	return true; 
 }
 
 void Mesh::clear()
