@@ -18,6 +18,7 @@
 #include "Engine/Rendering/Renderer.h"
 
 #include "Engine/SceneNode.h"
+#include "Engine/Camera.h"
 
 
 class Game
@@ -42,6 +43,7 @@ public:
 
     // Scene
     SceneNode* m_scene;
+    Camera* m_camera; // owned by scene 
 
     // Time Clock Chrono
     std::chrono::time_point<std::chrono::steady_clock> m_lastTime; 

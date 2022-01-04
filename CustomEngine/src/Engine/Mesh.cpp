@@ -353,7 +353,7 @@ bool Mesh::loadMesh(const char* filename)
 
 				}
 
-				if (tokens.size() > tokens2.size())
+				if (tokens.size() >= tokens2.size())
 				{
 					
 					ind.push_back(std::stoi(tokens[1])-1);

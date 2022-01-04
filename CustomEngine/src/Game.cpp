@@ -15,6 +15,7 @@ unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 static constexpr float APP_MAX_FRAMERATE{ 60.0f };
+bool callbackWindows = false; 
 
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -35,6 +36,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
     SCR_WIDTH = width; 
     SCR_HEIGHT = height; 
+
+    callbackWindows = true; 
+
+    
 }
 
 
@@ -84,6 +89,13 @@ Game::Game()
     // Scene Init  
     // -------------
     m_scene = new SceneNode();
+
+    // Camera 
+    m_camera = new Camera(m_scene, glm::vec3(0.0, 0.0, +10.0));
+    m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
+
+    // Game Objects
     GameObject * player = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
     std::string meshfilepath = m_datadir; 
     meshfilepath += "\\models\\cube.obj"; 
@@ -235,6 +247,11 @@ void Game::RunGameLoop()
         glfwGetFramebufferSize(m_Window, &display_w, &display_h);
 
         glViewport(0, 0, display_w, display_h);
+        if (callbackWindows)
+        {
+            m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT); 
+            callbackWindows = false; 
+        }
         
         
         
@@ -309,8 +326,11 @@ void Game::RenderDebugMenu() {
     if (ImGui::Button("Wireframe Mode"))
         wireframeMode = !wireframeMode;
     ImGui::SameLine();
-    if (ImGui::Button("Orthographic Camera"))
+    if (ImGui::Button("Orthographic Camera")) {
         orthoprojection = !orthoprojection;
+        m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, orthoprojection); 
+    }
+        
 
     ImGui::End();
 
@@ -359,8 +379,13 @@ void Game::RenderDebugMenu() {
     ImGui::End();
 
     m_renderer.setPolymode(!wireframeMode);
-    m_renderer.setviewprojMat((float)SCR_WIDTH, (float)SCR_HEIGHT, 
-                            ftranslate, orthoprojection);
+    if (m_camera != nullptr)
+    {
+        m_camera->setTargetPoint(glm::vec3(sin(glfwGetTime()) * ftranslate.z,
+            0.0f,
+            cos(glfwGetTime()) * ftranslate.z)); 
+        m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
+    }
     
 
 }
