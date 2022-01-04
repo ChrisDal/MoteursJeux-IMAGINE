@@ -1,30 +1,11 @@
 #include "Mesh.h"
 #include "Rendering/ShaderProgram.h"
-#include <glm/gtc/type_ptr.hpp>
 
 
-
-void Mesh::setupMesh()
-{
-	m_vao = new VertexArrayBuffer(); 
-	m_vao->bind();
-	// vertex buffer 
-	m_vbo = new VertexBuffer(this->vertices.data(), this->vertices.size() * sizeof(this->vertices[0]));
-	// indices buffer 
-	m_ibo = new IndexBuffer(this->indices.data(), this->indices.size()); 
-	// Layout
-	m_layout = VertexBufferLayout();
-	m_layout.Push<float>(3); // layout position 
-	m_layout.Push<float>(3); // layout normals
-	m_layout.Push<float>(2); // layout texture
-
-	// Add Layout to VAO 
-	m_vao->addBuffer(m_vbo, &m_layout);
-
-}
 
 Mesh::Mesh()
-	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLE_STRIP)
+	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLE_STRIP), 
+	model_view(glm::mat4(1.0f))
 {
 	bbox.minbbox = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN); 
 	bbox.minbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -35,7 +16,9 @@ Mesh::Mesh()
 }
 
 Mesh::Mesh(const char* filename)
-	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLES)
+	: m_nVertex(0), indexCount(0), 
+	m_primitives(GL_TRIANGLES), 
+	model_view(glm::mat4(1.0f))
 {
 	this->vertices = {};
 	this->indices = {};
@@ -55,7 +38,8 @@ Mesh::Mesh(const char* filename)
 }
 
 Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
-	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLES)
+	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLES),
+	model_view(glm::mat4(1.0f))
 {
 	this->vertices = vertices; 
 	this->indices = indices; 
@@ -72,6 +56,24 @@ Mesh::~Mesh()
 }
 
 
+void Mesh::setupMesh()
+{
+	m_vao = new VertexArrayBuffer();
+	m_vao->bind();
+	// vertex buffer 
+	m_vbo = new VertexBuffer(this->vertices.data(), this->vertices.size() * sizeof(this->vertices[0]));
+	// indices buffer 
+	m_ibo = new IndexBuffer(this->indices.data(), this->indices.size());
+	// Layout
+	m_layout = VertexBufferLayout();
+	m_layout.Push<float>(3); // layout position 
+	m_layout.Push<float>(3); // layout normals
+	m_layout.Push<float>(2); // layout texture
+
+	// Add Layout to VAO 
+	m_vao->addBuffer(m_vbo, &m_layout);
+
+}
 
 void Mesh::initPlane()
 {
@@ -249,11 +251,12 @@ void Mesh::debugMesh() const
 bool Mesh::loadMesh(const char* filename)
 {
 	this->clear();
-	bool hasUV = false;
-	bool hasNormals = false; 
+
+
+	hasUV = false;
+	hasNormals = false; 
+	bool hasColors = false; 
 	
-
-
 	std::ifstream myfile(filename); 
 
 	// v : vertices 
@@ -265,6 +268,7 @@ bool Mesh::loadMesh(const char* filename)
 	std::vector < unsigned int > ind;
 	std::vector < glm::vec2 > uvs;
 	std::vector < glm::vec3 > norms;
+	std::vector < glm::vec3 > colors; 
 	
 	if (myfile)
 	{
@@ -293,10 +297,36 @@ bool Mesh::loadMesh(const char* filename)
 				}
 				else
 				{
-					float x, y, z;
-					char c;
-					sline >> c >> x >> y >> z;
-					vert.push_back(glm::vec3(x, y, z));
+					std::vector<std::string> tokens;
+					const char delimiter = ' '; 
+					std::string token; 
+					while (getline(sline, token, delimiter))
+					{
+						tokens.push_back(token);
+					}
+
+					// v .f .f .f 
+					if (tokens.size() == 4)
+					{
+						vert.push_back(glm::vec3(std::stof(tokens[1]), 
+							std::stof(tokens[2]), std::stof(tokens[3])));
+					}
+					// v .f .f .f color1 color1 color1 
+					else if (tokens.size() == 7)
+					{
+						vert.push_back(glm::vec3(std::stof(tokens[1]),
+												std::stof(tokens[2]), 
+												std::stof(tokens[3])));
+						// colors normally 
+						glm::vec3 color = glm::vec3(std::stoi(tokens[4]),
+							std::stoi(tokens[5]),
+							std::stoi(tokens[6])); 
+						norms.push_back(color / 255.f);
+
+						hasNormals = true;
+					}
+					
+					
 				}
 				
 			}
@@ -314,8 +344,8 @@ bool Mesh::loadMesh(const char* filename)
 	}
 
 	
-	std::cout << "Total " << vert.size() << " vertices\n";
-	std::cout << "Total " << norms.size() << " normals\n";
+	std::cout << "Total: " << vert.size() << " vertices\n";
+	std::cout << "Total: " << norms.size() << " normals\n";
 
 
 	
@@ -350,11 +380,13 @@ bool Mesh::loadMesh(const char* filename)
 	}
 
 	bbox.center = bbox.minbbox + 0.5f * (bbox.maxbbox - bbox.minbbox);
-	float scale = std::max(bbox.maxbbox.x - bbox.minbbox.x, bbox.maxbbox.y - bbox.minbbox.y);
-	glm::mat4 model_view = glm::translate(glm::mat4(1.0f), -bbox.center);
-	model_view = glm::scale(model_view, glm::vec3(1.0 / scale,           //Make the extents 0-1
-		1.0 / scale,
-		1.0 / scale));  //Orient Model About Center
+	float scale = std::max(bbox.maxbbox.x - bbox.minbbox.x, 
+							bbox.maxbbox.y - bbox.minbbox.y);
+	this->model_view = glm::translate(glm::mat4(1.0f), -bbox.center);
+	// Make the extents 0-1
+	this->model_view = glm::scale(this->model_view, glm::vec3(1.0 / scale,
+										1.0 / scale,
+										1.0 / scale));  //Orient Model About Center
 	this->indices = ind; 
 
 	setPrimitives(GL_TRIANGLES);
@@ -382,7 +414,7 @@ void Mesh::clear()
 	indexCount = 0;
 
 	this->bbox.minbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-	this->bbox.maxbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+	this->bbox.maxbbox = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN);
 
 }
 

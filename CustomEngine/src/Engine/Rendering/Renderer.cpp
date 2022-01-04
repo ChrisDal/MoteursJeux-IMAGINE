@@ -145,7 +145,8 @@ void Renderer::Draw(GameObject* gmo, int shadertype) const
 
 	// set internal transform matrix
 	SpaceEngine::Transform t_interne = gmo->getTransformation(true);
-	chosenShader->setMat4("u_internal_tsfm_matrix", glm::value_ptr(t_interne.getMatrixTransform()));
+	glm::mat4 modelTransfointern = t_interne.getMatrixTransform() * meshobject->getModelView(); 
+	chosenShader->setMat4("u_internal_tsfm_matrix", glm::value_ptr(modelTransfointern));
 	
 	// View Proj Matrix 
 	chosenShader->setMat4("u_vp", glm::value_ptr(vpmat));

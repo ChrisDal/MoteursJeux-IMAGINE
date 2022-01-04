@@ -4,6 +4,9 @@
 #include <sstream>
 #include <fstream>
 
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/mat4x4.hpp>
+
 #include "Rendering/VertexData.h"
 #include "Rendering/VertexArrayBuffer.h"
 #include "Rendering/VertexBuffer.hpp"
@@ -55,6 +58,8 @@ private:
 	void setupMesh();
 
 	bool hasUV = false;
+	bool hasNormals = false; 
+	glm::mat4 model_view; 
 
 
 protected: 
@@ -93,6 +98,9 @@ public:
 	};
 
 	unsigned int getNumTri() { return vertices.size() / 3; }
+
+	// Uniform 
+	glm::mat4 getModelView() const { return model_view; }
 
 	// OpenGL Render data
 	unsigned int getNVertex() const { return  m_nVertex; }

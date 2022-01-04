@@ -172,9 +172,9 @@ void GameObject::initMesh(int typemesh)
 }
 void GameObject::initMesh(const char* filename)
 {
-    m_mesh = new Mesh(filename);
-    bool loadded = m_mesh->loadMesh(filename);
-    if (!loadded)
+    m_mesh = new Mesh();
+    bool loaded = m_mesh->loadMesh(filename);
+    if (!loaded)
     {
         std::cout << "[GmObj " << m_id << "] Error on mesh loading " << filename << std::endl; 
     }
