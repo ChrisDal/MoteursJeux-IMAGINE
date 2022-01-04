@@ -43,6 +43,52 @@ Game::Game()
   m_texturedir(PROJECT_DIR"data\\"), 
   m_renderer((float)SCR_WIDTH, (float)SCR_HEIGHT)
 {
+    // GLFW and ImGui initialisation 
+    initWindow(); 
+
+    // Renderer initialisation 
+    m_renderer.initGraphics(); 
+    
+
+    /*
+    // texture load 
+    std::string imagecontainer = m_texturedir;
+    imagecontainer += "container.jpg";
+    boxTexture = new Texture(imagecontainer.c_str()); 
+
+    std::string imageface = m_texturedir + std::string("awesomeface.png"); 
+    faceTexture = std::make_unique<Texture>(imageface.c_str(), 1); 
+	
+	*/
+	
+	// Default Shader 
+	// ---------------
+	// Vertex & Fragment Shader
+    std::string vertexsource = m_shaderdir; 
+    vertexsource += "basicVShader.shader";
+
+    std::string fragmentsource = m_shaderdir; 
+    fragmentsource += "basicFragShader.shader";
+
+    // Renderer Initialisation 
+    // -------------------------
+
+    // Shader Program : by Default 
+    m_renderer.createShaderProg(vertexsource, fragmentsource);
+    std::cout << fragmentsource << std::endl; 
+	
+    // Game Object  
+    // -------------
+    m_scene = new SceneNode();
+    m_gmo = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
+    m_gmo->initMesh(0);
+                        
+
+}
+
+void Game::initWindow()
+{
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -66,6 +112,7 @@ Game::Game()
 
     glfwMakeContextCurrent(m_Window);
     glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
+
 
     // ImGUI 
     // Setup Dear ImGui context
@@ -91,139 +138,6 @@ Game::Game()
 
     // stbi image loading preset 
     stbi_set_flip_vertically_on_load(true);
-
-    // enable Depth 
-    glEnable(GL_DEPTH_TEST);
-
-
-    // --------------------------
-    /*float vertices[] = {
-     0.5f,  0.5f, 0.0f,  // top right
-     0.5f, -0.5f, 0.0f,  // bottom right
-    -0.5f, -0.5f, 0.0f,  // bottom left
-    -0.5f,  0.5f, 0.0f   // top left 
-    };*/
-
-    float vertices2[] = {
-        // positions          // colors           // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
-    };
-
-    unsigned int indices[] = {  // note that we start from 0!
-    0, 1, 3,   // first triangle
-    1, 2, 3    // second triangle
-    };
-
-    int nVertex = 9; 
-
-    float texCoords[] = {
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        0.5f, 1.0f
-    }; 
-
-	/* TO REMOVE 
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), 
-    // and then configure vertex attributes(s).
-    VAO = new VertexArrayBuffer(); 
-    VAO->bind(); 
-
-
-    // Vertex Buffer 
-    //VBO = new VertexBuffer(vertices, sizeof(vertices));
-    VBO = new VertexBuffer(vertices2, sizeof(vertices2));
-
-    // Index Buffer 
-    unsigned int countIndices = sizeof(indices) / sizeof(unsigned int); 
-    EBO = new IndexBuffer(indices, countIndices);
-
-    // Set Layout 
-    VertexBufferLayout layout = VertexBufferLayout();
-    layout.Push<float>(3); // layout position 
-    layout.Push<float>(3); // layout color
-    layout.Push<float>(2); // layout texture
-    
-    // Add Layout to VAO 
-    VAO->addBuffer(VBO, &layout);
-     
-    // Vertex & Fragment Shader
-    std::string vertexsource = m_shaderdir; 
-    vertexsource += "basicVertexShader.shader";
-
-    std::string fragmentsource = m_shaderdir; 
-    fragmentsource += "basicFragmentShader.shader";
-
-    // Renderer Initialisation 
-    // -------------------------
-
-    // Shader Program : by Default 
-    m_renderer.createShaderProg(vertexsource, fragmentsource);
-
-    std::cout << fragmentsource << std::endl; 
-
-    Shader* vertexShader = new Shader(vertexsource.c_str(), GL_VERTEX_SHADER);
-    Shader* fragmentShader = new Shader(fragmentsource.c_str(), GL_FRAGMENT_SHADER);
-
-    vertexShader->checkValidity(); 
-    fragmentShader->checkValidity();
-
-    // create shader Program 
-    shaderProgram = new ShaderProgram(); 
-    shaderProgram->bindShaders(vertexShader, fragmentShader); 
-    shaderProgram->link(); 
-    shaderProgram->use(); 
-
-
-    delete vertexShader; 
-    delete fragmentShader; 
-
-    // Unbind all 
-    VAO->unbind(); 
-    EBO->unbind();
-    VBO->unbind(); 
-    shaderProgram->unuse();
-
-
-    // texture load 
-    std::string imagecontainer = m_texturedir;
-    imagecontainer += "container.jpg";
-    boxTexture = new Texture(imagecontainer.c_str()); 
-
-    std::string imageface = m_texturedir + std::string("awesomeface.png"); 
-    faceTexture = std::make_unique<Texture>(imageface.c_str(), 1); 
-	
-	*/
-	
-	// Renderer 
-	// ---------
-	// Vertex & Fragment Shader
-    std::string vertexsource = m_shaderdir; 
-    vertexsource += "basicVShader.shader";
-
-    std::string fragmentsource = m_shaderdir; 
-    fragmentsource += "basicFragShader.shader";
-
-    // Renderer Initialisation 
-    // -------------------------
-
-    // Shader Program : by Default 
-    m_renderer.createShaderProg(vertexsource, fragmentsource);
-
-    std::cout << fragmentsource << std::endl; 
-	
-	
-	
-	
-
-    // Game Object  
-    // -------------
-    m_scene = new SceneNode();
-    m_gmo = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
-    m_gmo->initMesh(0);
-                        
 
 }
 
@@ -302,12 +216,8 @@ void Game::RunGameLoop()
         // input
         // -----
         processInput(m_Window);
-        if (wireframeMode){
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); 
-        }
-        else {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
-        }
+        m_renderer.setPolymode( ! wireframeMode); 
+        
 
         // IMGUI rendering
         // -----------------
@@ -399,7 +309,7 @@ void Game::RunGameLoop()
         m_renderer.setviewprojMat((float)SCR_WIDTH, (float)SCR_HEIGHT, ftranslate, true); 
         // Transformation = rotation 
         m_gmo->setTransformation(transformation); 
-        m_renderer.Draw(m_gmo, GL_TRIANGLE_STRIP, -1); 
+        m_renderer.Draw(m_gmo, -1); 
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

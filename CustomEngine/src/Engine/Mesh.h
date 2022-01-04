@@ -35,6 +35,9 @@ private:
 	// shader 
 	ShaderProgram* m_shader = nullptr; // if not 
 
+	//  Triangle or Triangle Strip 
+	GLenum m_primitives;
+
 	// Data to draw - Cube geometry
 	std::vector<Texture>    m_textures; 
 	// Size count 
@@ -54,6 +57,9 @@ protected:
 	std::vector<unsigned int> indices;
 	std::vector<Texture>      textures;
 	SpaceEngine::boundingBox  bbox;   // Bounding box of mesh 
+
+	// Debug 
+	void debugMesh() const; 
 
 public:
 
@@ -97,6 +103,8 @@ public:
 	bool isShaderSet() const; 
 	bool useShader() const; 
 	ShaderProgram* getShader() { return m_shader;  }
+	inline GLenum getPrimitives() const { return m_primitives;  }
+	inline void setPrimitives(GLenum mode) { m_primitives = mode; }
 
 };
 

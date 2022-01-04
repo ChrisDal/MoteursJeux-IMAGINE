@@ -53,6 +53,8 @@ protected:
     virtual void Render();
     virtual void RenderDebugMenu();*/
 
+    void initWindow(); 
+
     
 
 private:

@@ -21,17 +21,38 @@ bool GLLogCall(const char* function, const char* file, int line)
 
 
 Renderer::Renderer(float _w, float _h)
-	: m_id(0), vpmat(glm::mat4(1.0f))
+	: m_id(0), vpmat(glm::mat4(1.0f)), m_polymode(GL_FILL)
 {
 	//glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 	// glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
 	setviewprojMat(_w, _h, glm::vec3(0.0, 0.0, -10.0f), true); 
 }
 
+void Renderer::initGraphics() const
+{
+	// On init Black Frame 
+	GLCall(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
+
+	// Enable depth buffer
+	GLCall(glEnable(GL_DEPTH_TEST));
+
+	// Enable back face culling
+	//glEnable(GL_CULL_FACE);
+
+	// GL_FRONT_AND_BACK for front- and back-facing polygons
+	// GL_FILL : The interior of the polygon is filled
+	GLCall(glPolygonMode(GL_FRONT_AND_BACK, m_polymode));
+	
+}
+
 void Renderer::Clear() const
 {
 	GLCall(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
-	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT););
+	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
+	GLCall(glPolygonMode(GL_FRONT_AND_BACK, m_polymode));
+
+
 }
 
 void Renderer::Draw(const VertexArrayBuffer& vao, const IndexBuffer& ibo, const ShaderProgram& shader) const
@@ -59,12 +80,12 @@ void Renderer::Draw(Mesh* mesh, const ShaderProgram* shader) const
 	shader->use();
 	mesh->bindBuffers(); 
 
-	GLCall(glDrawElements(GL_TRIANGLES, mesh->getIndicesCount(), GL_UNSIGNED_INT, nullptr));
+	GLCall(glDrawElements(mesh->getPrimitives(), mesh->getIndicesCount(), GL_UNSIGNED_INT, nullptr));
 }
 
 // Default DRAW MODE = GL_TRIANGLES 
 // IF no Shader attach to mesh use default shader 
-void Renderer::Draw(GameObject* gmo, GLenum mode, int shadertype) const
+void Renderer::Draw(GameObject* gmo, int shadertype) const
 {
 	Mesh * meshobject = gmo->getMesh(); 
 	const ShaderProgram* chosenShader = nullptr; 
@@ -129,7 +150,7 @@ void Renderer::Draw(GameObject* gmo, GLenum mode, int shadertype) const
 	chosenShader->setMat4("u_vp", glm::value_ptr(vpmat));
 	unsigned int idcount = meshobject->getIndicesCount(); 
 	// DRAW CALL 
-	GLCall(glDrawElements(mode, idcount, GL_UNSIGNED_INT, nullptr));
+	GLCall(glDrawElements(meshobject->getPrimitives(), idcount, GL_UNSIGNED_INT, nullptr));
 }
 
 void Renderer::Draw(Mesh* mesh, int shaderType) const
@@ -165,7 +186,13 @@ void Renderer::createShaderProg(const std::string& vertexshad, const std::string
 
 	// link 
 	m_shaderprograms[m_shaderprograms.size()-1].link();
-} 
+}
+
+void Renderer::setPolymode(bool polygon)
+{
+	m_polymode = polygon ? GL_FILL : GL_LINE; 
+}
+
 
 void Renderer::setviewprojMat(float width, float height, const glm::vec3& transview, bool orthographic){
 	

@@ -22,7 +22,7 @@ void Mesh::setupMesh()
 }
 
 Mesh::Mesh()
-	: m_nVertex(0), indexCount(0)
+	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLE_STRIP)
 {
 	bbox.minbbox = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN); 
 	bbox.minbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -33,7 +33,7 @@ Mesh::Mesh()
 }
 
 Mesh::Mesh(const char* filename)
-	: m_nVertex(0), indexCount(0)
+	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLES)
 {
 	this->vertices = {};
 	this->indices = {};
@@ -57,7 +57,7 @@ Mesh::Mesh(const char* filename)
 }
 
 Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
-	: m_nVertex(0), indexCount(0)
+	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLES)
 {
 	this->vertices = vertices; 
 	this->indices = indices; 
@@ -77,7 +77,6 @@ void Mesh::initSphere()
 {
 	this->clear();
 	this->textures.clear();
-
 	
 }
 
@@ -96,6 +95,8 @@ void Mesh::initPlane()
 	this->indices = { 0, 1, 3, 
 					1, 2, 3 }; 
 
+	setPrimitives(GL_TRIANGLE_STRIP);
+
 	setupMesh();
 }
 
@@ -112,39 +113,39 @@ void Mesh::initCube()
 
 	// Vertex data for face 0
 	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.0f, 0.0f) }));  // v0
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f, -1.0f,  1.0f),  glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 0.0f) })); // v1
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 0.0f) })); // v1
 	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.0f, 0.5f) })); // v2
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f,  1.0f,  1.0f),  glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 0.5f) })); // v3
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 0.5f) })); // v3
 
 	// Vertex data for face 1
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f, -1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.0f, 0.5f) })); // v4
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 0.5f) })); // v5
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f,  1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.0f, 1.0f) }));  // v6
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f,  1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 1.0f) })); // v7
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.0f, 0.5f) })); // v4
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 0.5f) })); // v5
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.0f, 1.0f) }));  // v6
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 1.0f) })); // v7
 
 	// Vertex data for face 2
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(0.66f, 0.5f) })); // v8
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f),glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(1.0f, 0.5f) })); // v9
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f,  1.0f, -1.0f), glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(0.66f, 1.0f) })); // v10
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f),glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f) })); // v11
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(0.66f, 0.5f) })); // v8
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(1.0f, 0.5f) })); // v9
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(0.66f, 1.0f) })); // v10
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f) })); // v11
 
 	// Vertex data for face 3
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f),glm::vec3(1.0f, 0.0, 0.0f),glm::vec2(0.66f, 0.0f) })); // v12
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f,  1.0f),glm::vec3(1.0f, 0.0, 0.0f),glm::vec2(1.0f, 0.0f) })); // v13
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f),glm::vec3(1.0f, 0.0, 0.0f),glm::vec2(0.66f, 0.5f) })); // v14
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f,  1.0f),glm::vec3(1.0f, 0.0, 0.0f),glm::vec2(1.0f, 0.5f) })); // v15
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.66f, 0.0f) })); // v12
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(1.0f, 0.0f) })); // v13
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.66f, 0.5f) })); // v14
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(1.0f, 0.5f) })); // v15
 
 	// Vertex data for face 4
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f,1.0f),glm::vec2(0.33f, 0.0f) })); // v16
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f, -1.0f, -1.0f),  glm::vec3(0.0, 0.0f,1.0f),glm::vec2(0.66f, 0.0f) })); // v17
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec3(0.0, 0.0f,1.0f),glm::vec2(0.33f, 0.5f) })); // v18
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f, -1.0f,  1.0f),  glm::vec3(0.0, 0.0f,1.0f),glm::vec2(0.66f, 0.5f) })); // v19
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f,1.0f), glm::vec2(0.33f, 0.0f) })); // v16
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f,1.0f), glm::vec2(0.66f, 0.0f) })); // v17
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec3(0.0, 0.0f,1.0f), glm::vec2(0.33f, 0.5f) })); // v18
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f,  1.0f), glm::vec3(0.0, 0.0f,1.0f), glm::vec2(0.66f, 0.5f) })); // v19
 
 	// Vertex data for face 5
 	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f,  1.0f),glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.33f, 0.5f) })); // v20
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f,  1.0f,  1.0f), glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.66f, 0.5f) })); // v21
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.66f, 0.5f) })); // v21
 	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f),glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.33f, 1.0f) })); // v22
-	this->vertices.push_back(VertexData({ glm::vec3(1.0f,  1.0f, -1.0f), glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.66f, 1.0f) })); // v23
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.66f, 1.0f) })); // v23
 
 	m_nVertex = this->vertices.size();
 
@@ -163,15 +164,35 @@ void Mesh::initCube()
 		}
 	}
 
+	this->indices.push_back(m_nVertex); 
+
+#if 0
+	debugMesh(); 
+#endif 
+	
+
 	// set pointers
 	m_pvertices = &this->vertices[0];
 	m_pindices = (GLushort*)&this->indices[0];
 
 	m_nVertex = this->vertices.size();
 	indexCount = this->indices.size();
-
+	
+	setPrimitives(GL_TRIANGLE_STRIP);
 	setupMesh();
 
+}
+
+// Display Debug informations 
+void Mesh::debugMesh() const
+{
+	std::cout << "Cube Indices : ";
+	for (const unsigned int& id : this->indices)
+	{
+		std::cout << id << ", ";
+	}
+
+	std::cout << std::endl;
 }
 
 

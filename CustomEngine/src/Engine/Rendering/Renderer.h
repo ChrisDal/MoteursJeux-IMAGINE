@@ -31,17 +31,22 @@ private:
 	// Set the projection view mat 
 	glm::mat4 vpmat; 
 
+	// Wireframe or polygon mode 
+	GLenum m_polymode;
+
 public: 
 
 	Renderer(float _w, float _h); 
+	
 	~Renderer() {};
 
+	void initGraphics() const; 
 	void Clear() const; 
 
 	void Draw(const VertexArrayBuffer& vao, const IndexBuffer& ibo, const ShaderProgram& shader) const;
 	void Draw(const VertexArrayBuffer* vao, const IndexBuffer* ibo, const ShaderProgram* shader) const;
 	void Draw(Mesh* mesh, const ShaderProgram* shader) const;
-	void Draw(GameObject* gmo, GLenum mode = GL_TRIANGLES, int shadertype = -1) const;
+	void Draw(GameObject* gmo, int shadertype = -1) const;
 	void Draw(Mesh* mesh, int shaderType) const;
 	
 	// Set View Proj Matrix
@@ -49,5 +54,9 @@ public:
 
 	
 	void createShaderProg(const std::string& vertexshad, const std::string& fragmentshad); 
+
+	// Set Wireframe or polygon mode
+	void setPolymode(bool polygon); 
+	GLenum getPolymode() const { return m_polymode;  }
 };
 
