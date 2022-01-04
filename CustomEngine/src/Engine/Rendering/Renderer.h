@@ -52,7 +52,7 @@ public:
 	void Draw(Mesh* mesh, int shaderType) const;
 	
 	// Set View Proj Matrix
-	void setviewprojMat(float width, float height, const glm::vec3& transview, bool orthographic);
+	void setviewprojMat(const glm::mat4& camView, const glm::mat4& camProj); 
 
 	
 	void createShaderProg(const std::string& vertexshad, const std::string& fragmentshad); 

@@ -82,160 +82,7 @@ GameObject::~GameObject()
 
     std::cout << "Delete GameObj " << getId() << "\n";
 };
-/*
-// ---------------------------------------
-// Apply transformation in memory
-void GameObject::applyTransformation()
-{
 
-    m_transfo.applyOnPoint(m_position, m_position);
-
-
-}
-
-// ==================================================
-// Transformations interface at GameObject Level
-// ==================================================
-
-// Rotation angle a , angle b , angle g
-// True: transfo apply on object space
-// False: transfo apply in local space (node)
-GameObject& GameObject::Rotate(float alpha, float beta, float gamma, bool internal)
-{
-    if (internal)
-    {
-        m_internal.addRotation(alpha, beta, gamma);
-    }
-    else
-    {
-        m_transfo.addRotation(alpha, beta, gamma);
-    }
-    return *this;
-}
-
-
-// Translation x axis, y axis, y axis
-// True: transfo apply on object space
-// False: transfo apply in local space (node)
-GameObject& GameObject::Translate(float tx, float ty, float tz, bool internal)
-{
-    if (internal)
-    {
-        m_internal.addTranslate(tx, ty, tz);
-    }
-    else
-    {
-        m_transfo.addTranslate(tx, ty, tz);
-    }
-    return *this;
-}
-
-// Scaling on x axis, y axis, y axis
-// True: transfo apply on object space
-// False: transfo apply in local space (node)
-GameObject& GameObject::Scale(float sx, float sy, float sz, bool internal)
-{
-    if (internal)
-    {
-        m_internal.addScale(sx, sy, sz);
-    }
-    else
-    {
-        m_transfo.addScale(sx, sy, sz);
-    }
-
-    return *this;
-}
-
-
-// ---------------------------------------
-// Define Transformations
-// ---------------------------------------
-void GameObject::setTransformation(SpaceEngine::Transform transfo, bool internal)
-{
-    if (internal)
-    {
-        m_internal = transfo;
-    }
-    else
-    {
-        m_transfo = transfo;
-    }
-
-}
-
-
-void GameObject::addTransformation(const SpaceEngine::Transform& transfo, bool internal)
-{
-    if (internal)
-    {
-        m_internal = m_internal.tfm_combine_with(transfo);
-    }
-    else
-    {
-        m_transfo = m_transfo.tfm_combine_with(transfo);
-    }
-
-}
-
-
-
-// True: transfo apply on object space
-// False: transfo apply in local space (node)
-SpaceEngine::Transform GameObject::getTransformation(bool internal) const {
-
-    if (internal)
-    {
-        return m_internal;
-    }
-
-    return m_transfo;
-
-}
-// -------------
-// WORLD MATRIX
-// -------------
-// Transformations apply on world space onto
-// the parents of our game object
-glm::mat4x4 GameObject::getWorldMat()
-{
-    return  m_parent->getMatWorldTransform();
-}
-
-
-
-//glm::vec3 GameObject::Position() const { return m_position; }
-
-void GameObject::Position(float x, float y, float z)
-{
-    m_position = glm::vec3(x, y, z);
-    m_world = glm::translate(glm::mat4x4(1.0f), m_position);
-    m_internal.setTranslate(m_position[0], m_position[1], m_position[2]);
-}
-
-glm::vec4 GameObject::getWorldPosition()
-{
-    glm::vec3 pos = this->Position();
-    SpaceEngine::Transform t_interne = this->getTransformation(true);
-    SpaceEngine::Transform t_externe = this->getTransformation();
-    glm::mat4x4 worldmat = this->getWorldMat();
-
-    pos = t_interne.applyToPoint(pos, glm::vec3(0.0f, 0.0f, 0.0f));
-    glm::vec4 pos4act = worldmat * glm::vec4(pos[0], pos[1], pos[2], 1.0f);
-    pos4act = this->getTransformation().getMatrixTransform() * pos4act;
-
-    return pos4act;
-}
-
-//Get a global transformation matrix to set vertices on real world
-glm::mat4x4 GameObject::getTransformationAllIn()
-{
-    glm::mat4x4 t_interne = this->getTransformation(true).getMatrixTransform();
-    glm::mat4x4 t_externe = this->getTransformation().getMatrixTransform();
-    glm::mat4x4 worldmat = this->getWorldMat();
-
-    return t_externe * worldmat * t_interne;
-}*/
 
 
 // ---------------------------------------
@@ -322,7 +169,17 @@ void GameObject::initMesh(int typemesh)
         }*/
     }
 
-};
+}
+void GameObject::initMesh(const char* filename)
+{
+    m_mesh = new Mesh();
+    bool loaded = m_mesh->loadMesh(filename);
+    if (!loaded)
+    {
+        std::cout << "[GmObj " << m_id << "] Error on mesh loading " << filename << std::endl; 
+    }
+}
+;
 
 // ---------------------------------------
 // init mesh data

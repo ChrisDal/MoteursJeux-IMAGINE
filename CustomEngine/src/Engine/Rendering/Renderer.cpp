@@ -26,7 +26,7 @@ Renderer::Renderer(float _w, float _h)
 {
 	//glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 	// glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
-	setviewprojMat(_w, _h, glm::vec3(0.0, 0.0, -10.0f), true); 
+	setviewprojMat(glm::mat4(1.0f), glm::mat4(1.0f));
 }
 
 void Renderer::initGraphics() const
@@ -88,6 +88,7 @@ void Renderer::Draw(Mesh* mesh, const ShaderProgram* shader) const
 // IF no Shader attach to mesh use default shader 
 void Renderer::Draw(GameObject* gmo, int shadertype) const
 {
+
 	Mesh * meshobject = gmo->getMesh(); 
 	const ShaderProgram* chosenShader = nullptr; 
 
@@ -145,7 +146,8 @@ void Renderer::Draw(GameObject* gmo, int shadertype) const
 
 	// set internal transform matrix
 	SpaceEngine::Transform t_interne = gmo->getTransformation(true);
-	chosenShader->setMat4("u_internal_tsfm_matrix", glm::value_ptr(t_interne.getMatrixTransform()));
+	glm::mat4 modelTransfointern = t_interne.getMatrixTransform() * meshobject->getModelView(); 
+	chosenShader->setMat4("u_internal_tsfm_matrix", glm::value_ptr(modelTransfointern));
 	
 	// View Proj Matrix 
 	chosenShader->setMat4("u_vp", glm::value_ptr(vpmat));
@@ -213,34 +215,10 @@ void Renderer::setPolymode(bool polygon)
 }
 
 
-void Renderer::setviewprojMat(float width, float height, const glm::vec3& transview, bool orthographic){
+void Renderer::setviewprojMat(const glm::mat4& camView, const glm::mat4& camProj){
 	
-	//-----------------
-	// View Matrix 
-	//-----------------
-
-	glm::mat4 view = glm::translate(glm::mat4(1.0f), transview);
-
-	//-----------------
-	// Projection Matrix 
-	//-----------------
-	glm::mat4 projection;
-	float ratio = width / height; 
-	float znear = 0.1f;
-	float zfar = 100.f;
-
-	if (orthographic) 
-	{
-		
-		projection = glm::ortho(0.0f, width, 0.0f, height, znear, zfar);
-	}
-	else 
-	{
-		projection = glm::perspective(glm::radians(45.0f), ratio, znear, zfar);
-	}
-
 
 	// Set View-Projection Matrix 
-	vpmat = projection * view; 
+	vpmat = camProj * camView;
 	
 }

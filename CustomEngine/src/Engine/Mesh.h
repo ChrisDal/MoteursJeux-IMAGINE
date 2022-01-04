@@ -1,5 +1,12 @@
 #pragma once
 #include <vector>
+#include <string>
+#include <sstream>
+#include <fstream>
+
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/mat4x4.hpp>
+
 #include "Rendering/VertexData.h"
 #include "Rendering/VertexArrayBuffer.h"
 #include "Rendering/VertexBuffer.hpp"
@@ -15,6 +22,7 @@ namespace SpaceEngine {
 	{
 		glm::vec3 minbbox; 
 		glm::vec3 maxbbox; 
+		glm::vec3 center; 
 	};
 	
 	// Visualise Bounding Box 
@@ -49,6 +57,10 @@ private:
 
 	void setupMesh();
 
+	bool hasUV = false;
+	bool hasNormals = false; 
+	glm::mat4 model_view; 
+
 
 protected: 
 
@@ -76,7 +88,7 @@ public:
 	void initCapsule();
 	void initPlane(); 
 
-	void loadMesh(const char* filename); 
+	bool loadMesh(const char* filename); 
 	void clear(); 
 
 	// Bounding Box 
@@ -84,6 +96,11 @@ public:
 	SpaceEngine::boundingBox getBbox() const {
 		return bbox;
 	};
+
+	unsigned int getNumTri() { return vertices.size() / 3; }
+
+	// Uniform 
+	glm::mat4 getModelView() const { return model_view; }
 
 	// OpenGL Render data
 	unsigned int getNVertex() const { return  m_nVertex; }

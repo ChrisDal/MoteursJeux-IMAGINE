@@ -15,6 +15,7 @@ unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 static constexpr float APP_MAX_FRAMERATE{ 60.0f };
+bool callbackWindows = false; 
 
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -35,6 +36,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
     SCR_WIDTH = width; 
     SCR_HEIGHT = height; 
+
+    callbackWindows = true; 
+
+    
 }
 
 
@@ -84,8 +89,17 @@ Game::Game()
     // Scene Init  
     // -------------
     m_scene = new SceneNode();
+
+    // Camera 
+    m_camera = new Camera(m_scene, glm::vec3(0.0, 0.0, +10.0));
+    m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
+
+    // Game Objects
     GameObject * player = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
-    player->initMesh(0);
+    std::string meshfilepath = m_datadir; 
+    meshfilepath += "\\models\\cube.obj"; 
+    player->initMesh(meshfilepath.c_str());
 
     SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
     SpaceEngine::Transform transfoterre;
@@ -183,6 +197,9 @@ void Game::RunGameLoop()
 {
     double frameTime{ 1.0f / APP_MAX_FRAMERATE }; // in seconds 
     m_lastTime = std::chrono::steady_clock::now();
+    double mFrameTime = 0.0; 
+    bool render = false; 
+    
     
     // render loop
     // -----------
@@ -190,8 +207,9 @@ void Game::RunGameLoop()
     {
         m_startTime = std::chrono::steady_clock::now();
         double deltaTime = 0.001 * std::chrono::duration_cast<std::chrono::milliseconds>(m_startTime - m_lastTime).count();
-
+        
         m_lastTime = m_startTime;
+        //mFrameTime += deltaTime;
 
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -210,9 +228,12 @@ void Game::RunGameLoop()
         // -----
         processInput(m_Window);
 
+
         // Update Game 
         // -----------
         Update(static_cast<float>(deltaTime));
+
+        
 
         // IMGUI rendering
         // -----------------
@@ -226,69 +247,38 @@ void Game::RunGameLoop()
         glfwGetFramebufferSize(m_Window, &display_w, &display_h);
 
         glViewport(0, 0, display_w, display_h);
-        m_renderer.Clear(); 
-
-        //=================================================
-        // GLM Transformations
+        if (callbackWindows)
+        {
+            m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT); 
+            callbackWindows = false; 
+        }
         
-		
-		/*
-		
-        //-----------------
-        // View Matrix 
-        //-----------------
-        // note that we're translating the scene in the reverse direction of where we want to move
-        glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-
-        //-----------------
-        // Projection Matrix 
-        //-----------------
-        glm::mat4 projection;
-        float ratio = (float)SCR_WIDTH / (float)SCR_HEIGHT; 
-        projection = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
-
-
-        // MVP Matrix 
-        glm::mat4 mvp = projection * view; */
+        
         
         //=================================================
-
-        
-        
-        // =================================================
         // Draw here 
-       
-        // 2. use our shader program when we want to render an object
-        /*shaderProgram->setUniform1i("texture1", 0);
-        shaderProgram->setUniform1i("texture2", 1);*/
-        
-        // Transformations 
-        /*shaderProgram->setMat4("u_mvp", glm::value_ptr(mvp));
-        shaderProgram->setMat4("u_internal_tsfm_matrix", glm::value_ptr(transformation.getMatrixTransform()));
-        shaderProgram->setMat4("u_worldmatrix", glm::value_ptr(worldMatrix.getMatrixTransform()));
-        shaderProgram->setMat4("u_transform_matrix", glm::value_ptr(transfo_extern.getMatrixTransform()));*/
-        
-        // Exemple with BOX 
+
+        // Exemple with Texture
         // bind texture 
         /*boxTexture->bind(0);
         faceTexture->bind(1);
-        m_renderer.Draw(VAO, EBO, shaderProgram); 
+        m_renderer.Draw(VAO, EBO, shaderProgram);
         boxTexture->unbind();*/
 
 
-        // To Transform into 
-        /*Mesh testmesh = Mesh(); 
-        testmesh.initCube(); 
-        m_renderer.Draw(&testmesh, -1);*/
+        m_renderer.Clear();
 
-
-        // translation of camera 
-        
         // Transformation 
-        m_renderer.Draw(m_scene); 
+        m_renderer.Draw(m_scene);
+
+
+        // =================================================
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        
+        
+        
+        
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -336,8 +326,11 @@ void Game::RenderDebugMenu() {
     if (ImGui::Button("Wireframe Mode"))
         wireframeMode = !wireframeMode;
     ImGui::SameLine();
-    if (ImGui::Button("Orthographic Camera"))
+    if (ImGui::Button("Orthographic Camera")) {
         orthoprojection = !orthoprojection;
+        m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, orthoprojection); 
+    }
+        
 
     ImGui::End();
 
@@ -386,8 +379,13 @@ void Game::RenderDebugMenu() {
     ImGui::End();
 
     m_renderer.setPolymode(!wireframeMode);
-    m_renderer.setviewprojMat((float)SCR_WIDTH, (float)SCR_HEIGHT, 
-                            ftranslate, orthoprojection);
+    if (m_camera != nullptr)
+    {
+        m_camera->setTargetPoint(glm::vec3(sin(glfwGetTime()) * ftranslate.z,
+            0.0f,
+            cos(glfwGetTime()) * ftranslate.z)); 
+        m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
+    }
     
 
 }

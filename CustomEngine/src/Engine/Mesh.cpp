@@ -1,29 +1,11 @@
 #include "Mesh.h"
 #include "Rendering/ShaderProgram.h"
-#include <glm/gtc/type_ptr.hpp>
 
 
-void Mesh::setupMesh()
-{
-	m_vao = new VertexArrayBuffer(); 
-	m_vao->bind();
-	// vertex buffer 
-	m_vbo = new VertexBuffer(this->vertices.data(), this->vertices.size() * sizeof(this->vertices[0]));
-	// indices buffer 
-	m_ibo = new IndexBuffer(this->indices.data(), this->indices.size()); 
-	// Layout
-	m_layout = VertexBufferLayout();
-	m_layout.Push<float>(3); // layout position 
-	m_layout.Push<float>(3); // layout normals
-	m_layout.Push<float>(2); // layout texture
-
-	// Add Layout to VAO 
-	m_vao->addBuffer(m_vbo, &m_layout);
-
-}
 
 Mesh::Mesh()
-	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLE_STRIP)
+	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLE_STRIP), 
+	model_view(glm::mat4(1.0f))
 {
 	bbox.minbbox = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN); 
 	bbox.minbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -34,7 +16,9 @@ Mesh::Mesh()
 }
 
 Mesh::Mesh(const char* filename)
-	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLES)
+	: m_nVertex(0), indexCount(0), 
+	m_primitives(GL_TRIANGLES), 
+	model_view(glm::mat4(1.0f))
 {
 	this->vertices = {};
 	this->indices = {};
@@ -42,13 +26,9 @@ Mesh::Mesh(const char* filename)
 	
 	// switch according to type 
 	int typefile = - 1; 
-	if (typefile == 0)
+	if (loadMesh(filename))
 	{
-		// obj == Load obj 
-	}
-	else if (typefile == 1)
-	{
-		// off == load off
+		std::cout << "Loaded \n"; 
 	}
 	else
 	{
@@ -58,7 +38,8 @@ Mesh::Mesh(const char* filename)
 }
 
 Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
-	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLES)
+	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLES),
+	model_view(glm::mat4(1.0f))
 {
 	this->vertices = vertices; 
 	this->indices = indices; 
@@ -75,6 +56,24 @@ Mesh::~Mesh()
 }
 
 
+void Mesh::setupMesh()
+{
+	m_vao = new VertexArrayBuffer();
+	m_vao->bind();
+	// vertex buffer 
+	m_vbo = new VertexBuffer(this->vertices.data(), this->vertices.size() * sizeof(this->vertices[0]));
+	// indices buffer 
+	m_ibo = new IndexBuffer(this->indices.data(), this->indices.size());
+	// Layout
+	m_layout = VertexBufferLayout();
+	m_layout.Push<float>(3); // layout position 
+	m_layout.Push<float>(3); // layout normals
+	m_layout.Push<float>(2); // layout texture
+
+	// Add Layout to VAO 
+	m_vao->addBuffer(m_vbo, &m_layout);
+
+}
 
 void Mesh::initPlane()
 {
@@ -247,13 +246,184 @@ void Mesh::debugMesh() const
 	std::cout << std::endl;
 }
 
-
-void Mesh::loadMesh(const char* filename)
+//http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/
+// From TP LoadMesh Created  by Brian Summa
+bool Mesh::loadMesh(const char* filename)
 {
 	this->clear();
 
 
-	// Load mesh file
+	hasUV = false;
+	hasNormals = false; 
+	bool hasColors = false; 
+	
+	std::ifstream myfile(filename); 
+
+	// v : vertices 
+	// f : faces 
+	// vn : normals 
+	// vt : uv vertices textures 
+
+	std::vector < glm::vec3 > vert;
+	std::vector < unsigned int > ind;
+	std::vector < glm::vec2 > uvs;
+	std::vector < glm::vec3 > norms;
+	std::vector < glm::vec3 > colors; 
+	
+	if (myfile)
+	{
+		std::string line; 
+		while (getline(myfile, line)) 
+		{
+			std::istringstream sline(line);
+			if ( line[0] == 'v' )
+			{
+				if (line[1] == 't')
+				{
+					float x, y;
+					char c, c2;
+					sline >> c >> c2 >> x >> y;
+					uvs.push_back(glm::vec2(x, y));
+
+					hasUV = true; 
+				}
+				else if (line[1] == 'n')
+				{
+					float x, y, z;
+					char c, c2;
+					sline >> c >> c2 >> x >> y >> z;
+					norms.push_back(glm::vec3(x, y, z));
+					hasNormals = true; 
+				}
+				else
+				{
+					std::vector<std::string> tokens;
+					const char delimiter = ' '; 
+					std::string token; 
+					while (getline(sline, token, delimiter))
+					{
+						tokens.push_back(token);
+					}
+
+					// v .f .f .f 
+					if (tokens.size() == 4)
+					{
+						vert.push_back(glm::vec3(std::stof(tokens[1]), 
+							std::stof(tokens[2]), std::stof(tokens[3])));
+					}
+					// v .f .f .f color1 color1 color1 
+					else if (tokens.size() == 7)
+					{
+						vert.push_back(glm::vec3(std::stof(tokens[1]),
+												std::stof(tokens[2]), 
+												std::stof(tokens[3])));
+						// colors normally 
+						glm::vec3 color = glm::vec3(std::stoi(tokens[4]),
+							std::stoi(tokens[5]),
+							std::stoi(tokens[6])); 
+						norms.push_back(color / 255.f);
+
+						hasNormals = true;
+					}
+					
+					
+				}
+				
+			}
+			else if (line[0] == 'f')
+			{
+				std::vector<std::string> tokens;
+				const char delimiter = ' ';
+				std::string token;
+				while (getline(sline, token, delimiter))
+				{
+					tokens.push_back(token);
+				}
+
+				std::vector<std::string> tokens2;
+				const char delimiter2 = '/';
+				std::string token2; 
+				for (const std::string& tk : tokens)
+				{
+					std::istringstream sline2(tk);
+					while (getline(sline2, token2, delimiter2))
+					{
+						tokens2.push_back(token2);
+					}
+
+				}
+
+				if (tokens.size() >= tokens2.size())
+				{
+					
+					ind.push_back(std::stoi(tokens[1])-1);
+					ind.push_back(std::stoi(tokens[2])-1);
+					ind.push_back(std::stoi(tokens[3])-1);
+				}
+				else
+				{
+					std::cout << "Split by \/ ";
+					ind.push_back(std::stoi(tokens2[1])-1);
+					ind.push_back(std::stoi(tokens2[3])-1);
+					ind.push_back(std::stoi(tokens2[4])-1);
+				}
+				
+			}
+				
+			
+		}
+	}
+
+	
+	std::cout << "Total: " << vert.size() << " vertices\n";
+	std::cout << "Total: " << norms.size() << " normals\n";
+
+
+	
+	for (unsigned int i = 0; i < vert.size(); i++) {
+
+		VertexData vdata; 
+		if (hasNormals && hasUV) {
+			vdata = { vert[i], norms[i], uvs[i] };
+		}
+		else if (hasNormals && !hasUV)
+		{
+			vdata = { vert[i], norms[i], glm::vec2(0.0, 0.0) };
+		}
+		else if ( !hasNormals && !hasUV)
+		{
+			vdata = { vert[i],glm::vec3(1.0f, 0.0f, 0.0f),glm::vec2(0.0, 0.0) };
+		}
+		else if (!hasNormals && hasUV)
+		{
+			vdata = { vert[i],glm::vec3(1.0f, 0.0f, 0.0f), uvs[i] };
+		}
+		
+		if (vert[i].x < bbox.minbbox.x) { bbox.minbbox.x = vert[i].x; }
+		if (vert[i].y < bbox.minbbox.y) { bbox.minbbox.y = vert[i].y; }
+		if (vert[i].z < bbox.minbbox.z) { bbox.minbbox.z = vert[i].z; }
+		if (vert[i].x > bbox.maxbbox.x) { bbox.maxbbox.x = vert[i].x; }
+		if (vert[i].y > bbox.maxbbox.y) { bbox.maxbbox.y = vert[i].y; }
+		if (vert[i].z > bbox.maxbbox.z) { bbox.maxbbox.z = vert[i].z; }
+
+		this->vertices.push_back(vdata); 
+		
+	}
+
+	bbox.center = bbox.minbbox + 0.5f * (bbox.maxbbox - bbox.minbbox);
+	float scale = std::max(bbox.maxbbox.x - bbox.minbbox.x, 
+							bbox.maxbbox.y - bbox.minbbox.y);
+	this->model_view = glm::translate(glm::mat4(1.0f), -bbox.center);
+	// Make the extents 0-1
+	this->model_view = glm::scale(this->model_view, glm::vec3(1.0 / scale,
+										1.0 / scale,
+										1.0 / scale));  //Orient Model About Center
+	this->indices = ind; 
+
+	setPrimitives(GL_TRIANGLES);
+	setupMesh();
+
+	return true; 
 }
 
 void Mesh::clear()
@@ -275,7 +445,7 @@ void Mesh::clear()
 	indexCount = 0;
 
 	this->bbox.minbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-	this->bbox.maxbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+	this->bbox.maxbbox = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN);
 
 }
 
