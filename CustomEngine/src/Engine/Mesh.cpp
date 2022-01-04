@@ -332,13 +332,44 @@ bool Mesh::loadMesh(const char* filename)
 			}
 			else if (line[0] == 'f')
 			{
-				int x, y, z; 
-				char c; 
-				sline >> c >> x >> y >> z;
-				ind.push_back(x-1); 
-				ind.push_back(y-1); 
-				ind.push_back(z-1); 
+				std::vector<std::string> tokens;
+				const char delimiter = ' ';
+				std::string token;
+				while (getline(sline, token, delimiter))
+				{
+					tokens.push_back(token);
+				}
+
+				std::vector<std::string> tokens2;
+				const char delimiter2 = '/';
+				std::string token2; 
+				for (const std::string& tk : tokens)
+				{
+					std::istringstream sline2(tk);
+					while (getline(sline2, token2, delimiter2))
+					{
+						tokens2.push_back(token2);
+					}
+
+				}
+
+				if (tokens.size() > tokens2.size())
+				{
+					
+					ind.push_back(std::stoi(tokens[1])-1);
+					ind.push_back(std::stoi(tokens[2])-1);
+					ind.push_back(std::stoi(tokens[3])-1);
+				}
+				else
+				{
+					std::cout << "Split by \/ ";
+					ind.push_back(std::stoi(tokens2[1])-1);
+					ind.push_back(std::stoi(tokens2[3])-1);
+					ind.push_back(std::stoi(tokens2[4])-1);
+				}
+				
 			}
+				
 			
 		}
 	}
