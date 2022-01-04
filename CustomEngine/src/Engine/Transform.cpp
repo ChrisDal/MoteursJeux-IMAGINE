@@ -16,17 +16,17 @@ namespace SpaceEngine {
 	// set translation to QVector3(0)
 	void Transform::resetTranslation()
 	{
-		m_translation[0] = 0.0f;
-		m_translation[1] = 0.0f;
-		m_translation[2] = 0.0f;
+		m_translation.x = 0.0f;
+		m_translation.y = 0.0f;
+		m_translation.z = 0.0f;
 	}
 
 	// set Scale to 1.0f
 	void Transform::resetScale()
 	{
-		m_scale[0] = 1.0f;
-		m_scale[1] = 1.0f;
-		m_scale[2] = 1.0f;
+		m_scale.x = 1.0f;
+		m_scale.y = 1.0f;
+		m_scale.z = 1.0f;
 	}
 
 	// set rotation to identity
@@ -249,7 +249,6 @@ namespace SpaceEngine {
 		m_scale.x *= sx;
 		m_scale.y *= sy;
 		m_scale.z *= sz;
-
 	}
 
 

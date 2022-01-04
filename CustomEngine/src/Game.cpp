@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Engine/Transform.h"
+#include "Engine/GameObject.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -10,9 +11,10 @@
 const char* glsl_version = "#version 130";
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+unsigned int SCR_WIDTH = 800;
+unsigned int SCR_HEIGHT = 600;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+static constexpr float APP_MAX_FRAMERATE{ 60.0f };
 
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -31,14 +33,76 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+    SCR_WIDTH = width; 
+    SCR_HEIGHT = height; 
 }
 
 
 Game::Game()
 : m_shaderdir(PROJECT_DIR"src\\shaders\\"), 
   m_datadir(PROJECT_DIR"data\\"), 
-  m_texturedir(PROJECT_DIR"data\\")
+  m_texturedir(PROJECT_DIR"data\\"), 
+  m_renderer((float)SCR_WIDTH, (float)SCR_HEIGHT), 
+  m_lastTime(std::chrono::steady_clock::now()), 
+  m_startTime(std::chrono::steady_clock::now())
 {
+    // GLFW and ImGui initialisation 
+    initWindow(); 
+
+    // Renderer initialisation 
+    m_renderer.initGraphics(); 
+    m_renderer.printOpenGLVersion(); 
+    
+
+    /*
+    // texture load 
+    std::string imagecontainer = m_texturedir;
+    imagecontainer += "container.jpg";
+    boxTexture = new Texture(imagecontainer.c_str()); 
+
+    std::string imageface = m_texturedir + std::string("awesomeface.png"); 
+    faceTexture = std::make_unique<Texture>(imageface.c_str(), 1); 
+	
+	*/
+	
+	// Default Shader 
+	// ---------------
+	// Vertex & Fragment Shader
+    std::string vertexsource = m_shaderdir; 
+    vertexsource += "basicVShader.shader";
+
+    std::string fragmentsource = m_shaderdir; 
+    fragmentsource += "basicFragShader.shader";
+
+    // Renderer Initialisation 
+    // -------------------------
+
+    // Shader Program : by Default 
+    m_renderer.createShaderProg(vertexsource, fragmentsource);
+    std::cout << fragmentsource << std::endl; 
+	
+    // Scene Init  
+    // -------------
+    m_scene = new SceneNode();
+    GameObject * player = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
+    player->initMesh(0);
+
+    SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    SpaceEngine::Transform transfoterre;
+    transfoterre.addHomogenousScale(0.7f);
+    transfoterre.addRotation(0.0f, 23.0f, 0.0f);
+    GameObject* terre = new GameObject(etape1, glm::vec3(3.0, 0.0, 0.0), -1);
+    terre->initMesh(3); 
+    terre->addTransformation(transfoterre, true);
+    // -------------------------------------------
+    m_scene->print();
+    m_scene->sceneInit(m_scene);
+
+}
+
+void Game::initWindow()
+{
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -62,6 +126,7 @@ Game::Game()
 
     glfwMakeContextCurrent(m_Window);
     glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
+
 
     // ImGUI 
     // Setup Dear ImGui context
@@ -88,126 +153,19 @@ Game::Game()
     // stbi image loading preset 
     stbi_set_flip_vertically_on_load(true);
 
-    // enable Depth 
-    glEnable(GL_DEPTH_TEST);
-
-    // --------------------------
-    /*float vertices[] = {
-     0.5f,  0.5f, 0.0f,  // top right
-     0.5f, -0.5f, 0.0f,  // bottom right
-    -0.5f, -0.5f, 0.0f,  // bottom left
-    -0.5f,  0.5f, 0.0f   // top left 
-    };*/
-
-    float vertices2[] = {
-        // positions          // colors           // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
-    };
-
-    unsigned int indices[] = {  // note that we start from 0!
-    0, 1, 3,   // first triangle
-    1, 2, 3    // second triangle
-    };
-
-    int nVertex = 9; 
-
-    float texCoords[] = {
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        0.5f, 1.0f
-    }; 
-
-
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), 
-    // and then configure vertex attributes(s).
-    VAO = new VertexArrayBuffer(); 
-    VAO->bind(); 
-
-
-    // Vertex Buffer 
-    //VBO = new VertexBuffer(vertices, sizeof(vertices));
-    VBO = new VertexBuffer(vertices2, sizeof(vertices2));
-
-    // Index Buffer 
-    unsigned int countIndices = sizeof(indices) / sizeof(unsigned int); 
-    EBO = new IndexBuffer(indices, countIndices);
-
-    // Set Layout 
-    VertexBufferLayout layout = VertexBufferLayout();
-    layout.Push<float>(3); // layout position 
-    layout.Push<float>(3); // layout color
-    layout.Push<float>(2); // layout texture
-    
-    // Add Layout to VAO 
-    VAO->addBuffer(VBO, &layout);
-     
-
-    // 0. copy our vertices array in a buffer for OpenGL to use
-    //glBindBuffer(GL_ARRAY_BUFFER, VBO); 
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); 
-    // 1. copy our index array in a element buffer for OpenGL to use
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    //glEnableVertexAttribArray(0); 
-    
-
-    // Vertex & Fragment Shader
-    std::string vertexsource = m_shaderdir; 
-    vertexsource += "basicVertexShader.shader";
-
-    std::string fragmentsource = m_shaderdir; 
-    fragmentsource += "basicFragmentShader.shader";
-
-    std::cout << fragmentsource << std::endl; 
-
-    Shader* vertexShader = new Shader(vertexsource.c_str(), GL_VERTEX_SHADER);
-    Shader* fragmentShader = new Shader(fragmentsource.c_str(), GL_FRAGMENT_SHADER);
-
-    vertexShader->checkValidity(); 
-    fragmentShader->checkValidity();
-
-    // create shader Programe 
-    shaderProgram = new ShaderProgram(); 
-    shaderProgram->bindShaders(vertexShader, fragmentShader); 
-    shaderProgram->link(); 
-    shaderProgram->use(); 
-
-
-    delete vertexShader; 
-    delete fragmentShader; 
-
-    // Unbind all 
-    VAO->unbind(); 
-    EBO->unbind();
-    VBO->unbind(); 
-    shaderProgram->unuse(); 
-
-
-    // texture load 
-    std::string imagecontainer = m_texturedir;
-    imagecontainer += "container.jpg";
-    boxTexture = new Texture(imagecontainer.c_str()); 
-
-    std::string imageface = m_texturedir + std::string("awesomeface.png"); 
-    faceTexture = std::make_unique<Texture>(imageface.c_str(), 1); 
-
 }
 
 Game::~Game()
 {
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
-    delete VAO;
-    delete VBO; 
-    delete EBO; 
+    if (VAO != nullptr){ delete VAO; }
+    if (VBO != nullptr){ delete VBO; }
+    if (EBO != nullptr) { delete EBO; } 
+    if (shaderProgram != nullptr) { delete shaderProgram; }
+    //delete boxTexture;
+    delete m_scene; 
     
-    delete shaderProgram; 
-    delete boxTexture;
     
     
     // glfw: terminate, clearing all previously allocated GLFW resources.
@@ -223,11 +181,17 @@ Game::~Game()
 
 void Game::RunGameLoop()
 {
+    double frameTime{ 1.0f / APP_MAX_FRAMERATE }; // in seconds 
+    m_lastTime = std::chrono::steady_clock::now();
     
     // render loop
     // -----------
     while (!glfwWindowShouldClose(m_Window))
     {
+        m_startTime = std::chrono::steady_clock::now();
+        double deltaTime = 0.001 * std::chrono::duration_cast<std::chrono::milliseconds>(m_startTime - m_lastTime).count();
+
+        m_lastTime = m_startTime;
 
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -240,47 +204,19 @@ void Game::RunGameLoop()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         
-        static glm::vec3 frotate = glm::vec3(0.0f, 0.0f, 0.0f); 
-        static glm::vec3 ftranslate = glm::vec3(0.0f, 0.0f, 0.0f); 
-        static int counter = 0;
-        static bool wireframeMode = false; 
-        
-
-        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-
-        ImGui::SliderFloat("rotationX", &frotate.x, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("rotationY", &frotate.y, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("rotationZ", &frotate.z, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("translationX", &ftranslate.x, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("translationY", &ftranslate.y, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("translationZ", &ftranslate.z, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-        if (ImGui::Button("Wireframe Mode"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-            wireframeMode = !wireframeMode;
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
-
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::End();
         
         // input
         // -----
         processInput(m_Window);
-        if (wireframeMode){
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); 
-        }
-        else {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
-        }
+
+        // Update Game 
+        // -----------
+        Update(static_cast<float>(deltaTime));
 
         // IMGUI rendering
         // -----------------
+        RenderDebugMenu();
         ImGui::Render();
 
         // Render : Game LOOP 
@@ -293,33 +229,11 @@ void Game::RunGameLoop()
         m_renderer.Clear(); 
 
         //=================================================
-        //GLM Transformations
-
-        SpaceEngine::Transform transformation; 
-        transformation.addRotation(frotate.x, 0.f, frotate.z);
-        transformation.Translate(ftranslate.x, ftranslate.y, ftranslate.z);
-
-        SpaceEngine::Transform transfo_extern;
-        transfo_extern.Translate(0.5f, 0.0, 0.0);
-        transfo_extern.addRotation(0.0f, frotate.y, 0.0f);
-        //transformation.addHomogenousScale(0.5f); 
-       
-
-
-        glm::vec4 vec(0.5f, 0.0f, 0.0f, 1.0f);
-        //glm::mat4 trans = glm::mat4(1.0f);
-        //trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
-        //trans = glm::rotate(trans, glm::radians(f), glm::vec3(0.0, 0.0, 1.0)); 
-        //trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+        // GLM Transformations
         
-        vec = transformation.getMatrixTransform() * vec;
-
-        //-----------------
-        // Model Matrix 
-        //-----------------
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
+		
+		/*
+		
         //-----------------
         // View Matrix 
         //-----------------
@@ -336,32 +250,43 @@ void Game::RunGameLoop()
 
 
         // MVP Matrix 
-        glm::mat4 mvp = projection * view * model; 
+        glm::mat4 mvp = projection * view; */
         
         //=================================================
 
         
         
-        // ====================================================
+        // =================================================
         // Draw here 
        
         // 2. use our shader program when we want to render an object
-        shaderProgram->setUniform1i("texture1", 0);
-        shaderProgram->setUniform1i("texture2", 1);
-        
+        /*shaderProgram->setUniform1i("texture1", 0);
+        shaderProgram->setUniform1i("texture2", 1);*/
         
         // Transformations 
-        shaderProgram->setMat4("u_mvp", glm::value_ptr(mvp));
-        shaderProgram->setMat4("u_transform", glm::value_ptr(transformation.getMatrixTransform()));
-        shaderProgram->setMat4("u_transformexterne", glm::value_ptr(transfo_extern.getMatrixTransform()));
-  
+        /*shaderProgram->setMat4("u_mvp", glm::value_ptr(mvp));
+        shaderProgram->setMat4("u_internal_tsfm_matrix", glm::value_ptr(transformation.getMatrixTransform()));
+        shaderProgram->setMat4("u_worldmatrix", glm::value_ptr(worldMatrix.getMatrixTransform()));
+        shaderProgram->setMat4("u_transform_matrix", glm::value_ptr(transfo_extern.getMatrixTransform()));*/
+        
+        // Exemple with BOX 
         // bind texture 
-        boxTexture->bind(0);
+        /*boxTexture->bind(0);
         faceTexture->bind(1);
-
         m_renderer.Draw(VAO, EBO, shaderProgram); 
+        boxTexture->unbind();*/
 
-        boxTexture->unbind();
+
+        // To Transform into 
+        /*Mesh testmesh = Mesh(); 
+        testmesh.initCube(); 
+        m_renderer.Draw(&testmesh, -1);*/
+
+
+        // translation of camera 
+        
+        // Transformation 
+        m_renderer.Draw(m_scene); 
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -370,6 +295,9 @@ void Game::RunGameLoop()
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(m_Window);
         // glfwPoll
+
+
+
     }
 }
 
@@ -377,5 +305,90 @@ void Game::RunGameLoop()
 
 
 
+void Game::Update(float deltaTime)
+{
+    m_scene->Update(deltaTime); 
+}
 
+void Game::RenderDebugMenu() {
+
+    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+
+    static glm::vec3 frotate = glm::vec3(0.0f, 0.0f, 0.0f);
+    static glm::vec3 ftranslate = glm::vec3(0.0f, 0.0f, 0.0f);
+    static int counter = 0;
+    static bool wireframeMode = false;
+    static bool orthoprojection = false;
+
+
+    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+
+    ImGui::SliderFloat("rotationX", &frotate.x, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("rotationY", &frotate.y, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("rotationZ", &frotate.z, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("translationX", &ftranslate.x, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("translationY", &ftranslate.y, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("translationZ", &ftranslate.z, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+    // /Buttons return true when clicked (most widgets return true when edited/activated)
+    if (ImGui::Button("Wireframe Mode"))
+        wireframeMode = !wireframeMode;
+    ImGui::SameLine();
+    if (ImGui::Button("Orthographic Camera"))
+        orthoprojection = !orthoprojection;
+
+    ImGui::End();
+
+
+
+    // ImGui example menu overlay 
+    static bool show_app_simple_overlay = true;
+    const float DISTANCE = 10.0f;
+    static int corner = 3;
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+    if (corner != -1)
+    {
+        window_flags |= ImGuiWindowFlags_NoMove;
+        ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
+        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+    }
+    ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+    if (ImGui::Begin("Example: Simple overlay", &show_app_simple_overlay, window_flags))
+    {
+        ImGui::Text("Simple overlay\n" "in the corner of the screen.\n" "(right-click to change position)");
+        ImGui::Separator();
+        if (ImGui::IsMousePosValid())
+        {
+            ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
+        }
+        else {
+            ImGui::Text("Mouse Position: <invalid>");
+        }
+
+
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+        if (ImGui::BeginPopupContextWindow())
+        {
+            if (ImGui::MenuItem("Custom", NULL, corner == -1)) corner = -1;
+            if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
+            if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
+            if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
+            if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
+            if (&show_app_simple_overlay && ImGui::MenuItem("Close")) show_app_simple_overlay = false;
+            ImGui::EndPopup();
+        }
+    }
+    ImGui::End();
+
+    m_renderer.setPolymode(!wireframeMode);
+    m_renderer.setviewprojMat((float)SCR_WIDTH, (float)SCR_HEIGHT, 
+                            ftranslate, orthoprojection);
+    
+
+}
 

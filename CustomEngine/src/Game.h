@@ -7,13 +7,17 @@
 
 #include <iostream>
 #include <string>
+#include <ctime>
+#include <chrono>
 
-#include "ShaderProgram.h"
-#include "VertexBuffer.hpp"
-#include "IndexBuffer.hpp"
-#include "VertexArrayBuffer.h"
-#include "Texture.h"
-#include "Renderer.h"
+#include "Engine/Rendering/ShaderProgram.h"
+#include "Engine/Rendering/VertexBuffer.hpp"
+#include "Engine/Rendering/IndexBuffer.hpp"
+#include "Engine/Rendering/VertexArrayBuffer.h"
+#include "Engine/Rendering/Texture.h"
+#include "Engine/Rendering/Renderer.h"
+
+#include "Engine/SceneNode.h"
 
 
 class Game
@@ -35,6 +39,13 @@ public:
 
     // Renderer 
     Renderer m_renderer; 
+
+    // Scene
+    SceneNode* m_scene;
+
+    // Time Clock Chrono
+    std::chrono::time_point<std::chrono::steady_clock> m_lastTime; 
+    std::chrono::time_point<std::chrono::steady_clock> m_startTime; 
    
 public:
     Game();
@@ -43,9 +54,10 @@ public:
     void RunGameLoop();
 
 protected:
-    /*virtual void Update(float deltaTime);
-    virtual void Render();
-    virtual void RenderDebugMenu();*/
+    void Update(float deltaTime);
+    //virtual void Render();
+    void RenderDebugMenu();
+    void initWindow(); 
 
     
 

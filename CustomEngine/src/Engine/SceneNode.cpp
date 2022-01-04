@@ -1,4 +1,4 @@
-#include "scenenode.h"
+#include "SceneNode.h"
 
 // static define
 unsigned int SceneNode::nodeNumber = 0;
@@ -12,8 +12,8 @@ unsigned int SceneNode::nodeNumber = 0;
 SceneNode::SceneNode()
     : m_origin(glm::vec3(0.0f, .0f, 0.0f)),
     m_position(glm::vec3(0.0f, .0f, 0.0f)),
-    m_tsfm_world(Transform()),
-    m_tsfm_internal(Transform())
+    m_tsfm_world(SpaceEngine::Transform()),
+    m_tsfm_internal(SpaceEngine::Transform())
 {
     m_nid = ++nodeNumber;
     m_tsfm_internal.setAsIdentity();
@@ -22,8 +22,8 @@ SceneNode::SceneNode()
 }
 
 SceneNode::SceneNode(const glm::vec3& position)
-    : m_origin(position), m_tsfm_world(Transform()),
-    m_tsfm_internal(Transform()), m_position(position)
+    : m_origin(position), m_tsfm_world(SpaceEngine::Transform()),
+    m_tsfm_internal(SpaceEngine::Transform()), m_position(position)
 {
     m_nid = ++nodeNumber;
     m_tsfm_world.setTranslate(m_origin);
@@ -34,8 +34,8 @@ SceneNode::SceneNode(const glm::vec3& position)
 
 
 SceneNode::SceneNode(SceneNode* parent)
-    : m_tsfm_world(Transform()),
-    m_tsfm_internal(Transform()),
+    : m_tsfm_world(SpaceEngine::Transform()),
+    m_tsfm_internal(SpaceEngine::Transform()),
     m_position(glm::vec3())
 {
     parent->addChild(this);
@@ -48,8 +48,8 @@ SceneNode::SceneNode(SceneNode* parent)
 }
 
 SceneNode::SceneNode(SceneNode* parent, const glm::vec3& position)
-    : m_tsfm_world(Transform()),
-    m_tsfm_internal(Transform()),
+    : m_tsfm_world(SpaceEngine::Transform()),
+    m_tsfm_internal(SpaceEngine::Transform()),
     m_position(position)
 {
     parent->addChild(this);
@@ -204,6 +204,13 @@ void SceneNode::Scale(float sx, float sy, float sz, bool internal) {
     }
 }
 
+void SceneNode::setPosition(float x, float y, float z)
+{
+    glm::vec3 translation = m_position - glm::vec3(x, y, z); 
+    Translate(translation.x, translation.y, translation.z);
+    m_position = glm::vec3(x, y, z); 
+}
+
 
 glm::vec3 SceneNode::getPosition() const
 {
@@ -215,18 +222,20 @@ glm::vec3 SceneNode::getPosition() const
 // ===================
 // GAME OBJECTS 
 // ===================
-void SceneNode::addObject(GameObject* gmo)
+void SceneNode::addObject(BasicGameObject* gmo)
 {
     m_objects.push_back(gmo);
 }
 
 
-std::vector<GameObject*> SceneNode::getObjects()
+
+
+std::vector<BasicGameObject*> SceneNode::getObjects()
 {
     return m_objects;
 }
 
-GameObject* SceneNode::getObject(int x)
+BasicGameObject* SceneNode::getObject(int x)
 {
     return m_objects.at(x);
 }
@@ -246,7 +255,7 @@ int SceneNode::getObjectNumber() const
 
 void SceneNode::print()
 {
-    std::cout << " Node Id : " << getId().c_str() << "Node number : " << m_nid;
+    std::cout << " Node Id : " << getId().c_str() << ", Node number : " << m_nid << " ";
 
     for (unsigned int x = 0; x < m_objects.size(); x++)
     {
@@ -287,8 +296,7 @@ void SceneNode::sceneInit(SceneNode* sNode)
         }
 
         // k is the type of texture by default 0 or not
-        sNode->getObject(k)->initMesh(k);
-        sNode->getObject(k)->initRendering();
+        //sNode->getObject(k)->initMesh(k);
         std::cout << "  init Rendering Obj=" << sNode->getObject(k)->getId() << "\n";
     }
 
@@ -303,21 +311,37 @@ void SceneNode::sceneInit(SceneNode* sNode)
 }
 
 // Scene Rendering : call render on each game object
-void SceneNode::render(SceneNode* sNode, QOpenGLShaderProgram* shader)
+void SceneNode::render(SceneNode* sNode, ShaderProgram* shader)
 {
     // init each game object for rendering at
     // hierarchy node
-    for (int k = 0; k < sNode->getObjectNumber(); k++)
+    /*for (int k = 0; k < sNode->getObjectNumber(); k++)
     {
-        sNode->getObject(k)->render(shader);
+        sNode->getObject(k)->Draw(shader);
     }
 
     for (int i = 0; i < sNode->getChildrenNumber(); i++)
     {
         render(sNode->getNode(i), shader);
-    }
+    }*/
 
     return;
+}
+
+void SceneNode::Update(float deltatime)
+{
+    for (int k = 0; k < getObjectNumber(); k++)
+    {
+        getObject(k)->Update(deltatime);
+    }
+
+    for (int i = 0; i < getChildrenNumber(); i++)
+    {
+        getNode(i)->Update(deltatime);
+    }
+
+
+
 }
 
 
@@ -338,12 +362,12 @@ glm::mat4x4 SceneNode::getMatWorldTransform() {
     return m_tsfm_world.getMatrixTransform();
 
 }
-Transform SceneNode::getInternalTransform() const {
+SpaceEngine::Transform SceneNode::getInternalTransform() const {
     return m_tsfm_internal;
 }
-Transform SceneNode::getWorldTransform() {
+SpaceEngine::Transform SceneNode::getWorldTransform() {
 
-    Transform transfo(m_tsfm_world);
+    SpaceEngine::Transform transfo(m_tsfm_world);
 
     if (m_parent != nullptr)
     {

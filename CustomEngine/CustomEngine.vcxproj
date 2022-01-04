@@ -155,6 +155,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\BasicGameObject.cpp" />
+    <ClCompile Include="src\Engine\Camera.cpp" />
     <ClCompile Include="dependencies\include\glm\detail\glm.cpp" />
     <ClCompile Include="dependencies\include\imgui\imgui.cpp" />
     <ClCompile Include="dependencies\include\imgui\imgui_demo.cpp" />
@@ -163,23 +165,27 @@
     <ClCompile Include="dependencies\include\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="dependencies\include\imgui\imgui_tables.cpp" />
     <ClCompile Include="dependencies\include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Engine\GameObject.cpp" />
     <ClCompile Include="src\Engine\Rotoform.cpp" />
+    <ClCompile Include="src\Engine\SceneNode.cpp" />
     <ClCompile Include="src\Engine\Transform.cpp" />
-    <ClCompile Include="src\IndexBuffer.cpp" />
-    <ClCompile Include="src\Mesh.cpp" />
-    <ClCompile Include="src\Renderer.cpp" />
-    <ClCompile Include="src\ShaderProgram.cpp" />
-    <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\Engine\Rendering\IndexBuffer.cpp" />
+    <ClCompile Include="src\Engine\Mesh.cpp" />
+    <ClCompile Include="src\Engine\Rendering\Renderer.cpp" />
+    <ClCompile Include="src\Engine\Rendering\ShaderProgram.cpp" />
+    <ClCompile Include="src\Engine\Rendering\Shader.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="dependencies\include\STB\stbimage.cpp" />
-    <ClCompile Include="src\VertexArrayBuffer.cpp" />
-    <ClCompile Include="src\VertexBuffer.cpp" />
-    <ClCompile Include="src\VertexBufferLayout.cpp" />
-    <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\Engine\Rendering\VertexArrayBuffer.cpp" />
+    <ClCompile Include="src\Engine\Rendering\VertexBuffer.cpp" />
+    <ClCompile Include="src\Engine\Rendering\VertexBufferLayout.cpp" />
+    <ClCompile Include="src\Engine\Rendering\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Engine\BasicGameObject.h" />
+    <ClInclude Include="src\Engine\Camera.h" />
     <ClInclude Include="dependencies\include\glad\glad.h" />
     <ClInclude Include="dependencies\include\GLFW\glfw3.h" />
     <ClInclude Include="dependencies\include\GLFW\glfw3native.h" />
@@ -479,21 +485,23 @@
     <ClInclude Include="dependencies\include\imgui\imstb_textedit.h" />
     <ClInclude Include="dependencies\include\imgui\imstb_truetype.h" />
     <ClInclude Include="dependencies\include\KHR\khrplatform.h" />
+    <ClInclude Include="src\Engine\GameObject.hpp" />
     <ClInclude Include="src\Engine\Rotoform.h" />
+    <ClInclude Include="src\Engine\SceneNode.h" />
     <ClInclude Include="src\Engine\Transform.h" />
-    <ClInclude Include="src\IndexBuffer.hpp" />
-    <ClInclude Include="src\Mesh.h" />
-    <ClInclude Include="src\Renderer.h" />
+    <ClInclude Include="src\Engine\Rendering\IndexBuffer.hpp" />
+    <ClInclude Include="src\Engine\Mesh.h" />
+    <ClInclude Include="src\Engine\Rendering\Renderer.h" />
     <ClInclude Include="src\glGeom.h" />
     <ClInclude Include="dependencies\include\STB\stb_image.h" />
-    <ClInclude Include="src\VertexData.h" />
-    <ClInclude Include="src\VertexBuffer.hpp" />
-    <ClInclude Include="src\ShaderProgram.h" />
-    <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\Engine\Rendering\VertexData.h" />
+    <ClInclude Include="src\Engine\Rendering\VertexBuffer.hpp" />
+    <ClInclude Include="src\Engine\Rendering\ShaderProgram.h" />
+    <ClInclude Include="src\Engine\Rendering\Shader.h" />
     <ClInclude Include="src\Game.h" />
-    <ClInclude Include="src\VertexArrayBuffer.h" />
-    <ClInclude Include="src\VertexBufferLayout.h" />
-    <ClInclude Include="src\Texture.h" />
+    <ClInclude Include="src\Engine\Rendering\VertexArrayBuffer.h" />
+    <ClInclude Include="src\Engine\Rendering\VertexBufferLayout.h" />
+    <ClInclude Include="src\Engine\Rendering\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="dependencies\lib\glfw3.lib" />
@@ -641,8 +649,10 @@
     <None Include="src\shaders\basicFragmentShader.shader">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
+    <None Include="src\shaders\basicVShader.shader" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\shaders\basicFragShader.shader" />
     <None Include="src\shaders\basicVertexShader.shader">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>

@@ -5,7 +5,7 @@ layout(location = 2) in vec2 aTextureCoord;
 
 uniform mat4 u_vp;
 uniform mat4 u_transform_matrix;
-uniform mat4 u_worldmatrix;
+uniform mat4 u_world_matrix;
 uniform mat4 u_internal_tsfm_matrix;
 
 out vec3 vColor; 
@@ -16,6 +16,6 @@ void main()
     vColor = aColor;
     vTextureCoord = aTextureCoord;
     // Position 
-    gl_Position = u_vp * u_transform_matrix * u_worldmatrix * u_internal_tsfm_matrix * a_position;
+    gl_Position = u_vp * u_transform_matrix * u_world_matrix * u_internal_tsfm_matrix * vec4(aPos, 1.0);
     
 }

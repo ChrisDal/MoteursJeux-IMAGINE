@@ -1,7 +1,9 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "GameObject.hpp"
+
+#include "BasicGameObject.h"
+#include "Rendering/ShaderProgram.h"
 
 
 class SceneNode
@@ -10,13 +12,13 @@ private:
     // Tree
     SceneNode* m_parent = nullptr;
     std::vector<SceneNode*> m_children;
-    std::vector<GameObject*> m_objects;
+    std::vector<BasicGameObject*> m_objects;
 
     // Space  
     glm::vec3 m_origin;
     glm::vec3 m_position;
-    Transform m_tsfm_world;    // position and orientation and scaling at Time t=0
-    Transform m_tsfm_internal; // Internal transformation RT
+    SpaceEngine::Transform m_tsfm_world;    // position and orientation and scaling at Time t=0
+    SpaceEngine::Transform m_tsfm_internal; // Internal transformation RT
 
     // ID
     int m_nid = -1;
@@ -50,9 +52,9 @@ public:
     int getChildrenNumber() const; // child is a node
 
     // Game Objects of node
-    void addObject(GameObject* gmo);
-    std::vector<GameObject*> getObjects();
-    GameObject* getObject(int x);
+    void addObject(BasicGameObject* gmo);
+    std::vector<BasicGameObject*> getObjects();
+    BasicGameObject* getObject(int x);
     int getObjectNumber() const; // Game object is an object 
 
     // -----------------
@@ -65,8 +67,8 @@ public:
     glm::vec3 getPosition() const;
     glm::mat4x4 getMatInternalTransform();
     glm::mat4x4 getMatWorldTransform();
-    Transform getInternalTransform() const;
-    Transform getWorldTransform();
+    SpaceEngine::Transform getInternalTransform() const;
+    SpaceEngine::Transform getWorldTransform();
 
     // Interface
     void Rotate(float alpha, float beta, float gamma, bool internal = false);
@@ -83,7 +85,10 @@ public:
     // Rendering
     // ------------
     void sceneInit(SceneNode* sNode);   //init object render
-    void render(SceneNode* sNode, QOpenGLShaderProgram* shader); // render objects
+    void render(SceneNode* sNode, ShaderProgram* shader); // render objects
+
+    // Update 
+    void Update(float deltatime); 
 
 
     std::string getId() const;
