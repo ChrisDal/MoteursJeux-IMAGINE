@@ -18,6 +18,7 @@
 
 
 class GameObject; 
+class SceneNode; 
 
 void GLClearError();
 bool GLLogCall(const char* function, const char* file, int line);
@@ -47,6 +48,7 @@ public:
 	void Draw(const VertexArrayBuffer* vao, const IndexBuffer* ibo, const ShaderProgram* shader) const;
 	void Draw(Mesh* mesh, const ShaderProgram* shader) const;
 	void Draw(GameObject* gmo, int shadertype = -1) const;
+	void Draw(SceneNode* scene) const;
 	void Draw(Mesh* mesh, int shaderType) const;
 	
 	// Set View Proj Matrix
@@ -58,5 +60,11 @@ public:
 	// Set Wireframe or polygon mode
 	void setPolymode(bool polygon); 
 	GLenum getPolymode() const { return m_polymode;  }
+
+	// get Opengl Version 
+	void printOpenGLVersion() const {
+		const unsigned char* version = glGetString(GL_VERSION); 
+		std::cout << "OpenGL Version : " << version << std::endl; 
+	}
 };
 

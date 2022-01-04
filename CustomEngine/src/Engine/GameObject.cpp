@@ -280,6 +280,11 @@ void GameObject::initMesh(int typemesh)
             m_mesh->initCube();
             std::cout << "LOG Init Dummy Dice\n";
         }
+        else if (typemesh == 3)
+        {
+            m_mesh->initSphere();
+            std::cout << "LOG Init Sphere radius 1.0\n";
+        }
         else
         {
             m_mesh->initCube();
@@ -332,6 +337,8 @@ void GameObject::initDummyCube(float textureIndex) {
 
 
 
+
+// 
 // ---------------------------------------
 
 void GameObject::initPlane(unsigned int terrainSize)

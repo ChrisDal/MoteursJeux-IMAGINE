@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "Rendering/ShaderProgram.h"
+#include <glm/gtc/type_ptr.hpp>
 
 
 void Mesh::setupMesh()
@@ -73,12 +74,7 @@ Mesh::~Mesh()
 	if (m_ibo != nullptr) { delete m_ibo; }
 }
 
-void Mesh::initSphere()
-{
-	this->clear();
-	this->textures.clear();
-	
-}
+
 
 void Mesh::initPlane()
 {
@@ -104,6 +100,62 @@ void Mesh::initCapsule()
 {
 	this->clear();
 }
+
+// ---------------------------------------
+// init Sphere data
+void Mesh::initSphere()
+{
+	this->clear();
+
+	float radius = 1.0f; 
+	float dphi   = 1.0f; 
+	float drho  = 1.0f; 
+
+	float minphi = -90.0f; 
+	float minrho = -180.0f; 
+	float maxphi = 90.0f;
+	float maxrho = 180.0f;
+
+	unsigned int nphi = (unsigned int)((maxphi - minphi) / dphi);
+	unsigned int nrho = (unsigned int)((maxrho - minrho) / drho);
+
+	const glm::vec3 center(0.0f, 0.0f, 0.0f); 
+
+
+	
+	for (unsigned int kphi = 0; kphi < nphi; kphi++)
+	{
+		for (unsigned int krho = 0; krho < nrho; krho++)
+		{
+			float phi = glm::radians<float>(minphi + kphi * dphi); 
+			float rho = glm::radians<float>(minrho + krho * drho);
+
+			glm::vec3 xyz(radius * glm::cos(phi) * glm::sin(rho),
+							radius * glm::cos(phi) * glm::cos(rho),
+							radius * glm::sin(phi));
+
+			glm::vec3 normal(glm::vec3(xyz - center)); 
+			glm::vec2 uvs(0.0f, 0.0f); 
+
+			this->vertices.push_back(VertexData({ xyz , normal, uvs })); 
+
+			this->indices.push_back(kphi* nrho + krho);
+		}
+	}
+
+
+	// set pointers
+	m_pvertices = &this->vertices[0];
+	m_pindices = (GLushort*)&this->indices[0];
+
+	m_nVertex = this->vertices.size();
+	indexCount = this->indices.size();
+
+	setPrimitives(GL_POINTS);
+
+	setupMesh();
+}
+
 
 void Mesh::initCube()
 {

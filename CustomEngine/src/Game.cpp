@@ -48,6 +48,7 @@ Game::Game()
 
     // Renderer initialisation 
     m_renderer.initGraphics(); 
+    m_renderer.printOpenGLVersion(); 
     
 
     /*
@@ -80,9 +81,19 @@ Game::Game()
     // Game Object  
     // -------------
     m_scene = new SceneNode();
-    m_gmo = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
-    m_gmo->initMesh(0);
-                        
+    GameObject * player = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
+    player->initMesh(0);
+
+    SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    SpaceEngine::Transform transfoterre;
+    transfoterre.addHomogenousScale(0.7f);
+    transfoterre.addRotation(0.0f, 23.0f, 0.0f);
+    GameObject* terre = new GameObject(etape1, glm::vec3(3.0, 0.0, 0.0), -1);
+    terre->initMesh(3); 
+    terre->addTransformation(transfoterre, true);
+    // -------------------------------------------
+    m_scene->print();
+    m_scene->sceneInit(m_scene);
 
 }
 
@@ -191,6 +202,7 @@ void Game::RunGameLoop()
         static glm::vec3 ftranslate = glm::vec3(0.0f, 0.0f, 0.0f); 
         static int counter = 0;
         static bool wireframeMode = false; 
+        static bool orthoprojection = false; 
         
 
         ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
@@ -204,13 +216,55 @@ void Game::RunGameLoop()
         ImGui::SliderFloat("translationY", &ftranslate.y, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::SliderFloat("translationZ", &ftranslate.z, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-        if (ImGui::Button("Wireframe Mode"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+        // /Buttons return true when clicked (most widgets return true when edited/activated)
+        if (ImGui::Button("Wireframe Mode"))                            
             wireframeMode = !wireframeMode;
         ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
+        if (ImGui::Button("Orthographic Camera"))
+            orthoprojection = !orthoprojection;
+        
+        ImGui::End();
 
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        // ImGui example menu overlay 
+        static bool show_app_simple_overlay = true;
+        const float DISTANCE = 10.0f;
+        static int corner = 3;
+        ImGuiIO& io = ImGui::GetIO();
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+        if (corner != -1)
+        {
+            window_flags |= ImGuiWindowFlags_NoMove;
+            ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
+            ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+            ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+        }
+        ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+        if (ImGui::Begin("Example: Simple overlay", &show_app_simple_overlay, window_flags))
+        {
+            ImGui::Text("Simple overlay\n" "in the corner of the screen.\n" "(right-click to change position)");
+            ImGui::Separator();
+            if (ImGui::IsMousePosValid())
+            {
+                ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
+            }
+            else {
+                ImGui::Text("Mouse Position: <invalid>");
+            }
+                
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+            if (ImGui::BeginPopupContextWindow())
+            {
+                if (ImGui::MenuItem("Custom", NULL, corner == -1)) corner = -1;
+                if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
+                if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
+                if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
+                if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
+                if (&show_app_simple_overlay && ImGui::MenuItem("Close")) show_app_simple_overlay = false;
+                ImGui::EndPopup();
+            }
+        }
         ImGui::End();
         
         // input
@@ -234,25 +288,7 @@ void Game::RunGameLoop()
 
         //=================================================
         // GLM Transformations
-        SpaceEngine::Transform transformation; 
-        transformation.addRotation(frotate.x, frotate.y, frotate.z);
-        //transformation.Translate(ftranslate.x, ftranslate.y, ftranslate.z);
-
-        SpaceEngine::Transform transfo_extern;
-        transfo_extern.Translate(0.5f, 0.0, 0.0);
-        transfo_extern.addRotation(0.0f, frotate.y, 0.0f);
-        //transformation.addHomogenousScale(0.5f); 
-
-        SpaceEngine::Transform worldMatrix;
-        worldMatrix.setAsIdentity();
-
-        glm::vec4 vec(0.5f, 0.0f, 0.0f, 1.0f);
-        //glm::mat4 trans = glm::mat4(1.0f);
-        //trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
-        //trans = glm::rotate(trans, glm::radians(f), glm::vec3(0.0, 0.0, 1.0)); 
-        //trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
         
-        vec = transformation.getMatrixTransform() * vec;
 		
 		/*
 		
@@ -306,10 +342,9 @@ void Game::RunGameLoop()
 
 
         // translation of camera 
-        m_renderer.setviewprojMat((float)SCR_WIDTH, (float)SCR_HEIGHT, ftranslate, true); 
-        // Transformation = rotation 
-        m_gmo->setTransformation(transformation); 
-        m_renderer.Draw(m_gmo, -1); 
+        m_renderer.setviewprojMat((float)SCR_WIDTH, (float)SCR_HEIGHT, ftranslate, orthoprojection);
+        // Transformation 
+        m_renderer.Draw(m_scene); 
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

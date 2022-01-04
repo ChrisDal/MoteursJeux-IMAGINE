@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "../GameObject.hpp"
+#include "../SceneNode.h"
 #include <iostream>
 
 void GLClearError()
@@ -83,7 +84,7 @@ void Renderer::Draw(Mesh* mesh, const ShaderProgram* shader) const
 	GLCall(glDrawElements(mesh->getPrimitives(), mesh->getIndicesCount(), GL_UNSIGNED_INT, nullptr));
 }
 
-// Default DRAW MODE = GL_TRIANGLES 
+
 // IF no Shader attach to mesh use default shader 
 void Renderer::Draw(GameObject* gmo, int shadertype) const
 {
@@ -153,6 +154,19 @@ void Renderer::Draw(GameObject* gmo, int shadertype) const
 	GLCall(glDrawElements(meshobject->getPrimitives(), idcount, GL_UNSIGNED_INT, nullptr));
 }
 
+void Renderer::Draw(SceneNode* scene) const
+{
+	for (int k = 0; k < scene->getObjectNumber(); k++)
+	{
+		this->Draw(scene->getObject(k), -1);
+	}
+
+	for (int i = 0; i < scene->getChildrenNumber(); i++)
+	{
+		this->Draw(scene->getNode(i));
+	}
+}
+
 void Renderer::Draw(Mesh* mesh, int shaderType) const
 {
 	// choose shader in shader list 
@@ -200,7 +214,6 @@ void Renderer::setviewprojMat(float width, float height, const glm::vec3& transv
 	// View Matrix 
 	//-----------------
 
-	//glm::mat4 view = glm::mat4(1.0f);
 	glm::mat4 view = glm::translate(glm::mat4(1.0f), transview);
 
 	//-----------------
@@ -208,13 +221,17 @@ void Renderer::setviewprojMat(float width, float height, const glm::vec3& transv
 	//-----------------
 	glm::mat4 projection;
 	float ratio = width / height; 
-	if (orthographic) // TODO 
+	float znear = 0.1f;
+	float zfar = 100.f;
+
+	if (orthographic) 
 	{
-		projection = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
+		
+		projection = glm::ortho(0.0f, width, 0.0f, height, znear, zfar);
 	}
 	else 
 	{
-		projection = glm::perspective(glm::radians(35.0f), ratio, 0.1f, 100.0f);
+		projection = glm::perspective(glm::radians(45.0f), ratio, znear, zfar);
 	}
 
 

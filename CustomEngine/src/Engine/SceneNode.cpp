@@ -246,7 +246,7 @@ int SceneNode::getObjectNumber() const
 
 void SceneNode::print()
 {
-    std::cout << " Node Id : " << getId().c_str() << "Node number : " << m_nid;
+    std::cout << " Node Id : " << getId().c_str() << ", Node number : " << m_nid << " ";
 
     for (unsigned int x = 0; x < m_objects.size(); x++)
     {
@@ -287,8 +287,7 @@ void SceneNode::sceneInit(SceneNode* sNode)
         }
 
         // k is the type of texture by default 0 or not
-        sNode->getObject(k)->initMesh(k);
-        //sNode->getObject(k)->initRendering();
+        //sNode->getObject(k)->initMesh(k);
         std::cout << "  init Rendering Obj=" << sNode->getObject(k)->getId() << "\n";
     }
 
