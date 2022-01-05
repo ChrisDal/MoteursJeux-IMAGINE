@@ -9,6 +9,7 @@
 #include <vector>
 #include "BasicGameObject.h"
 #include "Mesh.h"
+#include "Components.h"
 #include "Rendering/VertexData.h"
 #include "Rendering/ShaderProgram.h"
 
@@ -34,7 +35,6 @@ private:
     // Octree Data structure
     //Octree* m_meshtree = nullptr;
 
-
 protected:
 
     // init mesh data
@@ -42,6 +42,12 @@ protected:
     void initPlane(unsigned int terrainSize);
     // BoundingBox 
     void setbbox();
+
+public : // Components 
+
+    void addComponent(Component* component); 
+    Velocity velocity;
+    Living alive; 
 
 public:
     //static int g_id;
@@ -69,8 +75,15 @@ public:
 
     // Rendering
     Mesh* getMesh() const { return m_mesh; }
+
+
+    // Game 
+    
+
+
     // Update 
     void Update(float deltatime) override; 
+
   
     // Collisions 
     bool isCollidingWithTerrain(GameObject* other);

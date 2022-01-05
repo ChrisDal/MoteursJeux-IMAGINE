@@ -1,6 +1,10 @@
 #include "BasicGameObject.h"
 #include "SceneNode.h"
 
+
+// static define
+int BasicGameObject::g_id = 0;
+
 BasicGameObject::BasicGameObject(SceneNode* parent, glm::vec3 center, std::string tag)
 	: m_tag(tag), m_internal(SpaceEngine::Transform()), 
 	m_position(center), m_parent(parent)

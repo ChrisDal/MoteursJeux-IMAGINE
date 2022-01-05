@@ -93,11 +93,9 @@ public:
 
 	// Bounding Box 
 	void setBbox(); 
-	SpaceEngine::boundingBox getBbox() const {
-		return bbox;
-	};
+	SpaceEngine::boundingBox getBbox() const { return bbox; };
 
-	unsigned int getNumTri() { return vertices.size() / 3; }
+	unsigned int getNumTri() { return (int)vertices.size() / 3; }
 
 	// Uniform 
 	glm::mat4 getModelView() const { return model_view; }

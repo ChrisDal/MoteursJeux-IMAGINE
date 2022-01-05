@@ -2,8 +2,7 @@
 #include "SceneNode.h"
 
 
-// static define
-int GameObject::g_id = 0;
+
 
 // Constructos
 GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId,
@@ -280,6 +279,11 @@ void GameObject::setbbox()
     m_bbox.maxbbox = m_internal.getMatrixTransform() * glm::vec4(m_bbox.minbbox, 1.0);
 }
 
+void GameObject::addComponent(Component* component)
+{
+    component->setId(getId()); 
+}
+
 
 
 bool GameObject::loadMesh(const std::string& filename)
@@ -319,11 +323,26 @@ void GameObject::Update(float deltatime)
 {
     // Pass 
     // Make object rotate in degrees
-    glm::vec3 velocity = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 velocityrot = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 rotaVec  = glm::vec3(0.0f, 0.0f, 5.0f); 
-    glm::vec3 finalrot = deltatime * ( velocity * rotaVec);
+    glm::vec3 finalrot = deltatime * (velocityrot * rotaVec);
     Rotate(finalrot.x, finalrot.y, finalrot.z, true);
+
+    // Update position 
+    if (velocity.vx != 0.0 || velocity.vy != 0.0 || velocity.vz != 0.0)
+    {
+        velocity.move(this, deltatime);
+    }
+    
+
+    // Solve Collision 
+
+
+    // State 
+
+    
 }
+
 
 bool GameObject::isCollidingWithTerrain(GameObject* other)
 {
@@ -437,14 +456,14 @@ glm::vec3 GameObject::getNearestPos(int x, int y)
     glm::mat4x4 mattfm = getTransformationAllIn();
     int terrainSize = this->m_mesh->getNVertex();
 
-    int n = std::sqrt(terrainSize);
+    int n = (int)std::sqrt(terrainSize);
 
     glm::vec4 A = mattfm * glm::vec4(m_mesh->getVertices(0).positions, 1.0f);
     glm::vec4 B = mattfm * glm::vec4(m_mesh->getVertices(terrainSize - 1).positions, 1.0f);
     float dxy = (B[0] - A[0]) / float(n);
 
-    int nx = std::abs(x - A[0]);
-    int ny = std::abs(y - A[1]);
+    int nx = (int)std::abs(x - A[0]);
+    int ny = (int)std::abs(y - A[1]);
     std::cout << "nx, ny" << nx << "," << ny;
 
     if (nx < 0 || ny < 0)

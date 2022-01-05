@@ -22,9 +22,7 @@ bool callbackWindows = false;
 // ---------------------------------------------------------------------------------------------------------
 void Game::processInput(GLFWwindow* window)
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
+    m_input->handleInput(window, static_cast<GameObject*>(m_player), m_camera);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -85,21 +83,29 @@ Game::Game()
     // Shader Program : by Default 
     m_renderer.createShaderProg(vertexsource, fragmentsource);
     std::cout << fragmentsource << std::endl; 
+
+    // Input Controllers 
+    // -----------------
+
+    m_input = new InputControl();
+
 	
     // Scene Init  
     // -------------
     m_scene = new SceneNode();
 
     // Camera 
-    m_camera = new Camera(m_scene, glm::vec3(0.0, 0.0, +10.0));
+    m_camera = new Camera(m_scene, glm::vec3(0.0, 0.0, 5.0));
     m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
     m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
+
 
     // Game Objects
     GameObject * player = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
     std::string meshfilepath = m_datadir; 
     meshfilepath += "\\models\\cube.obj"; 
     player->initMesh(meshfilepath.c_str());
+    player->velocity.setVelocity(0.0f, 0.0f, 0.0f); 
 
     SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
     SpaceEngine::Transform transfoterre;
@@ -111,6 +117,18 @@ Game::Game()
     // -------------------------------------------
     m_scene->print();
     m_scene->sceneInit(m_scene);
+
+
+    // --------------------------------------------
+    // Game Player 
+    // -----------
+    
+    retrievePlayer(m_scene); 
+    if (m_player == nullptr)
+    {
+        std::cout << "No player found.\n"; 
+    }
+    // --------------------------------------------
 
 }
 
@@ -179,6 +197,7 @@ Game::~Game()
     if (shaderProgram != nullptr) { delete shaderProgram; }
     //delete boxTexture;
     delete m_scene; 
+    delete m_input; 
     
     
     
@@ -191,6 +210,23 @@ Game::~Game()
 
     glfwTerminate();
 
+}
+
+void Game::retrievePlayer(SceneNode* root)
+{
+    for (int k = 0; k < root->getObjectNumber(); k++)
+    {
+        bool isPlayer = root->getObject(k)->isPlayer();
+        if (isPlayer) {
+            m_player = root->getObject(k); 
+            return; 
+        }
+    }
+
+    for (int i = 0; i < root->getChildrenNumber(); i++)
+    {
+        retrievePlayer(root->getNode(i));
+    }
 }
 
 void Game::RunGameLoop()
@@ -381,9 +417,6 @@ void Game::RenderDebugMenu() {
     m_renderer.setPolymode(!wireframeMode);
     if (m_camera != nullptr)
     {
-        m_camera->setTargetPoint(glm::vec3(sin(glfwGetTime()) * ftranslate.z,
-            0.0f,
-            cos(glfwGetTime()) * ftranslate.z)); 
         m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
     }
     

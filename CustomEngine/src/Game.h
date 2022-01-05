@@ -1,4 +1,6 @@
 #pragma once
+
+
 #include <glad/glad.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
@@ -10,6 +12,8 @@
 #include <ctime>
 #include <chrono>
 
+
+
 #include "Engine/Rendering/ShaderProgram.h"
 #include "Engine/Rendering/VertexBuffer.hpp"
 #include "Engine/Rendering/IndexBuffer.hpp"
@@ -17,8 +21,11 @@
 #include "Engine/Rendering/Texture.h"
 #include "Engine/Rendering/Renderer.h"
 
+#include "Engine/InputControl.h"
 #include "Engine/SceneNode.h"
 #include "Engine/Camera.h"
+
+
 
 
 class Game
@@ -44,7 +51,11 @@ public:
     // Scene
     SceneNode* m_scene;
     Camera* m_camera; // owned by scene 
+    BasicGameObject* m_player = nullptr;
 
+    // Controllers 
+    InputControl* m_input;
+    
     // Time Clock Chrono
     std::chrono::time_point<std::chrono::steady_clock> m_lastTime; 
     std::chrono::time_point<std::chrono::steady_clock> m_startTime; 
@@ -65,6 +76,7 @@ protected:
 
 private:
     void processInput(GLFWwindow* window); 
+    void retrievePlayer(SceneNode* root); 
     GLFWwindow* m_Window;
 };
 

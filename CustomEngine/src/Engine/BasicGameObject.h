@@ -65,6 +65,7 @@ public:
     BasicGameObject& Scale(float sx, float sy, float sz, bool internal = false);
     glm::vec3 Position() const;
     void Position(float x, float y, float z);
+    void Position(const glm::vec3& pos) { m_position = pos;  }
 
     // Print game object informations
     virtual void print() = 0;
