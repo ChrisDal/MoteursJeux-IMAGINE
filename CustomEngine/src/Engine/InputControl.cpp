@@ -24,12 +24,12 @@ void InputControl::handleInput(GLFWwindow* window, GameObject* actor, Camera* ca
     
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        actor->velocity.vy += 5.0f; 
+        actor->velocity.vz -= 5.0f; 
         std::cout << "Up Actor - ";
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        actor->velocity.vy -= 5.0f;
+        actor->velocity.vz += 5.0f;
         std::cout << "BAck Actor - "; 
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
@@ -44,18 +44,10 @@ void InputControl::handleInput(GLFWwindow* window, GameObject* actor, Camera* ca
         std::cout << "Left Actor - ";
     }
 
-    if (actor->velocity.ismoving()) {
-        cam->setWalking(true);
-    }
-    else
-    {
-        cam->setWalking(false);
-    }
-
     // Mouse 
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
-        mouse_left_down = true; 
+        mouse_left_down = true;
 
     }
     else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
@@ -65,10 +57,24 @@ void InputControl::handleInput(GLFWwindow* window, GameObject* actor, Camera* ca
 
     if (mouse_left_down)
     {
-        double xpos, ypos; 
+        double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-        setTrackingPoint(window, cam, xpos, ypos); 
+        setTrackingPoint(window, cam, xpos, ypos);
     }
+
+
+    if (actor->velocity.ismoving()) {
+        glm::vec4 pos = actor->getWorldPosition(); 
+        glm::vec3 targetActor{ pos.x, pos.y, pos.z }; 
+        cam->setTargetPoint(targetActor);
+        cam->setWalking(true);
+    }
+    else
+    {
+        cam->setWalking(false);
+    }
+
+    
 
 }
 

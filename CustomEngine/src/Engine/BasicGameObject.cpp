@@ -7,7 +7,7 @@ int BasicGameObject::g_id = 0;
 
 BasicGameObject::BasicGameObject(SceneNode* parent, glm::vec3 center, std::string tag)
 	: m_tag(tag), m_internal(SpaceEngine::Transform()), 
-	m_position(center), m_parent(parent)
+	m_position(center), m_parent(parent), m_gparent(nullptr)
 {
 	parent->addObject(this);
 	m_parent = parent;
@@ -21,8 +21,9 @@ BasicGameObject::BasicGameObject(SceneNode* parent, glm::vec3 center, std::strin
 
 BasicGameObject::BasicGameObject(BasicGameObject* parent, glm::vec3 center, std::string tag)
 	: m_tag(tag), m_internal(SpaceEngine::Transform()),
-	m_position(center)
+	m_position(center), m_gparent(parent), m_parent(nullptr)
 {
+	parent->addChild(this); 
 	// matrice de transformation interne
 	m_internal.setAsIdentity();
 	m_internal.setTranslate(m_position);
@@ -34,7 +35,7 @@ BasicGameObject::BasicGameObject(BasicGameObject* parent, glm::vec3 center, std:
 
 BasicGameObject::BasicGameObject()
 	: m_tag("Default"), m_internal(SpaceEngine::Transform()), m_parent(nullptr),
-	m_position(glm::vec3(0.0f, 0.0f, 0.0f)), m_world(glm::mat4(1.0f))
+	m_position(glm::vec3(0.0f, 0.0f, 0.0f)), m_world(glm::mat4(1.0f)), m_gparent(nullptr)
 {
 }
 
@@ -90,26 +91,36 @@ void BasicGameObject::applyTransformation()
 
 glm::mat4x4 BasicGameObject::getMatTransformation()
 {
-	return glm::mat4x4();
+	return glm::mat4x4(1.0f);
 }
 
 glm::mat4x4 BasicGameObject::getWorldMat()
 {
-	return m_parent->getMatWorldTransform();
+	if (m_parent != nullptr) {
+
+		return m_parent->getMatWorldTransform();
+	}
+	else if (m_gparent != nullptr) {
+
+		return m_gparent->getTransformationAllIn()* m_world;
+	}
+	
 }
 
 glm::vec4 BasicGameObject::getWorldPosition()
 {
-	glm::vec3 pos = this->Position();
+	/*glm::vec3 pos = this->Position();
 	SpaceEngine::Transform t_interne = this->getTransformation(true);
 	SpaceEngine::Transform t_externe = this->getTransformation();
 	glm::mat4x4 worldmat = this->getWorldMat();
 
 	pos = t_interne.applyToPoint(pos, glm::vec3(0.0f, 0.0f, 0.0f));
 	glm::vec4 pos4act = worldmat * glm::vec4(pos[0], pos[1], pos[2], 1.0f);
-	pos4act = this->getTransformation().getMatrixTransform() * pos4act;
+	pos4act = this->getTransformation().getMatrixTransform() * pos4act;*/
 
-	return pos4act;
+	glm::vec4 pos = glm::vec4(this->Position(), 1.0f);
+
+	return this->getTransformationAllIn() * pos; ;
 }
 
 glm::mat4x4 BasicGameObject::getTransformationAllIn()
@@ -119,6 +130,11 @@ glm::mat4x4 BasicGameObject::getTransformationAllIn()
 	glm::mat4x4 worldmat  = this->getWorldMat();
 
 	return t_externe * worldmat * t_interne;
+}
+
+void BasicGameObject::addChild(BasicGameObject* obj)
+{
+	m_children.push_back(obj); 
 }
 
 

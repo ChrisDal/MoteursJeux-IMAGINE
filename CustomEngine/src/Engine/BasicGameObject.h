@@ -25,6 +25,7 @@ protected:
     // Hierarchie
     std::vector<BasicGameObject*> m_children;
     SceneNode* m_parent;
+    BasicGameObject* m_gparent; 
 
     // ----------------
     // Transformations 
@@ -58,6 +59,10 @@ public:
     glm::mat4x4 getWorldMat();
     glm::vec4 getWorldPosition();
     glm::mat4x4 getTransformationAllIn();
+
+    /// Hierarchy 
+    void addChild(BasicGameObject* obj); 
+    BasicGameObject* getChild(int index) const { return m_children.at(index);  }
 
     // Interface
     BasicGameObject& Rotate(float alpha, float beta, float gamma, bool internal = false);

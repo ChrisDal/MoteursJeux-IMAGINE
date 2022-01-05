@@ -18,12 +18,7 @@ static constexpr float APP_MAX_FRAMERATE{ 60.0f };
 bool callbackWindows = false; 
 
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-void Game::processInput(GLFWwindow* window)
-{
-    m_input->handleInput(window, static_cast<GameObject*>(m_player), m_camera);
-}
+
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
@@ -92,22 +87,32 @@ Game::Game()
 	
     // Scene Init  
     // -------------
-    m_scene = new SceneNode();
+    m_scene = new SceneNode(); //  ROOT NODE 
 
-    // Camera 
-    m_camera = new Camera(m_scene, glm::vec3(0.0, 0.0, 5.0));
-    m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
-    m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
+    
 
+    SceneNode* nodePlayer = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    
 
     // Game Objects
-    GameObject * player = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
+    GameObject * player = new GameObject(nodePlayer, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
     std::string meshfilepath = m_datadir; 
     meshfilepath += "\\models\\cube.obj"; 
     player->initMesh(meshfilepath.c_str());
     player->velocity.setVelocity(0.0f, 0.0f, 0.0f); 
 
-    SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    // Camera 
+    m_camera = new Camera(player, glm::vec3(0.0, 2.0, 5.0));
+    m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
+
+
+    GameObject* lune = new GameObject(etape1, glm::vec3(0.0, 0.0, 5.0), -1);
+    lune->initMesh(0);
+
+
+    
     SpaceEngine::Transform transfoterre;
     transfoterre.addHomogenousScale(0.7f);
     transfoterre.addRotation(0.0f, 23.0f, 0.0f);
@@ -185,6 +190,14 @@ void Game::initWindow()
     // stbi image loading preset 
     stbi_set_flip_vertically_on_load(true);
 
+}
+
+
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
+void Game::processInput(GLFWwindow* window)
+{
+    m_input->handleInput(window, static_cast<GameObject*>(m_player), m_camera);
 }
 
 Game::~Game()

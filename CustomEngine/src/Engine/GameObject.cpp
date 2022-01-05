@@ -332,6 +332,7 @@ void GameObject::Update(float deltatime)
     if (velocity.vx != 0.0 || velocity.vy != 0.0 || velocity.vz != 0.0)
     {
         velocity.move(this, deltatime);
+        
     }
     
 

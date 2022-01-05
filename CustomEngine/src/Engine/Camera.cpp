@@ -22,7 +22,21 @@ Camera::Camera(SceneNode* parent, const glm::vec3& position,
 {
 	setTargetPoint(m_target); 
 	velocity.setId(getId());
-	velocity.setVelocity(0.025f, 0.01f, 0.025f);
+	velocity.setVelocity(0.015f, 0.01f, 0.015f);
+}
+
+
+Camera::Camera(BasicGameObject* parent, const glm::vec3& position,
+	std::string tag)
+	: BasicGameObject(parent, position, tag),
+	m_zNear(0.1f), m_zFar(100.f),
+	m_target(glm::vec3(0.0f, 0.0f, 0.0f)),
+	m_projection(1.0f), m_fov(45.f),
+	m_walking(false)
+{
+	setTargetPoint(m_target);
+	velocity.setId(getId());
+	velocity.setVelocity(0.015f, 0.01f, 0.015f);
 }
 
 
@@ -35,7 +49,9 @@ Camera::~Camera()
 void Camera::setTargetPoint(const glm::vec3& target)
 {
 	m_target = target; 
-	m_direction = glm::normalize(m_position - m_target);
+
+	glm::vec4 worldposition = this->getTransformationAllIn() * glm::vec4(m_position, 1.0f);
+	m_direction = glm::normalize(glm::vec3(worldposition.x, worldposition.y, worldposition.z) - m_target);
 	this->setRight(); 
 	this->setUp();
 	this->setLookAt();

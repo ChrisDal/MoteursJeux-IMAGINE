@@ -41,6 +41,7 @@ public:
 
     Camera(); 
     Camera(SceneNode * parent, const glm::vec3& position, std::string tag = "Camera");
+    Camera(BasicGameObject * parent, const glm::vec3& position, std::string tag = "Camera");
 
     ~Camera(); 
 
@@ -75,7 +76,7 @@ public:
 
     void Update(float deltatime) override {
         
-        SimulateWalking(0.007f, glfwGetTime());
+        SimulateWalking(0.015f, glfwGetTime());
     
     }; 
 
