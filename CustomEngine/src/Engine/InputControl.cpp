@@ -1,9 +1,20 @@
-#include "InputHandler.h"
-#include <imgui/imgui_impl_opengl3.h>
 
-void InputHandler::handleInput(GameObject* actor, Camera* cam)
+
+#include "InputControl.h"
+#include "GameObject.hpp"
+#include "Camera.h"
+
+
+
+InputControl::InputControl()
+    : mouse_left_down(false), mouse_right_down(false)
 {
-    cam->setWalking(false); 
+
+}
+
+
+void InputControl::handleInput(GLFWwindow* window, GameObject* actor, Camera* cam)
+{
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
@@ -14,26 +25,31 @@ void InputHandler::handleInput(GameObject* actor, Camera* cam)
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
         actor->velocity.vy += 5.0f; 
-        //cam->setWalking(true); 
         std::cout << "Up Actor - ";
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
         actor->velocity.vy -= 5.0f;
-        //cam->setWalking(true);
         std::cout << "BAck Actor - "; 
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
         actor->velocity.vx += 5.0f;
-        //cam->setWalking(true);
         std::cout << "Right Actor - ";
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
         actor->velocity.vx -= 5.0f;
-        //cam->setWalking(true);
+        
         std::cout << "Left Actor - ";
+    }
+
+    if (actor->velocity.ismoving()) {
+        cam->setWalking(true);
+    }
+    else
+    {
+        cam->setWalking(false);
     }
 
     // Mouse 
@@ -51,12 +67,12 @@ void InputHandler::handleInput(GameObject* actor, Camera* cam)
     {
         double xpos, ypos; 
         glfwGetCursorPos(window, &xpos, &ypos);
-        setTrackingPoint(cam, xpos, ypos); 
+        setTrackingPoint(window, cam, xpos, ypos); 
     }
 
 }
 
-void InputHandler::setTrackingPoint(Camera* cam, double& x, double& y)
+void InputControl::setTrackingPoint(GLFWwindow* window, Camera* cam, double& x, double& y)
 {
     int w, h; 
     glfwGetWindowSize(window, &w, &h);
@@ -75,9 +91,4 @@ void InputHandler::setTrackingPoint(Camera* cam, double& x, double& y)
 
     cam->setTargetPoint(newTargetPoint);
 
-}
-
-InputHandler::InputHandler(GLFWwindow* window)
-{
-    this->window = window; 
 }

@@ -95,13 +95,13 @@ void Camera::move(const glm::vec3& direction, float dmove)
 }
 
 
-void Camera::SimulateWalking(float intensity)
+void Camera::SimulateWalking(float intensity, float dt)
 {
 
 	if (m_walking)
 	{
-		setTargetPoint(glm::vec3(sin(glfwGetTime()) * intensity,
-								cos(glfwGetTime()) * (intensity / 10.0f),
-								0.0f));
+		glm::vec3 targetP = m_target + glm::vec3(sin(dt) * intensity,
+			cos(2.0f*dt) * intensity / 10.0f, 0.0f);
+		setTargetPoint(targetP);
 	}
 }

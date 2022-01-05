@@ -7,9 +7,11 @@
 #include <glm/mat4x4.hpp> // glm::mat4
 
 #include <vector>
+#include <ctime>
 #include "BasicGameObject.h"
-#include"SceneNode.h"
+#include "SceneNode.h"
 #include "Components.h"
+
 
 
 class Camera : public BasicGameObject
@@ -64,14 +66,20 @@ public:
 
     void move(const glm::vec3& direction, float dmove);
 
-    void SimulateWalking(float intensity);
+    void SimulateWalking(float intensity, float dt);
     inline void setWalking(bool walk) { m_walking = walk;  }
     bool getWalking() const { return m_walking;  }
 
 
     bool hasMesh() override { return false;  }
 
-    void Update(float deltatime) override {}; 
+    void Update(float deltatime) override {
+        
+        SimulateWalking(0.007f, glfwGetTime());
+    
+    }; 
+
+
     void print() override { 
         std::cout << "[Camera " << m_id << "] Position " << 
                         m_position.x << ","<<  m_position.y << ","

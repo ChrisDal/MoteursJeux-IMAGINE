@@ -1,5 +1,5 @@
 #pragma once
-#include "Engine/InputHandler.h"
+
 
 #include <glad/glad.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -12,6 +12,8 @@
 #include <ctime>
 #include <chrono>
 
+
+
 #include "Engine/Rendering/ShaderProgram.h"
 #include "Engine/Rendering/VertexBuffer.hpp"
 #include "Engine/Rendering/IndexBuffer.hpp"
@@ -19,8 +21,10 @@
 #include "Engine/Rendering/Texture.h"
 #include "Engine/Rendering/Renderer.h"
 
+#include "Engine/InputControl.h"
 #include "Engine/SceneNode.h"
 #include "Engine/Camera.h"
+
 
 
 
@@ -50,7 +54,7 @@ public:
     BasicGameObject* m_player = nullptr;
 
     // Controllers 
-    InputHandler* m_input; 
+    InputControl* m_input;
     
     // Time Clock Chrono
     std::chrono::time_point<std::chrono::steady_clock> m_lastTime; 

@@ -58,6 +58,7 @@ struct Velocity : Component
 
 	void move(GameObject* gmo, float dt); 
 	inline void clampV(); 
+	inline bool ismoving() const { return vx != 0.0 || vy != 0.0 || vz != 0.0;  }
 
 
 };

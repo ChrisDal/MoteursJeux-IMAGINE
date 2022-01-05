@@ -96,10 +96,10 @@
     <ClCompile Include="src\Engine\BasicGameObject.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\Engine\InputHandler.h">
+    <ClCompile Include="src\Engine\InputControl.h">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\Engine\InputHandler.cpp">
+    <ClCompile Include="src\Engine\InputControl.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\Components.cpp">
@@ -1017,9 +1017,6 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\Rendering\VertexArrayBuffer.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="src\glGeom.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\Rendering\Renderer.h">

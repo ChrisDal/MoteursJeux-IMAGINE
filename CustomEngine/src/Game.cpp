@@ -22,7 +22,7 @@ bool callbackWindows = false;
 // ---------------------------------------------------------------------------------------------------------
 void Game::processInput(GLFWwindow* window)
 {
-    m_input->handleInput(static_cast<GameObject*>(m_player), m_camera);
+    m_input->handleInput(window, static_cast<GameObject*>(m_player), m_camera);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -87,7 +87,7 @@ Game::Game()
     // Input Controllers 
     // -----------------
 
-    m_input = new InputHandler(this->m_Window); 
+    m_input = new InputControl();
 
 	
     // Scene Init  
