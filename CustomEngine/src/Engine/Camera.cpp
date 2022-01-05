@@ -3,9 +3,12 @@
 
 
 Camera::Camera()
+	: m_zNear(0.1f), m_zFar(100.f),
+	m_target(glm::vec3(0.0f, 0.0f, 0.0f)),
+	m_projection(1.0f), m_fov(45.f)
 {
 	velocity.setId(getId()); 
-	velocity.setVelocity(2.5f, 1.0f, 2.5f); 
+	velocity.setVelocity(0.025f, 0.01f, 0.025f);
 }
 
 Camera::Camera(SceneNode* parent, const glm::vec3& position,
@@ -17,8 +20,10 @@ Camera::Camera(SceneNode* parent, const glm::vec3& position,
 {
 	setTargetPoint(m_target); 
 	velocity.setId(getId());
-	velocity.setVelocity(2.5f, 1.0f, 2.5f);
+	velocity.setVelocity(0.025f, 0.01f, 0.025f);
 }
+
+
 
 Camera::~Camera()
 {

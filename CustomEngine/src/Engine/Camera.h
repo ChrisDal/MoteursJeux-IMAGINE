@@ -60,7 +60,8 @@ public:
     void setPerspective(float zfar, float znear, float w, float h, bool ortho=false); 
     glm::mat4 getPerspective() const { return m_projection;  }
 
-    void move(const glm::vec3& direction, float dmove); 
+    void move(const glm::vec3& direction, float dmove);
+
 
     bool hasMesh() override { return false;  }
 
