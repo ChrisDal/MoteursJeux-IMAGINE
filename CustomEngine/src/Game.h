@@ -1,4 +1,6 @@
 #pragma once
+#include "Engine/InputHandler.h"
+
 #include <glad/glad.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
@@ -19,7 +21,7 @@
 
 #include "Engine/SceneNode.h"
 #include "Engine/Camera.h"
-#include "Engine/InputHandler.h"
+
 
 
 class Game
@@ -50,8 +52,6 @@ public:
     // Controllers 
     InputHandler* m_input; 
     
-    
-
     // Time Clock Chrono
     std::chrono::time_point<std::chrono::steady_clock> m_lastTime; 
     std::chrono::time_point<std::chrono::steady_clock> m_startTime; 

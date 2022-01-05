@@ -324,10 +324,24 @@ void GameObject::Update(float deltatime)
 {
     // Pass 
     // Make object rotate in degrees
-    glm::vec3 velocity = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 velocityrot = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 rotaVec  = glm::vec3(0.0f, 0.0f, 5.0f); 
-    glm::vec3 finalrot = deltatime * ( velocity * rotaVec);
+    glm::vec3 finalrot = deltatime * (velocityrot * rotaVec);
     Rotate(finalrot.x, finalrot.y, finalrot.z, true);
+
+    // Update position 
+    if (velocity.vx != 0.0 || velocity.vy != 0.0 || velocity.vz != 0.0)
+    {
+        velocity.move(this, deltatime);
+    }
+    
+
+    // Solve Collision 
+
+
+    // State 
+
+    
 }
 
 

@@ -1,31 +1,38 @@
 #include "InputHandler.h"
+#include <imgui/imgui_impl_opengl3.h>
 
 void InputHandler::handleInput(GameObject* actor, Camera* cam)
 {
+    cam->setWalking(false); 
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);
         return; 
     }
     
-    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        actor->velocity.move(m_up, actor); 
+        actor->velocity.vy += 5.0f; 
+        //cam->setWalking(true); 
         std::cout << "Up Actor - ";
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        actor->velocity.move(m_back, actor);
+        actor->velocity.vy -= 5.0f;
+        //cam->setWalking(true);
         std::cout << "BAck Actor - "; 
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        actor->velocity.move(m_right, actor);
+        actor->velocity.vx += 5.0f;
+        //cam->setWalking(true);
         std::cout << "Right Actor - ";
     }
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        actor->velocity.move(m_left, actor);
+        actor->velocity.vx -= 5.0f;
+        //cam->setWalking(true);
         std::cout << "Left Actor - ";
     }
 
@@ -46,6 +53,7 @@ void InputHandler::handleInput(GameObject* actor, Camera* cam)
         glfwGetCursorPos(window, &xpos, &ypos);
         setTrackingPoint(cam, xpos, ypos); 
     }
+
 }
 
 void InputHandler::setTrackingPoint(Camera* cam, double& x, double& y)

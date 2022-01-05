@@ -45,11 +45,25 @@ struct Velocity : Component
 	double vy;
 	double vz;
 
+	// Max and min speed 
+	double max_v = 50.0;
+	double min_v = -max_v;
+
+	double dv = 0.5; // reduction of speed 
+	static double DEAD_SPEED; 
+
 	void setVelocity(double x, double y, double z) {
 		vx = x; vy = y; vz = z; 
 	}
 
-	void move(const glm::vec3& direction, GameObject* gmo); 
+	void move(GameObject* gmo, float dt); 
+	inline void clampV(); 
 
+
+};
+
+struct Living : Component
+{
+	bool m_dead = false; 
 
 };

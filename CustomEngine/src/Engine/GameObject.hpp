@@ -47,6 +47,7 @@ public : // Components
 
     void addComponent(Component* component); 
     Velocity velocity;
+    Living alive; 
 
 public:
     //static int g_id;

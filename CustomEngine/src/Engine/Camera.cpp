@@ -5,7 +5,8 @@
 Camera::Camera()
 	: m_zNear(0.1f), m_zFar(100.f),
 	m_target(glm::vec3(0.0f, 0.0f, 0.0f)),
-	m_projection(1.0f), m_fov(45.f)
+	m_projection(1.0f), m_fov(45.f), 
+	m_walking(false)
 {
 	velocity.setId(getId()); 
 	velocity.setVelocity(0.025f, 0.01f, 0.025f);
@@ -16,7 +17,8 @@ Camera::Camera(SceneNode* parent, const glm::vec3& position,
 	: BasicGameObject(parent, position, tag),
 	m_zNear(0.1f), m_zFar(100.f),
 	m_target(glm::vec3(0.0f, 0.0f, 0.0f)),
-	m_projection(1.0f), m_fov(45.f)
+	m_projection(1.0f), m_fov(45.f), 
+	m_walking(false)
 {
 	setTargetPoint(m_target); 
 	velocity.setId(getId());
@@ -90,4 +92,16 @@ void Camera::move(const glm::vec3& direction, float dmove)
 	this->setRight();
 	this->setUp();
 	this->setLookAt(); 
+}
+
+
+void Camera::SimulateWalking(float intensity)
+{
+
+	if (m_walking)
+	{
+		setTargetPoint(glm::vec3(sin(glfwGetTime()) * intensity,
+								cos(glfwGetTime()) * (intensity / 10.0f),
+								0.0f));
+	}
 }

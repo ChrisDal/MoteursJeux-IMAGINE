@@ -30,6 +30,8 @@ private:
     glm::mat4 m_view; 
     glm::mat4 m_projection;
 
+    bool m_walking; 
+
 public : // Components 
     Velocity velocity; 
 
@@ -61,6 +63,10 @@ public:
     glm::mat4 getPerspective() const { return m_projection;  }
 
     void move(const glm::vec3& direction, float dmove);
+
+    void SimulateWalking(float intensity);
+    inline void setWalking(bool walk) { m_walking = walk;  }
+    bool getWalking() const { return m_walking;  }
 
 
     bool hasMesh() override { return false;  }

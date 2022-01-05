@@ -95,15 +95,17 @@ Game::Game()
     m_scene = new SceneNode();
 
     // Camera 
-    m_camera = new Camera(m_scene, glm::vec3(0.0, 0.0, +10.0));
+    m_camera = new Camera(m_scene, glm::vec3(0.0, 0.0, 5.0));
     m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
     m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
+
 
     // Game Objects
     GameObject * player = new GameObject(m_scene, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
     std::string meshfilepath = m_datadir; 
     meshfilepath += "\\models\\cube.obj"; 
     player->initMesh(meshfilepath.c_str());
+    player->velocity.setVelocity(0.0f, 0.0f, 0.0f); 
 
     SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
     SpaceEngine::Transform transfoterre;
@@ -195,6 +197,7 @@ Game::~Game()
     if (shaderProgram != nullptr) { delete shaderProgram; }
     //delete boxTexture;
     delete m_scene; 
+    delete m_input; 
     
     
     
@@ -414,9 +417,6 @@ void Game::RenderDebugMenu() {
     m_renderer.setPolymode(!wireframeMode);
     if (m_camera != nullptr)
     {
-        /*m_camera->setTargetPoint(glm::vec3(sin(glfwGetTime()) * ftranslate.z,
-            0.0f,
-            cos(glfwGetTime()) * ftranslate.z)); */
         m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
     }
     

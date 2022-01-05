@@ -3,6 +3,8 @@
 #include "GameObject.hpp"
 #include "Camera.h"
 
+struct GLFWwindow;
+
 class InputHandler
 {
 public : 
