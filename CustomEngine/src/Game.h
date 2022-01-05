@@ -19,6 +19,7 @@
 
 #include "Engine/SceneNode.h"
 #include "Engine/Camera.h"
+#include "Engine/InputHandler.h"
 
 
 class Game
@@ -44,6 +45,12 @@ public:
     // Scene
     SceneNode* m_scene;
     Camera* m_camera; // owned by scene 
+    BasicGameObject* m_player = nullptr;
+
+    // Controllers 
+    InputHandler* m_input; 
+    
+    
 
     // Time Clock Chrono
     std::chrono::time_point<std::chrono::steady_clock> m_lastTime; 
@@ -65,6 +72,7 @@ protected:
 
 private:
     void processInput(GLFWwindow* window); 
+    void retrievePlayer(SceneNode* root); 
     GLFWwindow* m_Window;
 };
 

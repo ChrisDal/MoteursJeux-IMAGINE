@@ -22,9 +22,7 @@ bool callbackWindows = false;
 // ---------------------------------------------------------------------------------------------------------
 void Game::processInput(GLFWwindow* window)
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
+    m_input->handleInput(static_cast<GameObject*>(m_player), m_camera);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -85,6 +83,12 @@ Game::Game()
     // Shader Program : by Default 
     m_renderer.createShaderProg(vertexsource, fragmentsource);
     std::cout << fragmentsource << std::endl; 
+
+    // Input Controllers 
+    // -----------------
+
+    m_input = new InputHandler(this->m_Window); 
+
 	
     // Scene Init  
     // -------------
@@ -111,6 +115,18 @@ Game::Game()
     // -------------------------------------------
     m_scene->print();
     m_scene->sceneInit(m_scene);
+
+
+    // --------------------------------------------
+    // Game Player 
+    // -----------
+    
+    retrievePlayer(m_scene); 
+    if (m_player == nullptr)
+    {
+        std::cout << "No player found.\n"; 
+    }
+    // --------------------------------------------
 
 }
 
@@ -191,6 +207,23 @@ Game::~Game()
 
     glfwTerminate();
 
+}
+
+void Game::retrievePlayer(SceneNode* root)
+{
+    for (int k = 0; k < root->getObjectNumber(); k++)
+    {
+        bool isPlayer = root->getObject(k)->isPlayer();
+        if (isPlayer) {
+            m_player = root->getObject(k); 
+            return; 
+        }
+    }
+
+    for (int i = 0; i < root->getChildrenNumber(); i++)
+    {
+        retrievePlayer(root->getNode(i));
+    }
 }
 
 void Game::RunGameLoop()
@@ -381,9 +414,9 @@ void Game::RenderDebugMenu() {
     m_renderer.setPolymode(!wireframeMode);
     if (m_camera != nullptr)
     {
-        m_camera->setTargetPoint(glm::vec3(sin(glfwGetTime()) * ftranslate.z,
+        /*m_camera->setTargetPoint(glm::vec3(sin(glfwGetTime()) * ftranslate.z,
             0.0f,
-            cos(glfwGetTime()) * ftranslate.z)); 
+            cos(glfwGetTime()) * ftranslate.z)); */
         m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
     }
     

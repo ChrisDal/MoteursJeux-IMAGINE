@@ -2,6 +2,12 @@
 
 
 
+Camera::Camera()
+{
+	velocity.setId(getId()); 
+	velocity.setVelocity(2.5f, 1.0f, 2.5f); 
+}
+
 Camera::Camera(SceneNode* parent, const glm::vec3& position,
 	std::string tag)
 	: BasicGameObject(parent, position, tag),
@@ -10,6 +16,8 @@ Camera::Camera(SceneNode* parent, const glm::vec3& position,
 	m_projection(1.0f), m_fov(45.f)
 {
 	setTargetPoint(m_target); 
+	velocity.setId(getId());
+	velocity.setVelocity(2.5f, 1.0f, 2.5f);
 }
 
 Camera::~Camera()

@@ -280,6 +280,11 @@ void GameObject::setbbox()
     m_bbox.maxbbox = m_internal.getMatrixTransform() * glm::vec4(m_bbox.minbbox, 1.0);
 }
 
+void GameObject::addComponent(Component* component)
+{
+    component->setId(getId()); 
+}
+
 
 
 bool GameObject::loadMesh(const std::string& filename)
@@ -324,6 +329,7 @@ void GameObject::Update(float deltatime)
     glm::vec3 finalrot = deltatime * ( velocity * rotaVec);
     Rotate(finalrot.x, finalrot.y, finalrot.z, true);
 }
+
 
 bool GameObject::isCollidingWithTerrain(GameObject* other)
 {

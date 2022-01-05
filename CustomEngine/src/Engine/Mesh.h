@@ -93,9 +93,7 @@ public:
 
 	// Bounding Box 
 	void setBbox(); 
-	SpaceEngine::boundingBox getBbox() const {
-		return bbox;
-	};
+	SpaceEngine::boundingBox getBbox() const { return bbox; };
 
 	unsigned int getNumTri() { return vertices.size() / 3; }
 

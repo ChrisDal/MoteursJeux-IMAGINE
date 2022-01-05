@@ -9,7 +9,7 @@
 #include <vector>
 #include "BasicGameObject.h"
 #include"SceneNode.h"
-
+#include "Components.h"
 
 
 class Camera : public BasicGameObject
@@ -29,6 +29,9 @@ private:
 
     glm::mat4 m_view; 
     glm::mat4 m_projection;
+
+public : // Components 
+    Velocity velocity; 
 
 public:
 
