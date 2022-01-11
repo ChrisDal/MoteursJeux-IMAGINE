@@ -75,19 +75,101 @@ void Mesh::setupMesh()
 
 }
 
-void Mesh::initPlane()
+void Mesh::initTerrain(const char* filename, int sqrtTerrain)
 {
 	this->clear();
 
-	this->vertices = {
-		// positions          // normals           // texture coords
-		VertexData({glm::vec3(0.5f,  0.5f, 0.0f),    glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)}),    // top right
-		VertexData({glm::vec3( 0.5f, -0.5f, 0.0f),   glm::vec3(0.0f, 1.0f, 0.0f),   glm::vec2(1.0f, 0.0f)}),   // bottom right
-		VertexData({glm::vec3(-0.5f, -0.5f, 0.0f),   glm::vec3(0.0f, 0.0f, 1.0f),   glm::vec2(0.0f, 0.0f)}),  // bottom left
-		VertexData({glm::vec3(-0.5f,  0.5f, 0.0f),   glm::vec3(1.0f, 1.0f, 0.0f),   glm::vec2(0.0f, 1.0f)}),  // top left 
-	};
+	// Load heightmap 
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
 
-	this->indices = { 0, 1, 3, 
+	if (data == nullptr)
+	{
+		std::cout << "[STBI] Load Image Error : " << filename << std::endl;
+		return; 
+	}
+
+	// afficher une surface plane (16*16 sommets) composée de triangles.
+	unsigned int sqrtnVertex = std::sqrt(sqrtTerrain);
+	unsigned int vertexNumber = sqrtnVertex * sqrtnVertex;
+
+	this->vertices.reserve(vertexNumber);
+
+	// defined subdivision of the plane
+	float minPlane = -1.0f;
+	float maxPlane = 1.0f;
+	float dxy = (maxPlane - minPlane) / float(sqrtnVertex - 1);
+
+	if (nrChannels == 1)
+	{
+		std::cout << "Only intensity " << std::endl;
+	}
+
+	for (unsigned int n = 0; n < sqrtnVertex; n++)
+	{
+		for (unsigned int m = 0; m < sqrtnVertex; m++)
+		{
+			//unsigned int k = n*sqrtnVertex + m;
+			float textcoordx = static_cast<float>(m) / static_cast<float>(sqrtnVertex - 1);
+			float textcoordy = static_cast<float>(n) / static_cast<float>(sqrtnVertex - 1);
+
+			int tx = static_cast<int>(textcoordx * width);
+			int ty = static_cast<int>(textcoordy * height);
+			int pixValue = data[ty * nrChannels * width + tx * nrChannels];
+
+			float zheight = static_cast<float>(pixValue) / 255.0f;
+
+			this->vertices.push_back(VertexData{ glm::vec3(minPlane + m * dxy, maxPlane - n * dxy,  zheight),
+												 glm::vec3(0.0f, 1.0f, 0.0f), 
+												 glm::vec2(textcoordx, textcoordy)});
+
+		}
+	}
+	// Duplication to form GL_TRIANGLE STRIPS is equal to 2* (sqrtnVertex-1) - 1
+	unsigned int idxcount = (sqrtnVertex - 1) * (sqrtnVertex * 2) + (2 * (sqrtnVertex - 1) - 1); //Careful update indicesNumber when creating new geometry
+	unsigned int tmpCount = (sqrtnVertex - 1) * (sqrtnVertex * 2);
+
+	this->indices.reserve(idxcount);
+	std::vector<GLushort> tmpindices;
+	tmpindices.reserve(tmpCount);
+
+	for (unsigned int i = 0; i < tmpCount - 1; i += 2)
+	{
+		tmpindices.push_back(i / 2);
+		tmpindices.push_back(i / 2 + sqrtnVertex);
+	}
+
+	unsigned int countVertex = 0;  // every N=2*sqrtnVertex samples we duplicate the vertices k and k+1,
+	for (unsigned int k = 0; k < tmpCount; k++)
+	{
+		countVertex++;
+		this->indices.push_back(tmpindices[k]);
+
+		if (countVertex % (2 * sqrtnVertex) == 0)
+		{
+			this->indices.push_back(tmpindices[k]);
+			this->indices.push_back(tmpindices[(int)k + 1]);
+		}
+	}
+
+	// remove data loaded 
+	stbi_image_free(data);
+
+
+	setPrimitives(GL_TRIANGLE_STRIP);
+
+	setupMesh();
+}
+
+void Mesh::initQuad()
+{
+	this->clear(); 
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  0.0f, -1.0f),  glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f) }));  // v0
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, 0.0f,  1.0f),  glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 0.0f) })); // v1
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, 0.0f,  1.0f),  glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 1.0f) })); // v2
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, 0.0f, -1.0f),  glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f) })); // v3
+
+	this->indices = { 0, 1, 3,
 					1, 2, 3 }; 
 
 	setPrimitives(GL_TRIANGLE_STRIP);

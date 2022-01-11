@@ -619,6 +619,13 @@ void Game::initScene()
     GameObject* terre = new GameObject(etape1, glm::vec3(3.0, 0.0, 0.0), -1);
     terre->initMesh(3);
     terre->addTransformation(transfoterre, true);
+
+    GameObject* ground = new GameObject(m_scene, glm::vec3(0.0, -2.0, 0.0),
+                                        -1, "", "Terrain");
+    ground->initMesh(1); 
+
+
+
     // -------------------------------------------
     m_scene->print();
     m_scene->sceneInit(m_scene);

@@ -60,6 +60,9 @@ private:
 	GLushort* m_pindices;
 
 	void setupMesh();
+	
+
+	
 
 	bool hasUV = false;
 	bool hasNormals = false; 
@@ -90,7 +93,9 @@ public:
 	void initSphere(); 
 	void initCube();
 	void initCapsule();
-	void initPlane(); 
+	void initPlane() {};
+	void initQuad(); 
+	void initTerrain(const char* filename, int sqrtTerrain=16);
 
 	bool loadMesh(const char* filename); 
 	void clear(); 

@@ -124,6 +124,11 @@ void GameObject::initMesh(int typemesh)
             m_mesh->initCube();
             std::cout << "LOG Init Dummy Dice\n";
         }
+        else if (typemesh == 1)
+        {
+            m_mesh->initQuad();
+            std::cout << "LOG Init Plane\n";
+        }
         else if (typemesh == 3)
         {
             m_mesh->initSphere();
@@ -333,6 +338,8 @@ void GameObject::Update(float deltatime)
     glm::vec3 velocityrot = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 rotaVec  = glm::vec3(0.0f, 0.0f, 5.0f); 
     glm::vec3 finalrot = deltatime * (velocityrot * rotaVec);
+    
+    // Hard Rotation 
     Rotate(finalrot.x, finalrot.y, finalrot.z, true);
 
     // Update position 
