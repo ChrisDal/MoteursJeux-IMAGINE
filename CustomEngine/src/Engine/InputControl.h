@@ -1,10 +1,10 @@
 #pragma once 
 
 #include <glm/vec3.hpp>  
-#include <imgui/imgui_impl_glfw.h>
+#include <GLFW/glfw3.h>
 
-class GameObject; 
-class Camera;
+#include "GameObject.hpp"
+#include "Camera.h"
 
 class InputControl
 {

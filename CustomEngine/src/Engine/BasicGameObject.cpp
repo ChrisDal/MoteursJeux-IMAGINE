@@ -200,6 +200,13 @@ glm::vec3 BasicGameObject::Position() const
 void BasicGameObject::Position(float x, float y, float z)
 {
 	m_position = glm::vec3(x, y, z);
-	m_world = glm::translate(glm::mat4x4(1.0f), m_position);
+	//m_world = glm::translate(glm::mat4x4(1.0f), m_position);
 	m_internal.setTranslate(m_position[0], m_position[1], m_position[2]);
+}
+
+
+void BasicGameObject::Position(const glm::vec3& pos)
+{
+	m_position = pos;
+	m_internal.setTranslate(m_position[0], m_position[1], m_position[2]); 
 }

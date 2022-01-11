@@ -15,7 +15,13 @@ unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 static constexpr float APP_MAX_FRAMERATE{ 60.0f };
-bool callbackWindows = false; 
+bool callbackWindows = false;
+bool firstMouse = true; 
+float lastX = SCR_WIDTH / 2.0f; 
+float lastY = SCR_HEIGHT / 2.0f;
+float Game::camoffsetx = 0.0f;
+float Game::camoffsety = 0.0f;
+bool processCamera = true; 
 
 
 
@@ -35,6 +41,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     
 }
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos); 
 
 Game::Game()
 : m_shaderdir(PROJECT_DIR"src\\shaders\\"), 
@@ -79,49 +86,9 @@ Game::Game()
     m_renderer.createShaderProg(vertexsource, fragmentsource);
     std::cout << fragmentsource << std::endl; 
 
-    // Input Controllers 
-    // -----------------
-
-    m_input = new InputControl();
-
+    this->initScene(); 
 	
-    // Scene Init  
-    // -------------
-    m_scene = new SceneNode(); //  ROOT NODE 
 
-    
-
-    SceneNode* nodePlayer = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
-    SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
-    
-
-    // Game Objects
-    GameObject * player = new GameObject(nodePlayer, glm::vec3(0.0, 0.0, 0.0), -1,"", "Player");
-    std::string meshfilepath = m_datadir; 
-    meshfilepath += "\\models\\cube.obj"; 
-    player->initMesh(meshfilepath.c_str());
-    player->velocity.setVelocity(0.0f, 0.0f, 0.0f); 
-
-    // Camera 
-    m_camera = new Camera(player, glm::vec3(0.0, 2.0, 5.0));
-    m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
-    m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
-
-
-    GameObject* lune = new GameObject(etape1, glm::vec3(0.0, 0.0, 5.0), -1);
-    lune->initMesh(0);
-
-
-    
-    SpaceEngine::Transform transfoterre;
-    transfoterre.addHomogenousScale(0.7f);
-    transfoterre.addRotation(0.0f, 23.0f, 0.0f);
-    GameObject* terre = new GameObject(etape1, glm::vec3(3.0, 0.0, 0.0), -1);
-    terre->initMesh(3); 
-    terre->addTransformation(transfoterre, true);
-    // -------------------------------------------
-    m_scene->print();
-    m_scene->sceneInit(m_scene);
 
 
     // --------------------------------------------
@@ -163,6 +130,12 @@ void Game::initWindow()
 
     glfwMakeContextCurrent(m_Window);
     glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
+    // Mouse Inputs 
+    //glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    //glfwSetCursorPosCallback(m_Window, mouse_callback);
+
+    
+
 
 
     // ImGUI 
@@ -192,12 +165,94 @@ void Game::initWindow()
 
 }
 
+// glfw: whenever the mouse moves, this callback is called
+// -------------------------------------------------------
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    Game::camoffsetx = xpos - lastX;
+    Game::camoffsety = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    processCamera = true; 
+}
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void Game::processInput(GLFWwindow* window)
 {
-    m_input->handleInput(window, static_cast<GameObject*>(m_player), m_camera);
+    GameObject* actor = static_cast<GameObject*>(m_player);
+
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(window, true);
+        return;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        actor->Position(actor->Position() + sensitivity*Game::m_zneg);
+        //actor->velocity.vz -= 5.0f;
+        std::cout << "U-";
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        actor->Position(actor->Position() + sensitivity*Game::m_zpos);
+        std::cout << "B-";
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        //actor->velocity.vx += 5.0f;
+        actor->Position(actor->Position() + sensitivity*Game::m_right);
+        std::cout << "R-";
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+
+        actor->Position(actor->Position() + sensitivity*Game::m_left);
+        std::cout << "L-";
+    }
+
+    // Mouse 
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    {
+        mouse_left_down = true;
+
+    }
+    else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+    {
+        mouse_left_down = false;
+    }
+
+    if (mouse_left_down)
+    {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        setTrackingPoint(window, m_camera, xpos, ypos);
+    }
+
+
+    if (actor->velocity.ismoving()) {
+        glm::vec4 pos = actor->getWorldPosition();
+        std::cout << " Actor : " << pos.x << pos.y << pos.z << "\n";
+        glm::vec3 targetActor{ pos.x, pos.y, pos.z };
+        m_camera->setTargetPoint(targetActor);
+        m_camera->setWalking(true);
+    }
+    else
+    {
+        m_camera->setWalking(false);
+    }
+
+   
 }
 
 Game::~Game()
@@ -210,7 +265,6 @@ Game::~Game()
     if (shaderProgram != nullptr) { delete shaderProgram; }
     //delete boxTexture;
     delete m_scene; 
-    delete m_input; 
     
     
     
@@ -277,6 +331,11 @@ void Game::RunGameLoop()
         // -----
         processInput(m_Window);
 
+        if (processCamera)
+        {
+            m_camera->processMovement(Game::camoffsetx, Game::camoffsety);
+        }
+
 
         // Update Game 
         // -----------
@@ -314,9 +373,10 @@ void Game::RunGameLoop()
         m_renderer.Draw(VAO, EBO, shaderProgram);
         boxTexture->unbind();*/
 
-
+        // render
+        // ------
+        
         m_renderer.Clear();
-
         // Transformation 
         m_renderer.Draw(m_scene);
 
@@ -324,11 +384,6 @@ void Game::RunGameLoop()
         // =================================================
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        
-        
-        
-        
-
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -436,3 +491,135 @@ void Game::RenderDebugMenu() {
 
 }
 
+
+
+void Game::handleInput(GLFWwindow* window, GameObject* actor, Camera* cam)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(window, true);
+        return;
+    }
+
+
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        actor->velocity.vz -= 5.0f;
+        std::cout << "Up Actor - ";
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        actor->velocity.vz += 5.0f;
+        std::cout << "BAck Actor - ";
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        actor->velocity.vx += 5.0f;
+        std::cout << "Right Actor - ";
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        actor->velocity.vx -= 5.0f;
+
+        std::cout << "Left Actor - ";
+    }
+
+    // Mouse 
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    {
+        mouse_left_down = true;
+
+    }
+    else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+    {
+        mouse_left_down = false;
+    }
+
+    if (mouse_left_down)
+    {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        setTrackingPoint(window, cam, xpos, ypos);
+    }
+
+
+    if (actor->velocity.ismoving()) {
+        glm::vec4 pos = actor->getWorldPosition();
+        glm::vec3 targetActor{ pos.x, pos.y, pos.z };
+        cam->setTargetPoint(targetActor);
+        cam->setWalking(true);
+    }
+    else
+    {
+        cam->setWalking(false);
+    }
+
+}
+
+void Game::setTrackingPoint(GLFWwindow* window, Camera* cam, double& x, double& y)
+{
+    int w, h;
+    glfwGetWindowSize(window, &w, &h);
+
+    // centered target
+    glm::vec3 newTargetPoint = glm::vec3(x, y, 0.0f) - glm::vec3((float)w / 2.0f, (float)h / 2.0f, 0.0f);
+    glm::vec3 oldTargetPoint = cam->getTargetPoint();
+    // direction
+    glm::vec3 direction = newTargetPoint - oldTargetPoint;
+    direction.z = 0.0f;
+    direction = glm::normalize(direction);
+
+    newTargetPoint = oldTargetPoint + glm::vec3(direction.x * cam->velocity.vx,
+        -direction.y * cam->velocity.vy,
+        0.0f);
+
+    cam->setTargetPoint(newTargetPoint);
+
+}
+
+void Game::initScene()
+{
+    // Scene Init  
+    // -------------
+    m_scene = new SceneNode(); //  ROOT NODE 
+
+    SceneNode* nodePlayer = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+
+
+    // Game Objects
+    GameObject* player = new GameObject(nodePlayer, glm::vec3(0.0, 0.0, 0.0), -1, "", "Player");
+    std::string meshfilepath = m_datadir;
+    meshfilepath += "\\models\\cube.obj";
+    player->initMesh(meshfilepath.c_str());
+
+    player->velocity.setVelocity(0.0f, 0.0f, 0.0f);
+
+    // Camera 
+    m_camera = new Camera(m_scene, glm::vec3(0.0, 0.0, 4.0));
+    m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
+
+
+    GameObject* lune = new GameObject(etape1, glm::vec3(1.5, 0.0, -3.0), -1);
+    lune->initMesh(0);
+    SpaceEngine::Transform transfolune;
+    transfolune.addRotation(0.0f, 85.0f, 10.0f);
+    lune->addTransformation(transfolune, true); 
+
+    GameObject* other = new GameObject(etape1, glm::vec3(0.0, 0.0, 0.0), -1);
+    other->initMesh(0);
+
+
+    // Terre : Sphere 
+    SpaceEngine::Transform transfoterre;
+    transfoterre.addHomogenousScale(0.7f);
+    transfoterre.addRotation(0.0f, 23.0f, 0.0f);
+    GameObject* terre = new GameObject(etape1, glm::vec3(3.0, 0.0, 0.0), -1);
+    terre->initMesh(3);
+    terre->addTransformation(transfoterre, true);
+    // -------------------------------------------
+    m_scene->print();
+    m_scene->sceneInit(m_scene);
+}

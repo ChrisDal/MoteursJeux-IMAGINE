@@ -96,13 +96,10 @@
     <ClCompile Include="src\Engine\BasicGameObject.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\Engine\InputControl.h">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Engine\InputControl.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="src\Engine\Components.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Rendering\Material.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1067,6 +1064,12 @@
     <ClInclude Include="src\Engine\Components.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="src\Engine\Rendering\Material.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Rendering\Rendering.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="dependencies\lib\glfw3.lib" />
@@ -1493,6 +1496,7 @@
     <None Include="src\shaders\basicVertexShader.shader" />
     <None Include="src\shaders\basicFragShader.shader" />
     <None Include="src\shaders\basicVShader.shader" />
+    <None Include="src\shaders\basicfragment.fs" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="data\cube.png">

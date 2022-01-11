@@ -14,6 +14,7 @@
 #include "Rendering/IndexBuffer.hpp"
 #include "Rendering/Texture.h"
 #include "Rendering/ShaderProgram.h"
+#include "Rendering/Material.h"
 
 
 namespace SpaceEngine {
@@ -42,6 +43,9 @@ private:
 
 	// shader 
 	ShaderProgram* m_shader = nullptr; // if not 
+
+	// Material 
+	Material* m_material; 
 
 	//  Triangle or Triangle Strip 
 	GLenum m_primitives;

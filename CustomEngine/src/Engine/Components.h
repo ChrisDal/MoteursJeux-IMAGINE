@@ -3,7 +3,7 @@
 #include <glm/vec3.hpp> 
 #include <string>
 
-class GameObject; 
+class BasicGameObject; 
 
 struct Component
 {
@@ -56,7 +56,7 @@ struct Velocity : Component
 		vx = x; vy = y; vz = z; 
 	}
 
-	void move(GameObject* gmo, float dt); 
+	void move(BasicGameObject* gmo, float dt); 
 	inline void clampV(); 
 	inline bool ismoving() const { return vx != 0.0 || vy != 0.0 || vz != 0.0;  }
 

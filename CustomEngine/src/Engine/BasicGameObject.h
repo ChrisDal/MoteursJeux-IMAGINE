@@ -20,7 +20,7 @@ protected:
     int m_id = -1;
     std::string m_tag;
 
-    glm::vec3 m_position = glm::vec3(0.0, 0.0, 0.0);
+    glm::vec3 m_position{ 0.0, 0.0, 0.0 };
 
     // Hierarchie
     std::vector<BasicGameObject*> m_children;
@@ -70,7 +70,7 @@ public:
     BasicGameObject& Scale(float sx, float sy, float sz, bool internal = false);
     glm::vec3 Position() const;
     void Position(float x, float y, float z);
-    void Position(const glm::vec3& pos) { m_position = pos;  }
+    void Position(const glm::vec3& pos); 
 
     // Print game object informations
     virtual void print() = 0;

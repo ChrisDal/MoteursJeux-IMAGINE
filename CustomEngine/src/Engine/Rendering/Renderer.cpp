@@ -32,27 +32,29 @@ Renderer::Renderer(float _w, float _h)
 void Renderer::initGraphics() const
 {
 	// On init Black Frame 
-	GLCall(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
+	GLCall(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+	
+	// Enable back face culling
+	//GLCall(glEnable(GL_CULL_FACE));
 
 	// Enable depth buffer
 	GLCall(glEnable(GL_DEPTH_TEST));
-
-	// Enable back face culling
-	//glEnable(GL_CULL_FACE);
 
 	// GL_FRONT_AND_BACK for front- and back-facing polygons
 	// GL_FILL : The interior of the polygon is filled
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, m_polymode));
 	
+	
+
 }
 
 void Renderer::Clear() const
 {
 	GLCall(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+
 	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
+	// GL_FRONT_AND_BACK for front- and back-facing polygons
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, m_polymode));
-
 
 }
 
@@ -68,6 +70,7 @@ void Renderer::Draw(const VertexArrayBuffer& vao, const IndexBuffer& ibo, const 
 
 void Renderer::Draw(const VertexArrayBuffer* vao, const IndexBuffer* ibo, const ShaderProgram* shader) const
 {
+
 	shader->use();
 	vao->bind();
 	ibo->bind();
@@ -86,7 +89,7 @@ void Renderer::Draw(Mesh* mesh, const ShaderProgram* shader) const
 
 
 // IF no Shader attach to mesh use default shader 
-void Renderer::Draw(GameObject* gmo, int shadertype) const
+void Renderer::Draw(GameObject* gmo, Material* mat, int shadertype) const
 {
 
 	Mesh * meshobject = gmo->getMesh(); 
@@ -136,6 +139,9 @@ void Renderer::Draw(GameObject* gmo, int shadertype) const
 	// -------------
 	meshobject->bindBuffers();
 
+	// ------------
+	// Set Uniforms 
+	// -------------
 	// set uniform transform 
 	// set transformation matrix for each game object
 	SpaceEngine::Transform t = gmo->getTransformation();
@@ -152,8 +158,22 @@ void Renderer::Draw(GameObject* gmo, int shadertype) const
 	// View Proj Matrix 
 	chosenShader->setMat4("u_vp", glm::value_ptr(vpmat));
 	unsigned int idcount = meshobject->getIndicesCount(); 
+
+	// Texture 
+	bool texturebind = false; 
+	if (mat != nullptr)
+	{
+		if (mat->getTexture() != nullptr)
+		{
+			mat->getTexture()->bind(0); 
+			texturebind = true;
+		}
+	}
+
 	// DRAW CALL 
 	GLCall(glDrawElements(meshobject->getPrimitives(), idcount, GL_UNSIGNED_INT, nullptr));
+
+	if (texturebind) { mat->getTexture()->unbind();  }
 }
 
 void Renderer::Draw(SceneNode* scene) const
@@ -163,7 +183,7 @@ void Renderer::Draw(SceneNode* scene) const
 		BasicGameObject* obj = scene->getObject(k); 
 		if (obj->hasMesh())
 		{
-			this->Draw(static_cast<GameObject*>(obj), -1);
+			this->Draw(static_cast<GameObject*>(obj), nullptr,  -1);
 		}
 		
 	}

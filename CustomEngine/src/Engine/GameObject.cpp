@@ -10,7 +10,8 @@ GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId
     : m_mesh(nullptr),
     m_ntexture(textureId),
     m_filename(filename),
-    BasicGameObject(parent, center, tag)
+    BasicGameObject(parent, center, tag), 
+    m_mat(nullptr)
 {
     /*m_position = glm::vec3(center);
     // matrice de transformation interne
@@ -26,7 +27,7 @@ GameObject::GameObject(SceneNode* parent, glm::vec3 center, short int textureId,
     : BasicGameObject(parent, center, tag),
     m_mesh(nullptr),
     m_ntexture(textureId),
-    m_filename(filename)
+    m_filename(filename), m_mat(nullptr)
 {
 
     /*parent->addObject(this);
@@ -46,7 +47,8 @@ GameObject::GameObject(glm::vec3 center, short int textureId, std::string filena
     : m_mesh(nullptr),
     m_ntexture(textureId),
     m_filename(filename),
-    BasicGameObject((SceneNode*)nullptr, center, tag)
+    BasicGameObject((SceneNode*)nullptr, center, tag), 
+    m_mat(nullptr)
 {
     /*m_position = glm::vec3(center);
     m_world = glm::translate(glm::mat4x4(1.0f), m_position); 
@@ -58,7 +60,7 @@ GameObject::GameObject(glm::vec3 center, short int textureId, std::string filena
 
 GameObject::GameObject(float x, float y, float z)
     : m_ntexture(-1), m_mesh(nullptr),
-    BasicGameObject()
+    BasicGameObject(), m_mat(nullptr)
 {
     /*m_position = glm::vec3(x, y, z);
     m_world = glm::translate(glm::mat4x4(1.0f), m_position);
@@ -74,10 +76,10 @@ GameObject::~GameObject()
         delete m_mesh; 
     }
 
-    /*if (m_meshtree != nullptr)
+    if (m_mat != nullptr)
     {
-        delete m_meshtree;
-    }*/
+        delete m_mat;
+    }
 
     std::cout << "Delete GameObj " << getId() << "\n";
 };
@@ -310,6 +312,11 @@ bool GameObject::loadMesh(const std::string& filename)
 
     return false;
 
+}
+
+void GameObject::initMaterial(Texture* texture, const glm::vec3& color)
+{
+    m_mat = new Material(texture, color); 
 }
 
 /*
