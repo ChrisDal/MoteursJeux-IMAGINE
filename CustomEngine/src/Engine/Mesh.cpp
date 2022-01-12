@@ -213,9 +213,12 @@ void Mesh::initSphere()
 			float phi = glm::radians<float>(minphi + kphi * dphi); 
 			float rho = glm::radians<float>(minrho + krho * drho);
 
-			glm::vec3 xyz(radius * glm::cos(phi) * glm::sin(rho),
-						  radius * glm::cos(phi) * glm::cos(rho),
-						  radius * glm::sin(phi));
+			// Not conventionnal : x,z is our moving plan 
+			// To have the poles aligned with up camera
+			glm::vec3 xyz(radius * glm::cos(phi) * glm::cos(rho),
+				          radius * glm::sin(phi), 
+						  radius * glm::cos(phi) * glm::sin(rho)
+						  );
 
 			glm::vec3 normal(glm::normalize(glm::vec3(xyz - center))); 
 			glm::vec2 uvs(kphi / (float)nphi, krho / (float)nrho);
@@ -237,9 +240,9 @@ void Mesh::initSphere()
 	{
 		for (unsigned int krho = 0; krho < nrho; krho++)
 		{
+			// First Triangle
 			if (kphi != 0)
 			{
-				// First Triangle
 				this->indices.push_back(kphi * nrho + krho);
 				this->indices.push_back((kphi + 1) * nrho + krho);
 				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));
