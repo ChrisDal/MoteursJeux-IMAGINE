@@ -182,26 +182,28 @@ void Mesh::initCapsule()
 	this->clear();
 }
 
-// ---------------------------------------
-// init Sphere data
+// Init Sphere with normals, UV, 
+// radius = 1.0f by default, 
+// center at 0 0 0 by default
 void Mesh::initSphere()
 {
 	this->clear();
 
+	// TODO : input parameters
 	float radius = 1.0f; 
-	float dphi   = 1.0f; 
-	float drho  = 1.0f; 
+	const glm::vec3 center(0.0f, 0.0f, 0.0f);
 
+
+	float dphi   = 15.0f; 
+	float drho   = 15.0f; 
+	// LAT LON
 	float minphi = -90.0f; 
-	float minrho = -180.0f; 
 	float maxphi = 90.0f;
+	float minrho = -180.0f; 
 	float maxrho = 180.0f;
 
-	unsigned int nphi = (unsigned int)((maxphi - minphi) / dphi);
+	unsigned int nphi = (unsigned int)((maxphi - minphi) / dphi) + 1; // matplotlib basic 
 	unsigned int nrho = (unsigned int)((maxrho - minrho) / drho);
-
-	const glm::vec3 center(0.0f, 0.0f, 0.0f); 
-
 
 	
 	for (unsigned int kphi = 0; kphi < nphi; kphi++)
@@ -212,15 +214,46 @@ void Mesh::initSphere()
 			float rho = glm::radians<float>(minrho + krho * drho);
 
 			glm::vec3 xyz(radius * glm::cos(phi) * glm::sin(rho),
-							radius * glm::cos(phi) * glm::cos(rho),
-							radius * glm::sin(phi));
+						  radius * glm::cos(phi) * glm::cos(rho),
+						  radius * glm::sin(phi));
 
-			glm::vec3 normal(glm::vec3(xyz - center)); 
-			glm::vec2 uvs(0.0f, 0.0f); 
+			glm::vec3 normal(glm::normalize(glm::vec3(xyz - center))); 
+			glm::vec2 uvs(kphi / (float)nphi, krho / (float)nrho);
 
 			this->vertices.push_back(VertexData({ xyz , normal, uvs })); 
 
-			this->indices.push_back(kphi* nrho + krho);
+		}
+	}
+
+
+	//     A -- D 
+	//	   | \  |
+	//     |  \ |
+	//     B -- C
+	// Triangle 1 : A B C 
+	// Triangle 2 : C D A 
+
+	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
+	{
+		for (unsigned int krho = 0; krho < nrho; krho++)
+		{
+			if (kphi != 0)
+			{
+				// First Triangle
+				this->indices.push_back(kphi * nrho + krho);
+				this->indices.push_back((kphi + 1) * nrho + krho);
+				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));
+			}
+			
+			// Second Triangle
+			if (kphi != nphi - 1)
+			{
+				// Indices 
+				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));
+				this->indices.push_back(kphi * nrho + ((krho + 1) % nrho));
+				this->indices.push_back(kphi * nrho + krho);
+			}
+
 		}
 	}
 
@@ -232,7 +265,7 @@ void Mesh::initSphere()
 	m_nVertex = this->vertices.size();
 	indexCount = this->indices.size();
 
-	setPrimitives(GL_POINTS);
+	setPrimitives(GL_TRIANGLES);
 
 	setupMesh();
 }
@@ -309,6 +342,7 @@ void Mesh::initCube()
 	setupMesh();
 
 }
+
 
 // Display Debug informations 
 void Mesh::debugMesh() const

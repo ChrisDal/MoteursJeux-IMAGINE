@@ -615,7 +615,7 @@ void Game::initScene()
     // Terre : Sphere 
     SpaceEngine::Transform transfoterre;
     transfoterre.addHomogenousScale(0.7f);
-    transfoterre.addRotation(0.0f, 23.0f, 0.0f);
+    //transfoterre.addRotation(0.0f, 23.0f, 0.0f);
     GameObject* terre = new GameObject(etape1, glm::vec3(3.0, 0.0, 0.0), -1);
     terre->initMesh(3);
     terre->addTransformation(transfoterre, true);
