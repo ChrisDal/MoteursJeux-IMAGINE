@@ -177,20 +177,117 @@ void Mesh::initQuad()
 	setupMesh();
 }
 
-void Mesh::initCapsule()
+// Capsule is just Two demi Spheres separated
+// radius : 0.5f; 
+// distance between two centers : 2.0f
+void Mesh::initCapsule(float radius, float distance)
 {
 	this->clear();
+
+	// Order matter or swap bounds for phi
+	glm::vec3 c1(0.0f, 0.0f, 0.0f); // highest hemisphere
+	glm::vec3 c2 = c1 + glm::vec3(0.0f, distance, 0.0f); // lowest hemisphere
+
+
+	float dphi = 15.0f;
+	float drho = 15.0f;
+	// LAT LON
+	float minphi = -90.0f;
+	float maxphi = 90.0f;
+	float minrho = -180.0f;
+	float maxrho = 180.0f;
+
+	unsigned int nphi = (unsigned int)((maxphi - minphi) / dphi) + 1; // matplotlib basic 
+	unsigned int nrho = (unsigned int)((maxrho - minrho) / drho);
+
+	glm::vec3 origin = c1; 
+
+	for (unsigned int kphi = 0; kphi < nphi; kphi++)
+	{
+		if (kphi > nphi / 2.0f) {
+
+			origin = c2; // move origin
+		}
+		for (unsigned int krho = 0; krho < nrho; krho++)
+		{
+			float phi = glm::radians<float>(minphi + kphi * dphi);
+			float rho = glm::radians<float>(minrho + krho * drho);
+
+			// Not conventionnal : x,z is our moving plan 
+			// To have the poles aligned with up camera
+			glm::vec3 xyz(radius * glm::cos(phi) * glm::cos(rho),
+				radius * glm::sin(phi),
+				radius * glm::cos(phi) * glm::sin(rho)
+			);
+
+			xyz += origin;
+
+			glm::vec3 normal(glm::normalize(glm::vec3(xyz - origin)));
+			glm::vec2 uvs(kphi / (float)nphi, krho / (float)nrho);
+
+			this->vertices.push_back(VertexData({ xyz , normal, uvs }));
+
+		}
+	}
+
+
+	//     A -- D 
+	//	   | \  |
+	//     |  \ |
+	//     B -- C
+	// Triangle 1 : A B C 
+	// Triangle 2 : C D A 
+
+	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
+	{
+		for (unsigned int krho = 0; krho < nrho; krho++)
+		{
+			// First Triangle
+			if (kphi != 0)
+			{
+				this->indices.push_back(kphi * nrho + krho);
+				this->indices.push_back((kphi + 1) * nrho + krho);
+				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));
+			}
+
+			// Second Triangle
+			if (kphi != nphi - 1)
+			{
+				// Indices 
+				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));
+				this->indices.push_back(kphi * nrho + ((krho + 1) % nrho));
+				this->indices.push_back(kphi * nrho + krho);
+			}
+
+		}
+	}
+
+
+	// set pointers
+	m_pvertices = &this->vertices[0];
+	m_pindices = (GLushort*)&this->indices[0];
+
+	m_nVertex = this->vertices.size();
+	indexCount = this->indices.size();
+
+	setPrimitives(GL_TRIANGLES);
+
+	setupMesh();
+
+
+
+
+
 }
 
 // Init Sphere with normals, UV, 
 // radius = 1.0f by default, 
 // center at 0 0 0 by default
-void Mesh::initSphere()
+void Mesh::initSphere(float radius)
 {
 	this->clear();
 
 	// TODO : input parameters
-	float radius = 1.0f; 
 	const glm::vec3 center(0.0f, 0.0f, 0.0f);
 
 
@@ -223,7 +320,7 @@ void Mesh::initSphere()
 			glm::vec3 normal(glm::normalize(glm::vec3(xyz - center))); 
 			glm::vec2 uvs(kphi / (float)nphi, krho / (float)nrho);
 
-			this->vertices.push_back(VertexData({ xyz , normal, uvs })); 
+			this->vertices.push_back(VertexData({ xyz + center , normal, uvs }));
 
 		}
 	}

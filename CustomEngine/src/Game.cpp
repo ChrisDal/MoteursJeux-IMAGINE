@@ -590,10 +590,7 @@ void Game::initScene()
 
     // Game Objects
     GameObject* player = new GameObject(nodePlayer, glm::vec3(0.0, 0.0, 0.0), -1, "", "Player");
-    std::string meshfilepath = m_datadir;
-    meshfilepath += "\\models\\cube.obj";
-    player->initMesh(meshfilepath.c_str());
-
+    player->initMesh(2);
     player->velocity.setVelocity(0.0f, 0.0f, 0.0f);
 
     // Camera 
@@ -609,7 +606,9 @@ void Game::initScene()
     lune->addTransformation(transfolune, true); 
 
     GameObject* other = new GameObject(etape1, glm::vec3(0.0, 0.0, 0.0), -1);
-    other->initMesh(0);
+    std::string meshfilepath = m_datadir;
+    meshfilepath += "\\models\\cube.obj";
+    other->initMesh(meshfilepath.c_str());
 
 
     // Terre : Sphere 

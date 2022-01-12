@@ -97,9 +97,9 @@ void GameObject::print()
 // Typemesh : 
 // ----------
 // 0 : Cube 
-// 1 : Cube
-// 2 : Cube
-// 3 : Plane
+// 1 : Quad
+// 2 : Capsule
+// 3 : Sphere
 
 void GameObject::initMesh(int typemesh)
 {
@@ -116,28 +116,34 @@ void GameObject::initMesh(int typemesh)
         else if (m_ntexture == 3)
         {
             m_mesh->initPlane();
-            std::cout << "LOG Init Grass Terrain\n";
+            std::cout << "[LOG Mesh] Init Grass Terrain\n";
             setTag("Terrain");
         }
+        // Type Mesh : Default Mesh 
         else if (typemesh == 0)
         {
             m_mesh->initCube();
-            std::cout << "LOG Init Dummy Dice\n";
+            std::cout << "[LOG Mesh] Init Cube\n";
         }
         else if (typemesh == 1)
         {
             m_mesh->initQuad();
-            std::cout << "LOG Init Plane\n";
+            std::cout << "[LOG Mesh] Init Quad \n";
+        }
+        else if (typemesh == 2)
+        {
+            m_mesh->initCapsule(0.25f, 0.5f); 
+            std::cout << "[LOG Mesh] Init Capsule \n"; 
         }
         else if (typemesh == 3)
         {
             m_mesh->initSphere();
-            std::cout << "LOG Init Sphere radius 1.0\n";
+            std::cout << "[LOG Mesh] Init Sphere radius 1.0\n";
         }
         else
         {
             m_mesh->initCube();
-            std::cout << "Default: Dummy Dice\n";
+            std::cout << "[LOG Mesh] Init Default Mesh : Cube\n";
         }
     }
     else
@@ -149,7 +155,7 @@ void GameObject::initMesh(int typemesh)
             delete m_mesh; 
             m_mesh = new Mesh(); 
             m_mesh->initCube();
-            std::cout << "Default: Dummy Dice\n";
+            std::cout << "[LOG Mesh] Init Default Mesh : Cube\n";
         }
 
     }

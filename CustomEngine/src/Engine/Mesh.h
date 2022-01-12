@@ -90,12 +90,13 @@ public:
 
 	~Mesh(); 
 
-	void initSphere(); 
+	void initSphere(float radius=1.0f); 
 	void initCube();
-	void initCapsule();
+	void initCapsule(float radius=0.5f, float distance=1.0f);
 	void initPlane() {};
 	void initQuad(); 
 	void initTerrain(const char* filename, int sqrtTerrain=16);
+
 
 	bool loadMesh(const char* filename); 
 	void clear(); 
