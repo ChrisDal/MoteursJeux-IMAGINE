@@ -143,7 +143,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;PROJECT_DIR=R"($(ProjectDir))";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -155,9 +155,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\Collider.cpp" />
+    <ClCompile Include="src\Engine\Sphere.cpp" />
     <ClCompile Include="src\Engine\Components.cpp" />
-    <ClCompile Include="src\Engine\InputControl.cpp" />
-    <ClCompile Include="src\Engine\InputControl.h" />
     <ClCompile Include="src\Engine\BasicGameObject.cpp" />
     <ClCompile Include="src\Engine\Camera.cpp" />
     <ClCompile Include="dependencies\include\glm\detail\glm.cpp" />
@@ -169,6 +169,7 @@
     <ClCompile Include="dependencies\include\imgui\imgui_tables.cpp" />
     <ClCompile Include="dependencies\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\Engine\GameObject.cpp" />
+    <ClCompile Include="src\Engine\Rendering\Material.cpp" />
     <ClCompile Include="src\Engine\Rotoform.cpp" />
     <ClCompile Include="src\Engine\SceneNode.cpp" />
     <ClCompile Include="src\Engine\Transform.cpp" />
@@ -187,7 +188,9 @@
     <ClCompile Include="src\Engine\Rendering\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Engine\Command.h" />
+    <ClInclude Include="src\Engine\Collider.h" />
+    <ClInclude Include="src\Engine\GeomPhysics.h" />
+    <ClInclude Include="src\Engine\Sphere.h" />
     <ClInclude Include="src\Engine\BasicGameObject.h" />
     <ClInclude Include="src\Engine\Camera.h" />
     <ClInclude Include="dependencies\include\glad\glad.h" />
@@ -491,9 +494,10 @@
     <ClInclude Include="dependencies\include\KHR\khrplatform.h" />
     <ClInclude Include="src\Engine\Components.h" />
     <ClInclude Include="src\Engine\GameObject.hpp" />
+    <ClInclude Include="src\Engine\Rendering\Material.h" />
+    <ClInclude Include="src\Engine\Rendering\Rendering.h" />
     <ClInclude Include="src\Engine\Rotoform.h" />
     <ClInclude Include="src\Engine\SceneNode.h" />
-    <ClInclude Include="src\Engine\SubCommand.h" />
     <ClInclude Include="src\Engine\Transform.h" />
     <ClInclude Include="src\Engine\Rendering\IndexBuffer.hpp" />
     <ClInclude Include="src\Engine\Mesh.h" />
@@ -651,6 +655,7 @@
     <None Include="dependencies\include\glm\gtx\vector_angle.inl" />
     <None Include="dependencies\include\glm\gtx\vector_query.inl" />
     <None Include="dependencies\include\glm\gtx\wrap.inl" />
+    <None Include="src\shaders\basicfragment.fs" />
     <None Include="src\shaders\basicFragmentShader.shader">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>

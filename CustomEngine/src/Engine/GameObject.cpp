@@ -1,5 +1,6 @@
 #include "GameObject.hpp"
 #include "SceneNode.h"
+#include "Sphere.h"
 
 
 
@@ -10,7 +11,8 @@ GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId
     : m_mesh(nullptr),
     m_ntexture(textureId),
     m_filename(filename),
-    BasicGameObject(parent, center, tag)
+    BasicGameObject(parent, center, tag), 
+    m_mat(nullptr)
 {
     /*m_position = glm::vec3(center);
     // matrice de transformation interne
@@ -26,7 +28,7 @@ GameObject::GameObject(SceneNode* parent, glm::vec3 center, short int textureId,
     : BasicGameObject(parent, center, tag),
     m_mesh(nullptr),
     m_ntexture(textureId),
-    m_filename(filename)
+    m_filename(filename), m_mat(nullptr)
 {
 
     /*parent->addObject(this);
@@ -46,7 +48,8 @@ GameObject::GameObject(glm::vec3 center, short int textureId, std::string filena
     : m_mesh(nullptr),
     m_ntexture(textureId),
     m_filename(filename),
-    BasicGameObject((SceneNode*)nullptr, center, tag)
+    BasicGameObject((SceneNode*)nullptr, center, tag), 
+    m_mat(nullptr)
 {
     /*m_position = glm::vec3(center);
     m_world = glm::translate(glm::mat4x4(1.0f), m_position); 
@@ -58,7 +61,7 @@ GameObject::GameObject(glm::vec3 center, short int textureId, std::string filena
 
 GameObject::GameObject(float x, float y, float z)
     : m_ntexture(-1), m_mesh(nullptr),
-    BasicGameObject()
+    BasicGameObject(), m_mat(nullptr)
 {
     /*m_position = glm::vec3(x, y, z);
     m_world = glm::translate(glm::mat4x4(1.0f), m_position);
@@ -74,10 +77,10 @@ GameObject::~GameObject()
         delete m_mesh; 
     }
 
-    /*if (m_meshtree != nullptr)
+    if (m_mat != nullptr)
     {
-        delete m_meshtree;
-    }*/
+        delete m_mat;
+    }
 
     std::cout << "Delete GameObj " << getId() << "\n";
 };
@@ -95,9 +98,9 @@ void GameObject::print()
 // Typemesh : 
 // ----------
 // 0 : Cube 
-// 1 : Cube
-// 2 : Cube
-// 3 : Plane
+// 1 : Quad
+// 2 : Capsule
+// 3 : Sphere
 
 void GameObject::initMesh(int typemesh)
 {
@@ -114,23 +117,35 @@ void GameObject::initMesh(int typemesh)
         else if (m_ntexture == 3)
         {
             m_mesh->initPlane();
-            std::cout << "LOG Init Grass Terrain\n";
+            std::cout << "[LOG Mesh] Init Grass Terrain\n";
             setTag("Terrain");
         }
+        // Type Mesh : Default Mesh 
         else if (typemesh == 0)
         {
             m_mesh->initCube();
-            std::cout << "LOG Init Dummy Dice\n";
+            std::cout << "[LOG Mesh] Init Cube\n";
+        }
+        else if (typemesh == 1)
+        {
+            m_mesh->initQuad();
+            std::cout << "[LOG Mesh] Init Quad \n";
+        }
+        else if (typemesh == 2)
+        {
+            m_mesh->initCapsule(0.25f, 0.5f); 
+            std::cout << "[LOG Mesh] Init Capsule \n"; 
         }
         else if (typemesh == 3)
         {
-            m_mesh->initSphere();
-            std::cout << "LOG Init Sphere radius 1.0\n";
+            delete m_mesh; 
+            m_mesh = new Sphere(1.0f, glm::vec3(0.0f, 0.0f, 0.0f)); 
+            std::cout << "[LOG Mesh] Init Sphere radius 1.0\n";
         }
         else
         {
             m_mesh->initCube();
-            std::cout << "Default: Dummy Dice\n";
+            std::cout << "[LOG Mesh] Init Default Mesh : Cube\n";
         }
     }
     else
@@ -142,7 +157,7 @@ void GameObject::initMesh(int typemesh)
             delete m_mesh; 
             m_mesh = new Mesh(); 
             m_mesh->initCube();
-            std::cout << "Default: Dummy Dice\n";
+            std::cout << "[LOG Mesh] Init Default Mesh : Cube\n";
         }
 
     }
@@ -312,6 +327,11 @@ bool GameObject::loadMesh(const std::string& filename)
 
 }
 
+void GameObject::initMaterial(Texture* texture, const glm::vec3& color)
+{
+    m_mat = new Material(texture, color); 
+}
+
 /*
 glm::mat4x4 GameObject::getMatTransformation()
 {
@@ -326,6 +346,8 @@ void GameObject::Update(float deltatime)
     glm::vec3 velocityrot = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 rotaVec  = glm::vec3(0.0f, 0.0f, 5.0f); 
     glm::vec3 finalrot = deltatime * (velocityrot * rotaVec);
+    
+    // Hard Rotation 
     Rotate(finalrot.x, finalrot.y, finalrot.z, true);
 
     // Update position 

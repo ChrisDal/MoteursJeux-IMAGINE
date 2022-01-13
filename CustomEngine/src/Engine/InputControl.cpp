@@ -1,8 +1,6 @@
 
 
 #include "InputControl.h"
-#include "GameObject.hpp"
-#include "Camera.h"
 
 
 

@@ -1,9 +1,9 @@
 #include "Components.h"
-#include "GameObject.hpp"
+#include "BasicGameObject.h"
 
 double Velocity::DEAD_SPEED = 0.005;
  
-void Velocity::move(GameObject* gmo, float dt)
+void Velocity::move(BasicGameObject* gmo, float dt)
 {
 	Velocity::clampV();
 

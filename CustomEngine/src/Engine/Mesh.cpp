@@ -7,12 +7,7 @@ Mesh::Mesh()
 	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLE_STRIP), 
 	model_view(glm::mat4(1.0f))
 {
-	bbox.minbbox = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN); 
-	bbox.minbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-
-	this->vertices = {};
-	this->indices = {};
-	this->textures = {};
+	this->clear(); 
 }
 
 Mesh::Mesh(const char* filename)
@@ -20,9 +15,7 @@ Mesh::Mesh(const char* filename)
 	m_primitives(GL_TRIANGLES), 
 	model_view(glm::mat4(1.0f))
 {
-	this->vertices = {};
-	this->indices = {};
-	this->textures = {};
+	this->clear(); 
 	
 	// switch according to type 
 	int typefile = - 1; 
@@ -34,7 +27,7 @@ Mesh::Mesh(const char* filename)
 	{
 		std::cout << "Cannot handle this extension file\n" << std::endl; 
 	}
-	 
+
 }
 
 Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
@@ -44,6 +37,13 @@ Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, 
 	this->vertices = vertices; 
 	this->indices = indices; 
 	this->textures = textures; 
+	
+	// Each Mesh has a collider 
+	if (m_collider == nullptr) {
+		m_collider = new Collider();
+	}
+	
+	this->setBbox(); 
 
 	this->setupMesh(); 
 }
@@ -53,6 +53,7 @@ Mesh::~Mesh()
 	if (m_vao != nullptr) { delete m_vao; }
 	if (m_vbo != nullptr) { delete m_vbo; }
 	if (m_ibo != nullptr) { delete m_ibo; }
+	if (m_collider != nullptr) { delete m_collider;  }
 }
 
 
@@ -75,19 +76,101 @@ void Mesh::setupMesh()
 
 }
 
-void Mesh::initPlane()
+void Mesh::initTerrain(const char* filename, int sqrtTerrain)
 {
 	this->clear();
 
-	this->vertices = {
-		// positions          // normals           // texture coords
-		VertexData({glm::vec3(0.5f,  0.5f, 0.0f),    glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)}),    // top right
-		VertexData({glm::vec3( 0.5f, -0.5f, 0.0f),   glm::vec3(0.0f, 1.0f, 0.0f),   glm::vec2(1.0f, 0.0f)}),   // bottom right
-		VertexData({glm::vec3(-0.5f, -0.5f, 0.0f),   glm::vec3(0.0f, 0.0f, 1.0f),   glm::vec2(0.0f, 0.0f)}),  // bottom left
-		VertexData({glm::vec3(-0.5f,  0.5f, 0.0f),   glm::vec3(1.0f, 1.0f, 0.0f),   glm::vec2(0.0f, 1.0f)}),  // top left 
-	};
+	// Load heightmap 
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
 
-	this->indices = { 0, 1, 3, 
+	if (data == nullptr)
+	{
+		std::cout << "[STBI] Load Image Error : " << filename << std::endl;
+		return; 
+	}
+
+	// afficher une surface plane (16*16 sommets) composée de triangles.
+	unsigned int sqrtnVertex = std::sqrt(sqrtTerrain);
+	unsigned int vertexNumber = sqrtnVertex * sqrtnVertex;
+
+	this->vertices.reserve(vertexNumber);
+
+	// defined subdivision of the plane
+	float minPlane = -1.0f;
+	float maxPlane = 1.0f;
+	float dxy = (maxPlane - minPlane) / float(sqrtnVertex - 1);
+
+	if (nrChannels == 1)
+	{
+		std::cout << "Only intensity " << std::endl;
+	}
+
+	for (unsigned int n = 0; n < sqrtnVertex; n++)
+	{
+		for (unsigned int m = 0; m < sqrtnVertex; m++)
+		{
+			//unsigned int k = n*sqrtnVertex + m;
+			float textcoordx = static_cast<float>(m) / static_cast<float>(sqrtnVertex - 1);
+			float textcoordy = static_cast<float>(n) / static_cast<float>(sqrtnVertex - 1);
+
+			int tx = static_cast<int>(textcoordx * width);
+			int ty = static_cast<int>(textcoordy * height);
+			int pixValue = data[ty * nrChannels * width + tx * nrChannels];
+
+			float zheight = static_cast<float>(pixValue) / 255.0f;
+
+			this->vertices.push_back(VertexData{ glm::vec3(minPlane + m * dxy, maxPlane - n * dxy,  zheight),
+												 glm::vec3(0.0f, 1.0f, 0.0f), 
+												 glm::vec2(textcoordx, textcoordy)});
+
+		}
+	}
+	// Duplication to form GL_TRIANGLE STRIPS is equal to 2* (sqrtnVertex-1) - 1
+	unsigned int idxcount = (sqrtnVertex - 1) * (sqrtnVertex * 2) + (2 * (sqrtnVertex - 1) - 1); //Careful update indicesNumber when creating new geometry
+	unsigned int tmpCount = (sqrtnVertex - 1) * (sqrtnVertex * 2);
+
+	this->indices.reserve(idxcount);
+	std::vector<GLushort> tmpindices;
+	tmpindices.reserve(tmpCount);
+
+	for (unsigned int i = 0; i < tmpCount - 1; i += 2)
+	{
+		tmpindices.push_back(i / 2);
+		tmpindices.push_back(i / 2 + sqrtnVertex);
+	}
+
+	unsigned int countVertex = 0;  // every N=2*sqrtnVertex samples we duplicate the vertices k and k+1,
+	for (unsigned int k = 0; k < tmpCount; k++)
+	{
+		countVertex++;
+		this->indices.push_back(tmpindices[k]);
+
+		if (countVertex % (2 * sqrtnVertex) == 0)
+		{
+			this->indices.push_back(tmpindices[k]);
+			this->indices.push_back(tmpindices[(int)k + 1]);
+		}
+	}
+
+	// remove data loaded 
+	stbi_image_free(data);
+
+
+	setPrimitives(GL_TRIANGLE_STRIP);
+
+	setupMesh();
+}
+
+void Mesh::initQuad()
+{
+	this->clear(); 
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  0.0f, -1.0f),  glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f) }));  // v0
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, 0.0f,  1.0f),  glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 0.0f) })); // v1
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, 0.0f,  1.0f),  glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.0f, 1.0f) })); // v2
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, 0.0f, -1.0f),  glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f) })); // v3
+
+	this->indices = { 0, 1, 3,
 					1, 2, 3 }; 
 
 	setPrimitives(GL_TRIANGLE_STRIP);
@@ -95,50 +178,88 @@ void Mesh::initPlane()
 	setupMesh();
 }
 
-void Mesh::initCapsule()
-{
-	this->clear();
-}
-
-// ---------------------------------------
-// init Sphere data
-void Mesh::initSphere()
+// Capsule is just Two demi Spheres separated
+// radius : 0.5f; 
+// distance between two centers : 2.0f
+void Mesh::initCapsule(float radius, float distance)
 {
 	this->clear();
 
-	float radius = 1.0f; 
-	float dphi   = 1.0f; 
-	float drho  = 1.0f; 
+	// Order matter or swap bounds for phi
+	glm::vec3 c1(0.0f, 0.0f, 0.0f); // highest hemisphere
+	glm::vec3 c2 = c1 + glm::vec3(0.0f, distance, 0.0f); // lowest hemisphere
 
-	float minphi = -90.0f; 
-	float minrho = -180.0f; 
+
+	float dphi = 15.0f;
+	float drho = 15.0f;
+	// LAT LON
+	float minphi = -90.0f;
 	float maxphi = 90.0f;
+	float minrho = -180.0f;
 	float maxrho = 180.0f;
 
-	unsigned int nphi = (unsigned int)((maxphi - minphi) / dphi);
+	unsigned int nphi = (unsigned int)((maxphi - minphi) / dphi) + 1; // matplotlib basic 
 	unsigned int nrho = (unsigned int)((maxrho - minrho) / drho);
 
-	const glm::vec3 center(0.0f, 0.0f, 0.0f); 
+	glm::vec3 origin = c1; 
 
-
-	
 	for (unsigned int kphi = 0; kphi < nphi; kphi++)
+	{
+		if (kphi > nphi / 2.0f) {
+
+			origin = c2; // move origin
+		}
+		for (unsigned int krho = 0; krho < nrho; krho++)
+		{
+			float phi = glm::radians<float>(minphi + kphi * dphi);
+			float rho = glm::radians<float>(minrho + krho * drho);
+
+			// Not conventionnal : x,z is our moving plan 
+			// To have the poles aligned with up camera
+			glm::vec3 xyz(radius * glm::cos(phi) * glm::cos(rho),
+				radius * glm::sin(phi),
+				radius * glm::cos(phi) * glm::sin(rho)
+			);
+
+			xyz += origin;
+
+			glm::vec3 normal(glm::normalize(glm::vec3(xyz - origin)));
+			glm::vec2 uvs(kphi / (float)nphi, krho / (float)nrho);
+
+			this->vertices.push_back(VertexData({ xyz , normal, uvs }));
+
+		}
+	}
+
+
+	//     A -- D 
+	//	   | \  |
+	//     |  \ |
+	//     B -- C
+	// Triangle 1 : A B C 
+	// Triangle 2 : C D A 
+
+	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
 	{
 		for (unsigned int krho = 0; krho < nrho; krho++)
 		{
-			float phi = glm::radians<float>(minphi + kphi * dphi); 
-			float rho = glm::radians<float>(minrho + krho * drho);
+			// First Triangle
+			if (kphi != 0)
+			{
+				this->indices.push_back(kphi * nrho + krho);
+				this->indices.push_back((kphi + 1) * nrho + krho);
+				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));
+			}
 
-			glm::vec3 xyz(radius * glm::cos(phi) * glm::sin(rho),
-							radius * glm::cos(phi) * glm::cos(rho),
-							radius * glm::sin(phi));
+			// Second Triangle
+			if (kphi != nphi - 1)
+			{
+				// Indices 
+				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));
+				this->indices.push_back(kphi * nrho + ((krho + 1) % nrho));
+				this->indices.push_back(kphi * nrho + krho);
+			}
 
-			glm::vec3 normal(glm::vec3(xyz - center)); 
-			glm::vec2 uvs(0.0f, 0.0f); 
-
-			this->vertices.push_back(VertexData({ xyz , normal, uvs })); 
-
-			this->indices.push_back(kphi* nrho + krho);
 		}
 	}
 
@@ -150,7 +271,102 @@ void Mesh::initSphere()
 	m_nVertex = this->vertices.size();
 	indexCount = this->indices.size();
 
-	setPrimitives(GL_POINTS);
+	setPrimitives(GL_TRIANGLES);
+
+	setupMesh();
+
+
+
+
+
+}
+
+// Init Sphere with normals, UV, 
+// radius = 1.0f by default, 
+// center at 0 0 0 by default
+void Mesh::initSphere(float radius)
+{
+	this->clear();
+
+	// TODO : input parameters
+	const glm::vec3 center(0.0f, 0.0f, 0.0f);
+
+
+	float dphi   = 15.0f; 
+	float drho   = 15.0f; 
+	// LAT LON
+	float minphi = -90.0f; 
+	float maxphi = 90.0f;
+	float minrho = -180.0f; 
+	float maxrho = 180.0f;
+
+	unsigned int nphi = (unsigned int)((maxphi - minphi) / dphi) + 1; // matplotlib basic 
+	unsigned int nrho = (unsigned int)((maxrho - minrho) / drho);
+
+	
+	for (unsigned int kphi = 0; kphi < nphi; kphi++)
+	{
+		for (unsigned int krho = 0; krho < nrho; krho++)
+		{
+			float phi = glm::radians<float>(minphi + kphi * dphi); 
+			float rho = glm::radians<float>(minrho + krho * drho);
+
+			// Not conventionnal : x,z is our moving plan 
+			// To have the poles aligned with up camera
+			glm::vec3 xyz(radius * glm::cos(phi) * glm::cos(rho),
+				          radius * glm::sin(phi), 
+						  radius * glm::cos(phi) * glm::sin(rho)
+						  );
+
+			glm::vec3 normal(glm::normalize(glm::vec3(xyz - center))); 
+			glm::vec2 uvs(kphi / (float)nphi, krho / (float)nrho);
+
+			this->vertices.push_back(VertexData({ xyz + center , normal, uvs }));
+
+		}
+	}
+
+
+	//     A -- D 
+	//	   | \  |
+	//     |  \ |
+	//     B -- C
+	// Triangle 1 : A B C 
+	// Triangle 2 : C D A 
+
+	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
+	{
+		for (unsigned int krho = 0; krho < nrho; krho++)
+		{
+			// First Triangle
+			if (kphi != 0)
+			{
+				this->indices.push_back(kphi * nrho + krho);
+				this->indices.push_back((kphi + 1) * nrho + krho);
+				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));
+			}
+			
+			// Second Triangle
+			if (kphi != nphi - 1)
+			{
+				// Indices 
+				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));
+				this->indices.push_back(kphi * nrho + ((krho + 1) % nrho));
+				this->indices.push_back(kphi * nrho + krho);
+			}
+
+		}
+	}
+
+
+	// set pointers
+	m_pvertices = &this->vertices[0];
+	m_pindices = (GLushort*)&this->indices[0];
+
+	m_nVertex = this->vertices.size();
+	indexCount = this->indices.size();
+
+	setPrimitives(GL_TRIANGLES);
 
 	setupMesh();
 }
@@ -201,21 +417,15 @@ void Mesh::initCube()
 	m_nVertex = this->vertices.size();
 
 	// Sommets
-	int ki = 0;
-	for (unsigned int k = 0; k < m_nVertex; k++)
-	{
-		this->indices.push_back(k);
-		ki++;
-		if (((k + 1) % 4 == 0) && k > 0)
-		{
-			this->indices.push_back(k);
-			this->indices.push_back(k + 1);
-			ki++;
-			ki++;
-		}
-	}
+	this->indices =  {
+		 0,  1,  2,  3,  3,     // Face 0 - triangle strip ( v0,  v1,  v2,  v3)
+		 4,  4,  5,  6,  7,  7, // Face 1 - triangle strip ( v4,  v5,  v6,  v7)
+		 8,  8,  9, 10, 11, 11, // Face 2 - triangle strip ( v8,  v9, v10, v11)
+		12, 12, 13, 14, 15, 15, // Face 3 - triangle strip (v12, v13, v14, v15)
+		16, 16, 17, 18, 19, 19, // Face 4 - triangle strip (v16, v17, v18, v19)
+		20, 20, 21, 22, 23      // Face 5 - triangle strip (v20, v21, v22, v23)
+	};
 
-	this->indices.push_back(m_nVertex); 
 
 #if 0
 	debugMesh(); 
@@ -233,6 +443,7 @@ void Mesh::initCube()
 	setupMesh();
 
 }
+
 
 // Display Debug informations 
 void Mesh::debugMesh() const
@@ -379,6 +590,8 @@ bool Mesh::loadMesh(const char* filename)
 	std::cout << "Total: " << norms.size() << " normals\n";
 
 
+	SpaceEngine::boundingBox* bbox = m_collider->getpBbox(); 
+
 	
 	for (unsigned int i = 0; i < vert.size(); i++) {
 
@@ -399,21 +612,21 @@ bool Mesh::loadMesh(const char* filename)
 			vdata = { vert[i],glm::vec3(1.0f, 0.0f, 0.0f), uvs[i] };
 		}
 		
-		if (vert[i].x < bbox.minbbox.x) { bbox.minbbox.x = vert[i].x; }
-		if (vert[i].y < bbox.minbbox.y) { bbox.minbbox.y = vert[i].y; }
-		if (vert[i].z < bbox.minbbox.z) { bbox.minbbox.z = vert[i].z; }
-		if (vert[i].x > bbox.maxbbox.x) { bbox.maxbbox.x = vert[i].x; }
-		if (vert[i].y > bbox.maxbbox.y) { bbox.maxbbox.y = vert[i].y; }
-		if (vert[i].z > bbox.maxbbox.z) { bbox.maxbbox.z = vert[i].z; }
+		if (vert[i].x < bbox->minbbox.x) { bbox->minbbox.x = vert[i].x; }
+		if (vert[i].y < bbox->minbbox.y) { bbox->minbbox.y = vert[i].y; }
+		if (vert[i].z < bbox->minbbox.z) { bbox->minbbox.z = vert[i].z; }
+		if (vert[i].x > bbox->maxbbox.x) { bbox->maxbbox.x = vert[i].x; }
+		if (vert[i].y > bbox->maxbbox.y) { bbox->maxbbox.y = vert[i].y; }
+		if (vert[i].z > bbox->maxbbox.z) { bbox->maxbbox.z = vert[i].z; }
 
 		this->vertices.push_back(vdata); 
 		
 	}
 
-	bbox.center = bbox.minbbox + 0.5f * (bbox.maxbbox - bbox.minbbox);
-	float scale = std::max(bbox.maxbbox.x - bbox.minbbox.x, 
-							bbox.maxbbox.y - bbox.minbbox.y);
-	this->model_view = glm::translate(glm::mat4(1.0f), -bbox.center);
+	bbox->center = bbox->minbbox + 0.5f * (bbox->maxbbox - bbox->minbbox);
+	float scale = std::max(bbox->maxbbox.x - bbox->minbbox.x,
+						 bbox->maxbbox.y - bbox->minbbox.y);
+	this->model_view = glm::translate(glm::mat4(1.0f), -bbox->center);
 	// Make the extents 0-1
 	this->model_view = glm::scale(this->model_view, glm::vec3(1.0 / scale,
 										1.0 / scale,
@@ -444,30 +657,27 @@ void Mesh::clear()
 	m_nVertex = 0;
 	indexCount = 0;
 
-	this->bbox.minbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-	this->bbox.maxbbox = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN);
+	if (m_collider != nullptr) {
+		m_collider->invalidBbox(); 
+	}
+	else
+	{
+		m_collider = new Collider(); 
+	}
+	
 
 }
 
 void Mesh::setBbox()
 {
-	bbox.minbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-	bbox.maxbbox = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN);
+	if (m_collider == nullptr) { return;  }
+	m_collider->processBbox(this->vertices);
+}
 
-	for (const VertexData& pv : this->vertices)
-	{
-		for (unsigned int k = 0; k < 3; k++)
-		{
-			if (pv.positions[k] < bbox.minbbox[k]) {
-				bbox.minbbox[k] = pv.positions[k];
-			}
-
-			if (pv.positions[k] > bbox.maxbbox[k]) {
-				bbox.maxbbox[k] = pv.positions[k];
-			}
-		}
-
-	}
+void Mesh::setBbox(Collider collider)
+{
+	collider.processBbox(this->vertices); 
+	collider.attach(this); 
 }
 
 

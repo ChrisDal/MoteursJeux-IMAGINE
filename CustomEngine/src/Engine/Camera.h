@@ -28,6 +28,10 @@ private:
     glm::vec3 m_direction; 
     glm::vec3 m_right; 
     glm::vec3 m_up; 
+    glm::vec3 m_front; 
+
+    float m_yaw; 
+    float m_pitch; 
 
     glm::mat4 m_view; 
     glm::mat4 m_projection;
@@ -36,6 +40,9 @@ private:
 
 public : // Components 
     Velocity velocity; 
+    Velocity movements; 
+
+    float m_sensitivity = 0.02f; 
 
 public:
 
@@ -62,10 +69,12 @@ public:
     void setLookAt();
     glm::mat4 getLookAt() const { return m_view; }
 
-    void setPerspective(float zfar, float znear, float w, float h, bool ortho=false); 
+    void setPerspective(float znear, float zfar, float w, float h, bool ortho=false);
     glm::mat4 getPerspective() const { return m_projection;  }
 
     void move(const glm::vec3& direction, float dmove);
+    void updateVectors(); 
+    void processMovement(float dx, float dy); 
 
     void SimulateWalking(float intensity, float dt);
     inline void setWalking(bool walk) { m_walking = walk;  }
@@ -74,11 +83,7 @@ public:
 
     bool hasMesh() override { return false;  }
 
-    void Update(float deltatime) override {
-        
-        SimulateWalking(0.015f, glfwGetTime());
-    
-    }; 
+    void Update(float deltatime) override; 
 
 
     void print() override { 

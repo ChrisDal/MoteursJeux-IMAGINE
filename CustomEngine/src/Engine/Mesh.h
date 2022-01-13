@@ -3,10 +3,11 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-
+// GLM 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
 
+// Rendering 
 #include "Rendering/VertexData.h"
 #include "Rendering/VertexArrayBuffer.h"
 #include "Rendering/VertexBuffer.hpp"
@@ -14,26 +15,19 @@
 #include "Rendering/IndexBuffer.hpp"
 #include "Rendering/Texture.h"
 #include "Rendering/ShaderProgram.h"
+#include "Rendering/Material.h"
+
+// Geometry
+#include "GeomPhysics.h"
+
+#include "Collider.h"
 
 
-namespace SpaceEngine {
-
-	struct boundingBox
-	{
-		glm::vec3 minbbox; 
-		glm::vec3 maxbbox; 
-		glm::vec3 center; 
-	};
-	
-	// Visualise Bounding Box 
-	
-
-}
 
 class Mesh
 {
 
-private: 
+protected: 
 	//  render data
 	VertexArrayBuffer* m_vao; 
 	VertexBuffer* m_vbo;
@@ -42,6 +36,9 @@ private:
 
 	// shader 
 	ShaderProgram* m_shader = nullptr; // if not 
+
+	// Material 
+	Material* m_material; 
 
 	//  Triangle or Triangle Strip 
 	GLenum m_primitives;
@@ -55,23 +52,22 @@ private:
 	VertexData* m_pvertices;
 	GLushort* m_pindices;
 
-	void setupMesh();
-
 	bool hasUV = false;
 	bool hasNormals = false; 
 	glm::mat4 model_view; 
-
-
-protected: 
 
 	// mesh data
 	std::vector<VertexData>	  vertices;
 	std::vector<unsigned int> indices;
 	std::vector<Texture>      textures;
-	SpaceEngine::boundingBox  bbox;   // Bounding box of mesh 
 
-	// Debug 
+	// Bounding Box if 
+	Collider* m_collider; 
+	//SpaceEngine::boundingBox  bbox;   // Bounding box of mesh 
+
+	// Mesh utils Functions 
 	void debugMesh() const; 
+	void setupMesh();
 
 public:
 
@@ -83,17 +79,21 @@ public:
 
 	~Mesh(); 
 
-	void initSphere(); 
+	void initSphere(float radius=1.0f); 
 	void initCube();
-	void initCapsule();
-	void initPlane(); 
+	void initCapsule(float radius=0.5f, float distance=1.0f);
+	void initPlane() {};
+	void initQuad(); 
+	void initTerrain(const char* filename, int sqrtTerrain=16);
+
 
 	bool loadMesh(const char* filename); 
 	void clear(); 
 
-	// Bounding Box 
+	// Collider Box  
+	SpaceEngine::boundingBox getBbox() const { return m_collider->getBbox() ;  }
+	void setBbox(Collider collider); 
 	void setBbox(); 
-	SpaceEngine::boundingBox getBbox() const { return bbox; };
 
 	unsigned int getNumTri() { return (int)vertices.size() / 3; }
 

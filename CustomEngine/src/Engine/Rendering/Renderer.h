@@ -47,7 +47,7 @@ public:
 	void Draw(const VertexArrayBuffer& vao, const IndexBuffer& ibo, const ShaderProgram& shader) const;
 	void Draw(const VertexArrayBuffer* vao, const IndexBuffer* ibo, const ShaderProgram* shader) const;
 	void Draw(Mesh* mesh, const ShaderProgram* shader) const;
-	void Draw(GameObject* gmo, int shadertype = -1) const;
+	void Draw(GameObject* gmo, Material* mat = nullptr, int shadertype = -1) const;
 	void Draw(SceneNode* scene) const;
 	void Draw(Mesh* mesh, int shaderType) const;
 	

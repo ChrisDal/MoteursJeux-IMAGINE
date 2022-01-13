@@ -23,6 +23,7 @@ private:
 
     // Mesh
     Mesh* m_mesh; 
+    Material* m_mat; 
     SpaceEngine::boundingBox m_bbox; 
 
     // -----------
@@ -67,14 +68,20 @@ public:
     // Print game object informations
     void print() override;
     bool hasMesh() override { return true; }
+    bool hasMaterial() const { return m_mat != nullptr;  }
 
     // Mesh
     void initMesh(int typemesh);
     void initMesh(const char* filename);
     bool loadMesh(const std::string& filename);
 
+    // Material  
+    void initMaterial(Texture* texture, const glm::vec3& color);
+    
+
     // Rendering
     Mesh* getMesh() const { return m_mesh; }
+    Material* getMaterial() const { return m_mat; }
 
 
     // Game 
