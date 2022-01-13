@@ -135,6 +135,7 @@ void Camera::updateVectors()
 
 void Camera::processMovement(float dx, float dy)
 {
+	
 	m_yaw += dx * m_sensitivity;
 	m_pitch += dy * m_sensitivity;
 

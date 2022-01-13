@@ -191,7 +191,6 @@
     <ClInclude Include="src\Engine\Collider.h" />
     <ClInclude Include="src\Engine\GeomPhysics.h" />
     <ClInclude Include="src\Engine\Sphere.h" />
-    <ClInclude Include="src\Engine\Command.h" />
     <ClInclude Include="src\Engine\BasicGameObject.h" />
     <ClInclude Include="src\Engine\Camera.h" />
     <ClInclude Include="dependencies\include\glad\glad.h" />
@@ -499,7 +498,6 @@
     <ClInclude Include="src\Engine\Rendering\Rendering.h" />
     <ClInclude Include="src\Engine\Rotoform.h" />
     <ClInclude Include="src\Engine\SceneNode.h" />
-    <ClInclude Include="src\Engine\SubCommand.h" />
     <ClInclude Include="src\Engine\Transform.h" />
     <ClInclude Include="src\Engine\Rendering\IndexBuffer.hpp" />
     <ClInclude Include="src\Engine\Mesh.h" />

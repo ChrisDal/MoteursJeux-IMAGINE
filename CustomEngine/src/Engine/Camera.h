@@ -42,7 +42,7 @@ public : // Components
     Velocity velocity; 
     Velocity movements; 
 
-    float m_sensitivity = 0.1f; 
+    float m_sensitivity = 0.02f; 
 
 public:
 

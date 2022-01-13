@@ -19,6 +19,7 @@ bool callbackWindows = false;
 bool firstMouse = true; 
 float lastX = SCR_WIDTH / 2.0f; 
 float lastY = SCR_HEIGHT / 2.0f;
+glm::vec2 Game::camDeadZone = glm::vec2((float)SCR_WIDTH/5.0f, (float)SCR_HEIGHT / 5.0f);
 float Game::camoffsetx = 0.0f;
 float Game::camoffsety = 0.0f;
 bool processCamera = true; 
@@ -131,8 +132,8 @@ void Game::initWindow()
     glfwMakeContextCurrent(m_Window);
     glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
     // Mouse Inputs 
-    //glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-    //glfwSetCursorPosCallback(m_Window, mouse_callback);
+    glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    glfwSetCursorPosCallback(m_Window, mouse_callback);
 
     
 
@@ -175,6 +176,16 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
         lastY = ypos;
         firstMouse = false;
     }
+
+    // In dead Zone wont treat  
+    bool inDeadZoneX = ((float)SCR_WIDTH / 2.0f) - Game::camDeadZone.x < xpos && xpos < ((float)SCR_WIDTH / 2.0f ) + Game::camDeadZone.x; 
+    bool inDeadZoneY = ((float)SCR_HEIGHT / 2.0f) - Game::camDeadZone.y < ypos && ypos < ((float)SCR_HEIGHT / 2.0f)  + Game::camDeadZone.y;
+    if (inDeadZoneX && inDeadZoneY)
+    {
+        processCamera = false;
+        return;
+    }
+
 
     Game::camoffsetx = xpos - lastX;
     Game::camoffsety = lastY - ypos; // reversed since y-coordinates go from bottom to top
@@ -312,7 +323,7 @@ void Game::RunGameLoop()
         double deltaTime = 0.001 * std::chrono::duration_cast<std::chrono::milliseconds>(m_startTime - m_lastTime).count();
         
         m_lastTime = m_startTime;
-        //mFrameTime += deltaTime;
+        mFrameTime += deltaTime;
 
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -336,13 +347,16 @@ void Game::RunGameLoop()
             m_camera->processMovement(Game::camoffsetx, Game::camoffsety);
         }
 
+        while (mFrameTime >= 1.0f/APP_MAX_FRAMERATE) 
+        {
+            // Update Game 
+            // -----------
+            Update(static_cast<float>(deltaTime));
 
-        // Update Game 
-        // -----------
-        Update(static_cast<float>(deltaTime));
-
+            mFrameTime -= 1.0f / APP_MAX_FRAMERATE;
+            
+        }
         
-
         // IMGUI rendering
         // -----------------
         RenderDebugMenu();
