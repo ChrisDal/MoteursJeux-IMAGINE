@@ -6,8 +6,9 @@ Camera::Camera()
 	: m_zNear(0.1f), m_zFar(100.f),
 	m_target(glm::vec3(0.0f, 0.0f, 0.0f)),
 	m_projection(1.0f), m_fov(45.f), 
-	m_walking(false), m_yaw(-90.f)
+	m_walking(false), m_yaw(-90.f), m_pitch(0.0f)
 {
+	setTargetPoint(m_target);
 	velocity.setId(getId()); 
 	velocity.setVelocity(0.025f, 0.01f, 0.025f);
 }
@@ -18,11 +19,12 @@ Camera::Camera(SceneNode* parent, const glm::vec3& position,
 	m_zNear(0.1f), m_zFar(100.f),
 	m_target(position + glm::vec3(0.0f, 0.0f, -1.0f)),
 	m_projection(1.0f), m_fov(45.f), 
-	m_walking(false), m_yaw(-90.f)
+	m_walking(false), m_yaw(-90.f), m_pitch(0.0f)
 {
 	setTargetPoint(m_target); 
 	velocity.setId(getId());
 	velocity.setVelocity(0.015f, 0.01f, 0.015f);
+
 }
 
 
@@ -32,11 +34,12 @@ Camera::Camera(BasicGameObject* parent, const glm::vec3& position,
 	m_zNear(0.1f), m_zFar(100.f),
 	m_target(position + glm::vec3(0.0f, 0.0f, -1.0f)),
 	m_projection(1.0f), m_fov(45.f),
-	m_walking(false), m_yaw(-90.f)
+	m_walking(false), m_yaw(-90.f), m_pitch(0.0f)
 {
 	setTargetPoint(m_target);
 	velocity.setId(getId());
 	velocity.setVelocity(0.015f, 0.01f, 0.015f);
+
 }
 
 

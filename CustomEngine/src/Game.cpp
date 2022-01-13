@@ -23,6 +23,7 @@ glm::vec2 Game::camDeadZone = glm::vec2((float)SCR_WIDTH/5.0f, (float)SCR_HEIGHT
 float Game::camoffsetx = 0.0f;
 float Game::camoffsety = 0.0f;
 bool processCamera = true; 
+bool cameraRotation = true; 
 
 
 
@@ -170,6 +171,12 @@ void Game::initWindow()
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
+    if (!cameraRotation) { 
+        Game::camoffsetx = 0.0f;
+        Game::camoffsety = 0.0f;
+        return;  
+    }
+    
     if (firstMouse)
     {
         lastX = xpos;
@@ -268,6 +275,8 @@ void Game::processInput(GLFWwindow* window)
 
 Game::~Game()
 {
+    std::cout << "\nGame Destructor\n"; 
+    
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
     if (VAO != nullptr){ delete VAO; }
@@ -342,7 +351,7 @@ void Game::RunGameLoop()
         // -----
         processInput(m_Window);
 
-        if (processCamera)
+        if (processCamera && cameraRotation)
         {
             m_camera->processMovement(Game::camoffsetx, Game::camoffsety);
         }
@@ -440,13 +449,18 @@ void Game::RenderDebugMenu() {
     ImGui::SliderFloat("translationY", &ftranslate.y, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
     ImGui::SliderFloat("translationZ", &ftranslate.z, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
     ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+    
+                                                            
     // /Buttons return true when clicked (most widgets return true when edited/activated)
-    if (ImGui::Button("Wireframe Mode"))
+    if (ImGui::Button("Wireframe Mode")) {
         wireframeMode = !wireframeMode;
+    }
+        
     ImGui::SameLine();
-    if (ImGui::Button("Orthographic Camera")) {
-        orthoprojection = !orthoprojection;
-        m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, orthoprojection); 
+
+    if (ImGui::Button("Stop Camera Rotation")) {
+        
+        cameraRotation != cameraRotation; 
     }
         
 
@@ -501,6 +515,9 @@ void Game::RenderDebugMenu() {
     {
         m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
     }
+
+    
+
     
 
 }
