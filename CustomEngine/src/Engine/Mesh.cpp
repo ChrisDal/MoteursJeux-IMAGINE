@@ -7,12 +7,7 @@ Mesh::Mesh()
 	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLE_STRIP), 
 	model_view(glm::mat4(1.0f))
 {
-	bbox.minbbox = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN); 
-	bbox.minbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-
-	this->vertices = {};
-	this->indices = {};
-	this->textures = {};
+	this->clear(); 
 }
 
 Mesh::Mesh(const char* filename)
@@ -20,9 +15,7 @@ Mesh::Mesh(const char* filename)
 	m_primitives(GL_TRIANGLES), 
 	model_view(glm::mat4(1.0f))
 {
-	this->vertices = {};
-	this->indices = {};
-	this->textures = {};
+	this->clear(); 
 	
 	// switch according to type 
 	int typefile = - 1; 
@@ -34,7 +27,7 @@ Mesh::Mesh(const char* filename)
 	{
 		std::cout << "Cannot handle this extension file\n" << std::endl; 
 	}
-	 
+
 }
 
 Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
@@ -44,6 +37,13 @@ Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, 
 	this->vertices = vertices; 
 	this->indices = indices; 
 	this->textures = textures; 
+	
+	// Each Mesh has a collider 
+	if (m_collider == nullptr) {
+		m_collider = new Collider();
+	}
+	
+	this->setBbox(); 
 
 	this->setupMesh(); 
 }
@@ -53,6 +53,7 @@ Mesh::~Mesh()
 	if (m_vao != nullptr) { delete m_vao; }
 	if (m_vbo != nullptr) { delete m_vbo; }
 	if (m_ibo != nullptr) { delete m_ibo; }
+	if (m_collider != nullptr) { delete m_collider;  }
 }
 
 
@@ -589,6 +590,8 @@ bool Mesh::loadMesh(const char* filename)
 	std::cout << "Total: " << norms.size() << " normals\n";
 
 
+	SpaceEngine::boundingBox* bbox = m_collider->getpBbox(); 
+
 	
 	for (unsigned int i = 0; i < vert.size(); i++) {
 
@@ -609,21 +612,21 @@ bool Mesh::loadMesh(const char* filename)
 			vdata = { vert[i],glm::vec3(1.0f, 0.0f, 0.0f), uvs[i] };
 		}
 		
-		if (vert[i].x < bbox.minbbox.x) { bbox.minbbox.x = vert[i].x; }
-		if (vert[i].y < bbox.minbbox.y) { bbox.minbbox.y = vert[i].y; }
-		if (vert[i].z < bbox.minbbox.z) { bbox.minbbox.z = vert[i].z; }
-		if (vert[i].x > bbox.maxbbox.x) { bbox.maxbbox.x = vert[i].x; }
-		if (vert[i].y > bbox.maxbbox.y) { bbox.maxbbox.y = vert[i].y; }
-		if (vert[i].z > bbox.maxbbox.z) { bbox.maxbbox.z = vert[i].z; }
+		if (vert[i].x < bbox->minbbox.x) { bbox->minbbox.x = vert[i].x; }
+		if (vert[i].y < bbox->minbbox.y) { bbox->minbbox.y = vert[i].y; }
+		if (vert[i].z < bbox->minbbox.z) { bbox->minbbox.z = vert[i].z; }
+		if (vert[i].x > bbox->maxbbox.x) { bbox->maxbbox.x = vert[i].x; }
+		if (vert[i].y > bbox->maxbbox.y) { bbox->maxbbox.y = vert[i].y; }
+		if (vert[i].z > bbox->maxbbox.z) { bbox->maxbbox.z = vert[i].z; }
 
 		this->vertices.push_back(vdata); 
 		
 	}
 
-	bbox.center = bbox.minbbox + 0.5f * (bbox.maxbbox - bbox.minbbox);
-	float scale = std::max(bbox.maxbbox.x - bbox.minbbox.x, 
-							bbox.maxbbox.y - bbox.minbbox.y);
-	this->model_view = glm::translate(glm::mat4(1.0f), -bbox.center);
+	bbox->center = bbox->minbbox + 0.5f * (bbox->maxbbox - bbox->minbbox);
+	float scale = std::max(bbox->maxbbox.x - bbox->minbbox.x,
+						 bbox->maxbbox.y - bbox->minbbox.y);
+	this->model_view = glm::translate(glm::mat4(1.0f), -bbox->center);
 	// Make the extents 0-1
 	this->model_view = glm::scale(this->model_view, glm::vec3(1.0 / scale,
 										1.0 / scale,
@@ -654,30 +657,27 @@ void Mesh::clear()
 	m_nVertex = 0;
 	indexCount = 0;
 
-	this->bbox.minbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-	this->bbox.maxbbox = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN);
+	if (m_collider != nullptr) {
+		m_collider->invalidBbox(); 
+	}
+	else
+	{
+		m_collider = new Collider(); 
+	}
+	
 
 }
 
 void Mesh::setBbox()
 {
-	bbox.minbbox = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-	bbox.maxbbox = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN);
+	if (m_collider == nullptr) { return;  }
+	m_collider->processBbox(this->vertices);
+}
 
-	for (const VertexData& pv : this->vertices)
-	{
-		for (unsigned int k = 0; k < 3; k++)
-		{
-			if (pv.positions[k] < bbox.minbbox[k]) {
-				bbox.minbbox[k] = pv.positions[k];
-			}
-
-			if (pv.positions[k] > bbox.maxbbox[k]) {
-				bbox.maxbbox[k] = pv.positions[k];
-			}
-		}
-
-	}
+void Mesh::setBbox(Collider collider)
+{
+	collider.processBbox(this->vertices); 
+	collider.attach(this); 
 }
 
 

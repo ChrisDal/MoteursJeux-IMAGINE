@@ -1,5 +1,6 @@
 #include "GameObject.hpp"
 #include "SceneNode.h"
+#include "Sphere.h"
 
 
 
@@ -137,7 +138,8 @@ void GameObject::initMesh(int typemesh)
         }
         else if (typemesh == 3)
         {
-            m_mesh->initSphere();
+            delete m_mesh; 
+            m_mesh = new Sphere(1.0f, glm::vec3(0.0f, 0.0f, 0.0f)); 
             std::cout << "[LOG Mesh] Init Sphere radius 1.0\n";
         }
         else

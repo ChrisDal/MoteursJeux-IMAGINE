@@ -143,7 +143,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;PROJECT_DIR=R"($(ProjectDir))";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -155,6 +155,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\Collider.cpp" />
+    <ClCompile Include="src\Engine\Sphere.cpp" />
     <ClCompile Include="src\Engine\Components.cpp" />
     <ClCompile Include="src\Engine\BasicGameObject.cpp" />
     <ClCompile Include="src\Engine\Camera.cpp" />
@@ -186,6 +188,9 @@
     <ClCompile Include="src\Engine\Rendering\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Engine\Collider.h" />
+    <ClInclude Include="src\Engine\GeomPhysics.h" />
+    <ClInclude Include="src\Engine\Sphere.h" />
     <ClInclude Include="src\Engine\Command.h" />
     <ClInclude Include="src\Engine\BasicGameObject.h" />
     <ClInclude Include="src\Engine\Camera.h" />
