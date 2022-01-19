@@ -147,15 +147,15 @@ void Renderer::Draw(GameObject* gmo, Material* mat, int shadertype) const
 	glm::mat4x4 test_ones = glm::mat4(1.0f);
 
 	// set transformation matrix for each game object
-	SpaceEngine::Transform t = gmo->getTransformation(true);
-	chosenShader->setMat4("u_transform_matrix", glm::value_ptr(t.getMatrixTransform()));
+	SpaceEngine::Transform tNode = gmo->getTransformation(false);
+	chosenShader->setMat4("u_transform_matrix", glm::value_ptr(tNode.getMatrixTransform()));
 
 	// set world position matrix
 	chosenShader->setMat4("u_world_matrix", glm::value_ptr(test_ones));
 
 	// set internal transform matrix
-	SpaceEngine::Transform t_interne = gmo->getTransformation(false);
-	glm::mat4 modelTransfointern = t_interne.getMatrixTransform() * meshobject->getModelView(); 
+	SpaceEngine::Transform t_interne = gmo->getTransformation(true);
+	glm::mat4 modelTransfointern = t_interne.getMatrixTransform() * meshobject->getModelView();
 	chosenShader->setMat4("u_internal_tsfm_matrix", glm::value_ptr(modelTransfointern));
 	
 	// View Proj Matrix 

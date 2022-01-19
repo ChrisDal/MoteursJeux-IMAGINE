@@ -69,7 +69,7 @@ public:
     // Interface
     BasicGameObject& Rotate(float alpha, float beta, float gamma, bool internal = false);
     BasicGameObject& Translate(float tx, float ty, float tz, bool internal = false);
-    BasicGameObject& Translate(const glm::vec3& transvec, bool internal);
+    BasicGameObject& Translate(const glm::vec3& transvec, bool internal = false);
     BasicGameObject& Scale(float sx, float sy, float sz, bool internal = false);
     glm::vec3 Position() const;
     void Position(float x, float y, float z);

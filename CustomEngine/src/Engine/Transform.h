@@ -125,6 +125,7 @@ public:
 
 	// add a translation : tx, ty, tz
 	void addTranslate(float tx, float ty, float tz);
+	void addTranslate(const glm::vec3& txyz);
 	// add a translation += (txyz, txyz, txyz)
 	void addHomogenousTranslate(float txyz);
 

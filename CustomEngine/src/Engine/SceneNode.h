@@ -78,6 +78,7 @@ public:
     // Interface
     void Rotate(float alpha, float beta, float gamma, bool internal = false);
     void Translate(float tx, float ty, float tz, bool internal = false);
+    void Translate(const glm::vec3& txyz, bool internal= false);
     void Scale(float sx, float sy, float sz, bool internal = false);
     void setTransformation(const SpaceEngine::Transform& transformation, bool internal=false); 
     void addTransformation(const SpaceEngine::Transform& transformation, bool internal = false);

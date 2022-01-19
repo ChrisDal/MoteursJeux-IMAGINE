@@ -89,7 +89,7 @@ protected :
     
 
 private:
-    void processInput(GLFWwindow* window);      //!< Process Keyboard Inputs 
+    void processInput(GLFWwindow* window, bool internal=false);      //!< Process Keyboard Inputs 
     void retrievePlayer(SceneNode* root);       //!< Utility function Retrieve GameObject Player
     GLFWwindow* m_Window;                       /*!< GLFW Window */
 

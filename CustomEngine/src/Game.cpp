@@ -24,7 +24,7 @@ float Game::camoffsetx = 0.0f;
 float Game::camoffsety = 0.0f;
 bool processCamera = true; 
 bool cameraRotation = true; 
-
+bool useInternal = true; 
 
 
 
@@ -205,7 +205,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void Game::processInput(GLFWwindow* window)
+void Game::processInput(GLFWwindow* window, bool internal)
 {
     GameObject* actor = static_cast<GameObject*>(m_player);
 
@@ -234,14 +234,13 @@ void Game::processInput(GLFWwindow* window)
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-
         movement += sensitivity * Game::m_left;
         std::cout << "L-";
     }
 
     if (movement.length() != 0.0)
     {
-        actor->Translate(movement.x, movement.y, movement.z, false);
+        actor->Translate(movement, useInternal);
     }
 
     // Mouse 
@@ -355,7 +354,9 @@ void Game::RunGameLoop()
         
         // input
         // -----
-        processInput(m_Window);
+        processInput(m_Window, useInternal);
+        // Rotation automatic
+        m_player->Rotate(0.2f, 0.2f, 0.0f, true);
 
         if (processCamera && cameraRotation)
         {
@@ -464,9 +465,9 @@ void Game::RenderDebugMenu() {
         
     ImGui::SameLine();
 
-    if (ImGui::Button("Stop Camera Rotation")) {
+    if (ImGui::Button("Internal Transform translation")) {
         
-        cameraRotation != cameraRotation; 
+        useInternal != useInternal;
     }
         
 

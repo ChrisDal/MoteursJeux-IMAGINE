@@ -185,6 +185,19 @@ void SceneNode::Translate(float tx, float ty, float tz, bool internal) {
     }
 }
 
+
+void SceneNode::Translate(const glm::vec3& txyz, bool internal) {
+
+    if (internal)
+    {
+        getObject()->Translate(txyz, true);
+    }
+    else
+    {
+        m_tsfm_world.addTranslate(txyz);
+    }
+}
+
 void SceneNode::Scale(float sx, float sy, float sz, bool internal) {
 
     if (internal)

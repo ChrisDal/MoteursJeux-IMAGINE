@@ -287,6 +287,14 @@ namespace SpaceEngine {
 		m_translation.z += tz;
 	}
 
+	// add a translation : vec3 
+	void Transform::addTranslate(const glm::vec3& txyz)
+	{
+		m_translation.x += txyz.x;
+		m_translation.y += txyz.y;
+		m_translation.z += txyz.z;
+	}
+
 	// add a translation += (txyz, txyz, txyz)
 	void Transform::addHomogenousTranslate(float txyz)
 	{
