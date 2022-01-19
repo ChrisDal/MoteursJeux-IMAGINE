@@ -143,15 +143,18 @@ void Renderer::Draw(GameObject* gmo, Material* mat, int shadertype) const
 	// Set Uniforms 
 	// -------------
 	// set uniform transform 
+	
+	glm::mat4x4 test_ones = glm::mat4(1.0f);
+
 	// set transformation matrix for each game object
 	SpaceEngine::Transform t = gmo->getTransformation();
 	chosenShader->setMat4("u_transform_matrix", glm::value_ptr(t.getMatrixTransform()));
 
 	// set world position matrix
-	chosenShader->setMat4("u_world_matrix", glm::value_ptr(gmo->getWorldMat()));
+	chosenShader->setMat4("u_world_matrix", glm::value_ptr(test_ones));
 
 	// set internal transform matrix
-	SpaceEngine::Transform t_interne = gmo->getTransformation(true);
+	SpaceEngine::Transform t_interne = gmo->getTransformation(false);
 	glm::mat4 modelTransfointern = t_interne.getMatrixTransform() * meshobject->getModelView(); 
 	chosenShader->setMat4("u_internal_tsfm_matrix", glm::value_ptr(modelTransfointern));
 	
@@ -178,15 +181,16 @@ void Renderer::Draw(GameObject* gmo, Material* mat, int shadertype) const
 
 void Renderer::Draw(SceneNode* scene) const
 {
-	for (int k = 0; k < scene->getObjectNumber(); k++)
-	{
-		BasicGameObject* obj = scene->getObject(k); 
+	if (scene->haveGmo()) {
+		BasicGameObject* obj = scene->getObject();
 		if (obj->hasMesh())
 		{
-			this->Draw(static_cast<GameObject*>(obj), nullptr,  -1);
+			this->Draw(static_cast<GameObject*>(obj), nullptr, -1);
 		}
-		
 	}
+	
+		
+	
 
 	for (int i = 0; i < scene->getChildrenNumber(); i++)
 	{

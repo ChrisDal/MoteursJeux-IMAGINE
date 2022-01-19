@@ -215,28 +215,33 @@ void Game::processInput(GLFWwindow* window)
         return;
     }
 
+    glm::vec3 movement = glm::vec3(0.0f);
+
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        actor->Position(actor->Position() + sensitivity*Game::m_zneg);
-        //actor->velocity.vz -= 5.0f;
+        movement += sensitivity * Game::m_zneg; 
         std::cout << "U-";
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        actor->Position(actor->Position() + sensitivity*Game::m_zpos);
+        movement += sensitivity * Game::m_zpos;
         std::cout << "B-";
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        //actor->velocity.vx += 5.0f;
-        actor->Position(actor->Position() + sensitivity*Game::m_right);
+        movement += sensitivity * Game::m_right;
         std::cout << "R-";
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
 
-        actor->Position(actor->Position() + sensitivity*Game::m_left);
+        movement += sensitivity * Game::m_left;
         std::cout << "L-";
+    }
+
+    if (movement.length() != 0.0)
+    {
+        actor->Translate(movement.x, movement.y, movement.z, false);
     }
 
     // Mouse 
@@ -299,16 +304,17 @@ Game::~Game()
 
 }
 
+// Find player through SceneGraph
 void Game::retrievePlayer(SceneNode* root)
 {
-    for (int k = 0; k < root->getObjectNumber(); k++)
+    if (root->haveGmo())
     {
-        bool isPlayer = root->getObject(k)->isPlayer();
-        if (isPlayer) {
-            m_player = root->getObject(k); 
-            return; 
+        if (root->getObject()->isPlayer()) {
+            m_player = root->getObject();
+            return;
         }
     }
+    
 
     for (int i = 0; i < root->getChildrenNumber(); i++)
     {
@@ -616,7 +622,7 @@ void Game::initScene()
     m_scene = new SceneNode(); //  ROOT NODE 
 
     SceneNode* nodePlayer = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
-    SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    //SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
 
 
     // Game Objects
@@ -630,7 +636,7 @@ void Game::initScene()
     m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
 
 
-    GameObject* lune = new GameObject(etape1, glm::vec3(1.5, 0.0, -3.0), -1);
+    /*GameObject* lune = new GameObject(etape1, glm::vec3(1.5, 0.0, -3.0), -1);
     lune->initMesh(0);
     SpaceEngine::Transform transfolune;
     transfolune.addRotation(0.0f, 85.0f, 10.0f);
@@ -652,7 +658,7 @@ void Game::initScene()
 
     GameObject* ground = new GameObject(m_scene, glm::vec3(0.0, -2.0, 0.0),
                                         -1, "", "Terrain");
-    ground->initMesh(1); 
+    ground->initMesh(1); */
 
 
 

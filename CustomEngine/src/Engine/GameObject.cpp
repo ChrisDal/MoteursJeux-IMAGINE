@@ -6,7 +6,7 @@
 
 
 // Constructos
-GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId,
+/*GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId,
     std::string filename, std::string tag)
     : m_mesh(nullptr),
     m_ntexture(textureId),
@@ -14,14 +14,14 @@ GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId
     BasicGameObject(parent, center, tag), 
     m_mat(nullptr)
 {
-    /*m_position = glm::vec3(center);
+    m_position = glm::vec3(center);
     // matrice de transformation interne
     m_internal.setAsIdentity();
     m_internal.setTranslate(m_position);
     // matrice de transformation monde
     m_world = glm::translate(glm::mat4x4(1.0f), parent->Position());
-    m_id = ++g_id;*/
-};
+    m_id = ++g_id;
+};*/
 
 GameObject::GameObject(SceneNode* parent, glm::vec3 center, short int textureId,
     std::string filename, std::string tag)

@@ -12,13 +12,15 @@ private:
     // Tree
     SceneNode* m_parent = nullptr;
     std::vector<SceneNode*> m_children;
-    std::vector<BasicGameObject*> m_objects;
+    BasicGameObject* m_object; // One gameObject per node 
+    //std::vector<BasicGameObject*> m_objects;
 
     // Space  
     glm::vec3 m_origin;
     glm::vec3 m_position;
+    // Transformation
     SpaceEngine::Transform m_tsfm_world;    // position and orientation and scaling at Time t=0
-    SpaceEngine::Transform m_tsfm_internal; // Internal transformation RT
+    //SpaceEngine::Transform m_tsfm_internal; // Internal transformation RT
 
     // ID
     int m_nid = -1;
@@ -44,18 +46,16 @@ public:
     // HANDLING HIERARCHY 
     // -----------------------
 
-    // Nodes  
+    // Nodes  : multiple children
     void addChild(SceneNode* node);
     void setParent(SceneNode* node);
     std::vector<SceneNode*> getNodes();
     SceneNode* getNode(int x);
-    int getChildrenNumber() const; // child is a node
+    int getChildrenNumber() const; 
 
-    // Game Objects of node
+    // One GameObject Per node 
     void addObject(BasicGameObject* gmo);
-    std::vector<BasicGameObject*> getObjects();
-    BasicGameObject* getObject(int x);
-    int getObjectNumber() const; // Game object is an object 
+    BasicGameObject* getObject();
 
     // -----------------
     // Transformations
@@ -65,15 +65,22 @@ public:
     // World : Transformation in repere world
     glm::vec3 getOrigin() const { return m_origin; }
     glm::vec3 getPosition() const;
-    glm::mat4x4 getMatInternalTransform();
+    // Get Transform to World 
     glm::mat4x4 getMatWorldTransform();
-    SpaceEngine::Transform getInternalTransform() const;
     SpaceEngine::Transform getWorldTransform();
+    // Get Node Matrix 
+    SpaceEngine::Transform getNodeTransform(); // Get Node + GameObject transform
+    glm::mat4x4 getMatNodeTransform(); // Get Node + GameObject transform
+    // Get All in One : SceneNode transform + GameObject 
+    SpaceEngine::Transform getTotalNodeTransform(); // Get Node + GameObject transform
+    glm::mat4x4 getMatTotalNodeTransform(); // Get Node + GameObject transform
 
     // Interface
     void Rotate(float alpha, float beta, float gamma, bool internal = false);
     void Translate(float tx, float ty, float tz, bool internal = false);
     void Scale(float sx, float sy, float sz, bool internal = false);
+    void setTransformation(const SpaceEngine::Transform& transformation, bool internal=false); 
+    void addTransformation(const SpaceEngine::Transform& transformation, bool internal = false);
 
     // Position of the sceneNode
     void setPosition(float x, float y, float z);
@@ -95,6 +102,9 @@ public:
     int getIntId() const;
 
     void print();
+
+    // have a valid game object 
+    inline bool haveGmo() const { return m_object != nullptr;  }
 
     // operators
     bool operator==(const SceneNode* other);

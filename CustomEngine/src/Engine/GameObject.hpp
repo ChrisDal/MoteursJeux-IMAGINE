@@ -56,9 +56,9 @@ public:
     GameObject(SceneNode* parent, glm::vec3 center,
         short int textureId = -1, std::string filename = "",
         std::string tag = "Default");
-    GameObject(GameObject* parent, glm::vec3 center,
+    /*GameObject(GameObject* parent, glm::vec3 center,
         short int textureId = -1, std::string filename = "",
-        std::string tag = "Default");
+        std::string tag = "Default");*/
     // for prog
     GameObject(glm::vec3 center, short int textureId = -1, std::string filename = "", std::string tag = "Default");
     GameObject(float x, float y, float z);
