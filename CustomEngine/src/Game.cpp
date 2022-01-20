@@ -459,7 +459,7 @@ void Game::RenderDebugMenu() {
     ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
     
                                                             
-    // Checkbox for scenes 
+    // Checkbox for scene
     ImGui::Checkbox("Wireframe Mode", &wireframeMode);
     ImGui::Checkbox("Internal Transform translation", &useInternal); 
     ImGui::End();
@@ -513,10 +513,6 @@ void Game::RenderDebugMenu() {
     {
         m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
     }
-
-    
-
-    
 
 }
 
@@ -628,12 +624,18 @@ void Game::initScene()
     m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
     m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
 
-    SceneNode* luneNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
-    GameObject* lune = new GameObject(luneNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
-    lune->initMesh(0);
+    // Sun Node 
+    SceneNode* suNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    GameObject* sun = new GameObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
+    sun->initMesh(3);
+
+    // Mars Node 
+    SceneNode* luneNode = new SceneNode(suNode, glm::vec3(0.0f, 0.0f, 0.0f));
+    GameObject* lune = new GameObject(luneNode, glm::vec3(3.0f, 0.0, 0.0f), -1);
+    lune->initMesh(3);
     SpaceEngine::Transform transfolune;
-    transfolune.setHomogenousScale(0.2f); 
-    transfolune.setRotation(0.0f, 0.0f, 0.0f);
+    transfolune.setHomogenousScale(2.0f); 
+    transfolune.setRotation(0.0f, 65.0f, 15.0f);
     lune->addTransformation(transfolune, true); 
 
     /*GameObject* other = new GameObject(etape1, glm::vec3(0.0, 0.0, 0.0), -1);
