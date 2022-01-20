@@ -24,7 +24,7 @@ float Game::camoffsetx = 0.0f;
 float Game::camoffsety = 0.0f;
 bool processCamera = true; 
 bool cameraRotation = true; 
-bool useInternal = true; 
+bool useInternal = false; 
 
 
 
@@ -215,7 +215,7 @@ void Game::processInput(GLFWwindow* window, bool internal)
         return;
     }
 
-    glm::vec3 movement = glm::vec3(0.0f);
+    glm::vec3 movement = glm::vec3(0.0f, 0.0f, 0.0f);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
@@ -356,7 +356,8 @@ void Game::RunGameLoop()
         // -----
         processInput(m_Window, useInternal);
         // Rotation automatic
-        m_player->Rotate(0.2f, 0.2f, 0.0f, true);
+        m_player->Rotate(0.0f, 0.5f, 0.0f, true);
+        m_player->Rotate(0.0f, 0.2f, 0.0f, false);
 
         if (processCamera && cameraRotation)
         {
@@ -458,19 +459,9 @@ void Game::RenderDebugMenu() {
     ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
     
                                                             
-    // /Buttons return true when clicked (most widgets return true when edited/activated)
-    if (ImGui::Button("Wireframe Mode")) {
-        wireframeMode = !wireframeMode;
-    }
-        
-    ImGui::SameLine();
-
-    if (ImGui::Button("Internal Transform translation")) {
-        
-        useInternal != useInternal;
-    }
-        
-
+    // Checkbox for scenes 
+    ImGui::Checkbox("Wireframe Mode", &wireframeMode);
+    ImGui::Checkbox("Internal Transform translation", &useInternal); 
     ImGui::End();
 
 
@@ -627,23 +618,25 @@ void Game::initScene()
 
 
     // Game Objects
-    GameObject* player = new GameObject(nodePlayer, glm::vec3(0.0, 0.0, 0.0), -1, "", "Player");
+    GameObject* player = new GameObject(nodePlayer, glm::vec3(2.0, 0.0, 0.0), -1, "", "Player");
     player->initMesh(2);
     player->velocity.setVelocity(0.0f, 0.0f, 0.0f);
 
-    // Camera 
-    m_camera = new Camera(m_scene, glm::vec3(0.0, 0.0, 4.0));
+    // Camera Node 
+    SceneNode* cameraNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera = new Camera(cameraNode, glm::vec3(0.0, 0.0, 4.0));
     m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
     m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
 
-
-    /*GameObject* lune = new GameObject(etape1, glm::vec3(1.5, 0.0, -3.0), -1);
+    SceneNode* luneNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    GameObject* lune = new GameObject(luneNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
     lune->initMesh(0);
     SpaceEngine::Transform transfolune;
-    transfolune.addRotation(0.0f, 85.0f, 10.0f);
+    transfolune.setHomogenousScale(0.2f); 
+    transfolune.setRotation(0.0f, 0.0f, 0.0f);
     lune->addTransformation(transfolune, true); 
 
-    GameObject* other = new GameObject(etape1, glm::vec3(0.0, 0.0, 0.0), -1);
+    /*GameObject* other = new GameObject(etape1, glm::vec3(0.0, 0.0, 0.0), -1);
     std::string meshfilepath = m_datadir;
     meshfilepath += "\\models\\cube.obj";
     other->initMesh(meshfilepath.c_str());

@@ -101,7 +101,7 @@ private:
     const glm::vec3 m_zpos{ 0.0f, 0.0f,  1.0f };
     const glm::vec3 m_zneg{ 0.0f, 0.0f, -1.0f };
 
-    float sensitivity = 0.05f;              /*!< Mouse Sensitivity */
+    float sensitivity = 0.02f;              /*!< Mouse Sensitivity */
 
     bool mouse_left_down;
     bool mouse_right_down;

@@ -143,7 +143,7 @@ namespace SpaceEngine {
 		//glm::mat3x3 rotscaled = scaled * m_rotation.getRotation();
 
 		// 1. Rotation
-		glm::mat3x3 rotscaled = m_rotation.getRotation(); 
+		glm::mat3x3 rotscaled = m_rotation.getRotation();
 		// 2. Scale
 		rotscaled[0][0] *= m_scale.x;
 		rotscaled[1][1] *= m_scale.y;
