@@ -327,6 +327,9 @@ void Game::RunGameLoop()
     m_lastTime = std::chrono::steady_clock::now();
     double mFrameTime = 0.0; 
     bool render = false; 
+
+    // GET nodes 
+    SceneNode* marsNode = m_scene->getNodebyId("SN5"); 
     
     
     // render loop
@@ -356,8 +359,9 @@ void Game::RunGameLoop()
         // -----
         processInput(m_Window, useInternal);
         // Rotation automatic
-        m_player->Rotate(0.0f, 0.5f, 0.0f, true);
-        m_player->Rotate(0.0f, 0.2f, 0.0f, false);
+        //m_player->Rotate(0.0f, 0.5f, 0.0f, true);
+       // m_player->Rotate(0.0f, 0.2f, 0.0f, false);
+        
 
         if (processCamera && cameraRotation)
         {
@@ -368,6 +372,10 @@ void Game::RunGameLoop()
         {
             // Update Game 
             // -----------
+
+            //SceneNode* nodeMars = m_scene->getNode(2)->getNode(0);
+            marsNode->getObject()->Rotate(0.0f, 1.0f, 0.0f, false);
+
             Update(static_cast<float>(deltaTime));
 
             mFrameTime -= 1.0f / APP_MAX_FRAMERATE;
@@ -630,13 +638,23 @@ void Game::initScene()
     sun->initMesh(3);
 
     // Mars Node 
-    SceneNode* luneNode = new SceneNode(suNode, glm::vec3(0.0f, 0.0f, 0.0f));
-    GameObject* lune = new GameObject(luneNode, glm::vec3(3.0f, 0.0, 0.0f), -1);
-    lune->initMesh(3);
+    SceneNode* marsNode = new SceneNode(suNode, glm::vec3(0.0f, 0.0f, 0.0f));
+    GameObject* mars = new GameObject(marsNode, glm::vec3(3.0f, 0.0, 0.0f), -1);
+    mars->initMesh(3);
     SpaceEngine::Transform transfolune;
-    transfolune.setHomogenousScale(2.0f); 
-    transfolune.setRotation(0.0f, 65.0f, 15.0f);
-    lune->addTransformation(transfolune, true); 
+    transfolune.setHomogenousScale(0.5f); 
+    transfolune.setRotation(0.0f, 0.0f, 15.0f);
+    mars->addTransformation(transfolune, true);
+
+    // Mars Node 
+    SceneNode* marsSatNode = new SceneNode(marsNode, mars->Position());
+    GameObject* marsSat = new GameObject(marsSatNode, 
+                                    glm::vec3(2.0f, 1.0, 0.0f), -1);
+    marsSat->initMesh(3);
+    SpaceEngine::Transform transfoSat;
+    transfoSat.setHomogenousScale(0.2f);
+    transfoSat.setRotation(0.0f, 65.0f, 15.0f);
+    marsSat->addTransformation(transfoSat, true);
 
     /*GameObject* other = new GameObject(etape1, glm::vec3(0.0, 0.0, 0.0), -1);
     std::string meshfilepath = m_datadir;

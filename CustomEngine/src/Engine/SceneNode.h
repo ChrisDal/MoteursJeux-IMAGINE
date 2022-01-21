@@ -106,6 +106,8 @@ public:
 
     // have a valid game object 
     inline bool haveGmo() const { return m_object != nullptr;  }
+    SceneNode* getNodebyId(const std::string& sId, const int& maxDepth = -1);                 //!< From this node look for node by string ID (down)
+    SceneNode* getNodebyId(const int& sId, const int& maxDepth=-1);                         //!< From this node look for node by int ID (down)
 
     // operators
     bool operator==(const SceneNode* other);

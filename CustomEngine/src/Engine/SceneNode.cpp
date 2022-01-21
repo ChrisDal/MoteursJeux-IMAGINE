@@ -470,6 +470,78 @@ glm::mat4x4 SceneNode::getMatTotalNodeTransform()
 //   OPERATORS
 // ==============
 
+/// <summary>
+/// Return Node if found from string ID "SNX" 
+/// With a max depth research allowed 
+/// </summary>
+/// <param name="sId"></param>
+/// <param name="maxDepth">-1 no maxDepth</param>
+/// <returns></returns>
+SceneNode* SceneNode::getNodebyId(const std::string& sId, const int& maxDepth)
+{
+    // Look into children 
+    if (m_children.size() == 0) {
+        return nullptr;
+    }
+
+    for (SceneNode* child : m_children) {
+        
+        if ( ! child->getId().compare(sId)) {
+            // Found 
+            return child; 
+        }
+
+        if (maxDepth == 0) {
+            // dont call for recursivity - last depth 
+            continue;
+        }
+
+        // Go down 
+        SceneNode* idNode = child->getNodebyId(sId);
+        if (idNode != nullptr)
+        {
+            return idNode; 
+        }
+    }
+    
+    return nullptr; 
+}
+
+
+SceneNode* SceneNode::getNodebyId(const int& sId, const int& maxDepth)
+{
+    
+    // Look into children 
+    if (m_children.size() == 0) {
+        return nullptr;
+    }
+
+    SceneNode* foundId = nullptr;
+
+    for (SceneNode* child : m_children) {
+
+        if ( ! (child->getIntId()  == sId)) {
+            // Found 
+            foundId = child;
+            return foundId;
+        }
+
+        if (maxDepth == 0) {
+            // dont call for recursivity - last depth 
+            continue; 
+        }
+
+        // Go down - if found return else keep going 
+        foundId = child->getNodebyId(sId, maxDepth - 1 );
+        if (foundId != nullptr)
+        {
+            return foundId;
+        }
+    }
+
+    return foundId; 
+}
+
 bool SceneNode::operator==(const SceneNode* other)
 {
     return this->getId() == other->getId();
