@@ -347,6 +347,8 @@ namespace SpaceEngine {
 		combined.m_translation += MatIn.m_translation;
 		combined.m_scale *= MatIn.m_scale;
 
+		combined.processMat4x4Transform(); 
+
 		return combined;
 	}
 

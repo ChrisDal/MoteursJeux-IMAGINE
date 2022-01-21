@@ -401,37 +401,23 @@ glm::mat4x4 SceneNode::getMatWorldTransform() {
 
 SpaceEngine::Transform SceneNode::getWorldTransform() {
 
-    SpaceEngine::Transform transfo(m_tsfm_world);
-
     if (m_parent != nullptr)
     {
-
-        // Get GameObject Transformation as Internal 
-        if (m_parent->haveGmo()) {
-            transfo.tfm_combine_with(m_parent->getObject()->getTransformation(true));
-        }
-        transfo.tfm_combine_with(m_parent->getWorldTransform());
+        
+        return m_parent->getNodeTransform().tfm_combine_with(m_tsfm_world);
     }
 
-
-    return transfo;
+    return m_tsfm_world; 
 }
 
 // Get One node Transformation
 SpaceEngine::Transform SceneNode::getNodeTransform()
 {
-    SpaceEngine::Transform objtransfo; 
+    SpaceEngine::Transform objtransfo = SpaceEngine::Transform(m_tsfm_world); 
     if (m_object != nullptr) 
     {
-        objtransfo = m_object->getTransformation(true); 
+        objtransfo.tfm_combine_with(m_object->getTransformation(true)); 
     }
-    else
-    {
-        objtransfo = SpaceEngine::Transform(); 
-    }
-
-    // combined with node 
-    objtransfo.tfm_combine_with(m_tsfm_world);
 
     return objtransfo;
 }
@@ -464,6 +450,19 @@ glm::mat4x4 SceneNode::getMatTotalNodeTransform()
 }
 
 
+/// <summary>
+/// Return Recursive transformation
+/// </summary>
+/// <returns></returns>
+glm::mat4x4 SceneNode::getMatTransform()
+{
+    if (m_parent != nullptr) {
+        return m_parent->getMatNodeTransform() * m_tsfm_world.getMatrixTransform();
+    }
+    
+    return m_tsfm_world.getMatrixTransform();
+    
+}
 
 
 // ==============

@@ -98,6 +98,8 @@ glm::mat4x4 BasicGameObject::getWorldMat()
 
 		return m_parent->getMatWorldTransform();
 	}
+
+	return glm::mat4x4(1.0f); 
 	
 }
 

@@ -651,7 +651,7 @@ void Game::initScene()
     // Mars Node 
     SceneNode* marsSatNode = new SceneNode(marsNode, mars->Position());
     GameObject* marsSat = new GameObject(marsSatNode, 
-                                    glm::vec3(2.0f, 1.0, 0.0f), -1);
+                                    glm::vec3(0.0f, 0.0, 0.0f), -1);
     marsSat->initMesh(3);
     SpaceEngine::Transform transfoSat;
     transfoSat.setHomogenousScale(0.2f);

@@ -74,6 +74,10 @@ public:
     // Get All in One : SceneNode transform + GameObject 
     SpaceEngine::Transform getTotalNodeTransform(); // Get Node + GameObject transform
     glm::mat4x4 getMatTotalNodeTransform(); // Get Node + GameObject transform
+    glm::mat4x4 getMatTransform();
+    // Get Transformation of the Node 
+    SpaceEngine::Transform getTransform() const { return m_tsfm_world; }
+    glm::mat4x4 getMatTransform() const { return getTransform().getMatrixTransform(); }
 
     // Interface
     void Rotate(float alpha, float beta, float gamma, bool internal = false);
@@ -108,6 +112,8 @@ public:
     inline bool haveGmo() const { return m_object != nullptr;  }
     SceneNode* getNodebyId(const std::string& sId, const int& maxDepth = -1);                 //!< From this node look for node by string ID (down)
     SceneNode* getNodebyId(const int& sId, const int& maxDepth=-1);                         //!< From this node look for node by int ID (down)
+
+    SceneNode* getParent() { return m_parent;  }
 
     // operators
     bool operator==(const SceneNode* other);

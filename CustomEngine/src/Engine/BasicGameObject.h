@@ -66,7 +66,9 @@ public:
     glm::vec4 getWorldPosition();
     glm::mat4x4 getTransformationAllIn();
 
+    // ---------------------------------------------
     // Interface
+    // ---------------------------------------------
     BasicGameObject& Rotate(float alpha, float beta, float gamma, bool internal = false);
     BasicGameObject& Translate(float tx, float ty, float tz, bool internal = false);
     BasicGameObject& Translate(const glm::vec3& transvec, bool internal = false);
@@ -90,6 +92,9 @@ public:
 
     // Update 
     virtual void Update(float deltatime) = 0; 
+
+    // Node 
+    SceneNode* getNode() { return m_parent; }
 
 
 
