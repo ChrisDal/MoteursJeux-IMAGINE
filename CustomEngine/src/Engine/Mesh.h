@@ -6,6 +6,7 @@
 // GLM 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/vec4.hpp>
 
 // Rendering 
 #include "Rendering/VertexData.h"
@@ -39,6 +40,8 @@ protected:
 
 	// Material 
 	Material* m_material; 
+	glm::vec4 m_color; 
+	static const glm::vec4 basicColor; 
 
 	//  Triangle or Triangle Strip 
 	GLenum m_primitives;
@@ -120,6 +123,12 @@ public:
 	ShaderProgram* getShader() { return m_shader;  }
 	inline GLenum getPrimitives() const { return m_primitives;  }
 	inline void setPrimitives(GLenum mode) { m_primitives = mode; }
+
+
+	// Albedo and color 
+	void setColor(const glm::vec4& color); 
+	void setColor(float r, float g, float b, float a); 
+	glm::vec4 getColor() const { return m_color;  }
 
 };
 

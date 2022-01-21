@@ -1,11 +1,11 @@
 #include "Mesh.h"
 #include "Rendering/ShaderProgram.h"
 
-
+const glm::vec4 Mesh::basicColor = glm::vec4(225.0f / 255.0f, 210.f / 255.0f, 184.f / 255.0f, 1.0f); 
 
 Mesh::Mesh()
 	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLE_STRIP), 
-	model_view(glm::mat4(1.0f))
+	model_view(glm::mat4(1.0f)), m_color(Mesh::basicColor)
 {
 	this->clear(); 
 }
@@ -13,7 +13,8 @@ Mesh::Mesh()
 Mesh::Mesh(const char* filename)
 	: m_nVertex(0), indexCount(0), 
 	m_primitives(GL_TRIANGLES), 
-	model_view(glm::mat4(1.0f))
+	model_view(glm::mat4(1.0f)), 
+	m_color(Mesh::basicColor)
 {
 	this->clear(); 
 	
@@ -32,7 +33,7 @@ Mesh::Mesh(const char* filename)
 
 Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
 	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLES),
-	model_view(glm::mat4(1.0f))
+	model_view(glm::mat4(1.0f)), m_color(Mesh::basicColor)
 {
 	this->vertices = vertices; 
 	this->indices = indices; 
@@ -724,4 +725,26 @@ bool Mesh::useShader() const
 	{
 		return false; 
 	}
+}
+
+void Mesh::setColor(const glm::vec4& color)
+{
+	m_color = color; 
+	// RGB
+	if (color.r > 1.0f || color.g > 1.0f || color.b > 1.0f || color.a > 1.0f) 
+	{
+		m_color /= 255.0f; 
+	}
+
+}
+
+void Mesh::setColor(float r, float g, float b, float a)
+{
+	m_color = glm::vec4(r, g, b, a);
+	// RGB
+	if (r > 1.0f || g > 1.0f ||b > 1.0f || a > 1.0f)
+	{
+		m_color /= 255.0f;
+	}
+
 }
