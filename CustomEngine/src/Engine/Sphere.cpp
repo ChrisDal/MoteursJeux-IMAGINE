@@ -10,7 +10,6 @@ void Sphere::init(float radius, const glm::vec3& center)
 	float minrho = -180.0f;
 	float maxrho = 180.0f;
 	
-	
 
 	unsigned int nphi = (unsigned int)((maxphi - minphi) / dphi) + 1; // matplotlib basic 
 	unsigned int nrho = (unsigned int)((maxrho - minrho) / drho);
@@ -46,12 +45,12 @@ void Sphere::init(float radius, const glm::vec3& center)
 	// Triangle 1 : A B C 
 	// Triangle 2 : C D A 
 
-	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
+	for (unsigned int kphi = 0; kphi < nphi; kphi++)
 	{
 		for (unsigned int krho = 0; krho < nrho; krho++)
 		{
 			// First Triangle
-			if (kphi != 0)
+			if (kphi != nphi - 1)
 			{
 				this->indices.push_back(kphi * nrho + krho);
 				this->indices.push_back((kphi + 1) * nrho + krho);
@@ -59,7 +58,7 @@ void Sphere::init(float radius, const glm::vec3& center)
 			}
 
 			// Second Triangle
-			if (kphi != nphi - 1)
+			if (kphi != 0)
 			{
 				// Indices 
 				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));

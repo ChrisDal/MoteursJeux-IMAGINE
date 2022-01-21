@@ -374,7 +374,9 @@ void Game::RunGameLoop()
             // -----------
 
             //SceneNode* nodeMars = m_scene->getNode(2)->getNode(0);
-            marsNode->getObject()->Rotate(0.0f, 1.0f, 0.0f, false);
+            marsNode->Rotate(0.0f, 1.0f, 0.0f, false);
+
+            m_player->Rotate(0.5f, 0.0f, 0.0f, true); 
 
             Update(static_cast<float>(deltaTime));
 
@@ -643,7 +645,7 @@ void Game::initScene()
     mars->initMesh(3);
     SpaceEngine::Transform transfolune;
     transfolune.setHomogenousScale(0.5f); 
-    transfolune.setRotation(0.0f, 0.0f, 15.0f);
+    transfolune.setRotation(100.0f, 0.0f, 0.0f);
     mars->addTransformation(transfolune, true);
 
     // Mars Node 

@@ -239,12 +239,12 @@ void Mesh::initCapsule(float radius, float distance)
 	// Triangle 1 : A B C 
 	// Triangle 2 : C D A 
 
-	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
+	for (unsigned int kphi = 0; kphi < nphi; kphi++)
 	{
 		for (unsigned int krho = 0; krho < nrho; krho++)
 		{
 			// First Triangle
-			if (kphi != 0)
+			if (kphi != nphi - 1)
 			{
 				this->indices.push_back(kphi * nrho + krho);
 				this->indices.push_back((kphi + 1) * nrho + krho);
@@ -252,7 +252,7 @@ void Mesh::initCapsule(float radius, float distance)
 			}
 
 			// Second Triangle
-			if (kphi != nphi - 1)
+			if (kphi != 0)
 			{
 				// Indices 
 				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));
@@ -334,12 +334,12 @@ void Mesh::initSphere(float radius)
 	// Triangle 1 : A B C 
 	// Triangle 2 : C D A 
 
-	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
+	for (unsigned int kphi = 0; kphi < nphi; kphi++)
 	{
 		for (unsigned int krho = 0; krho < nrho; krho++)
 		{
 			// First Triangle
-			if (kphi != 0)
+			if (kphi != nphi - 1)
 			{
 				this->indices.push_back(kphi * nrho + krho);
 				this->indices.push_back((kphi + 1) * nrho + krho);
@@ -347,7 +347,7 @@ void Mesh::initSphere(float radius)
 			}
 			
 			// Second Triangle
-			if (kphi != nphi - 1)
+			if (kphi != 0)
 			{
 				// Indices 
 				this->indices.push_back((kphi + 1) * nrho + ((krho + 1) % nrho));
