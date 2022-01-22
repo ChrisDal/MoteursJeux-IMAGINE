@@ -41,7 +41,7 @@ protected:
 	// Material 
 	Material* m_material; 
 	glm::vec4 m_color; 
-	static const glm::vec4 basicColor; 
+	
 
 	//  Triangle or Triangle Strip 
 	GLenum m_primitives;
@@ -129,6 +129,8 @@ public:
 	void setColor(const glm::vec4& color); 
 	void setColor(float r, float g, float b, float a); 
 	glm::vec4 getColor() const { return m_color;  }
+
+	static const glm::vec4 basicColor;
 
 };
 

@@ -8,9 +8,6 @@ private:
 
 	float dphi;
 	float drho;
-
-	glm::vec4 m_color; 
-
 	
 
 protected: 

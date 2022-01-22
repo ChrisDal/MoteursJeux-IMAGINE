@@ -157,6 +157,9 @@ void Renderer::Draw(GameObject* gmo, Material* mat, int shadertype) const
 	chosenShader->setMat4("u_vp", glm::value_ptr(vpmat));
 	unsigned int idcount = meshobject->getIndicesCount(); 
 
+	glm::vec4 color = meshobject->getColor(); 
+	chosenShader->setUniform4f("u_color", color.x, color.y, color.z, color.w);
+
 	// Texture 
 	bool texturebind = false; 
 	if (mat != nullptr)

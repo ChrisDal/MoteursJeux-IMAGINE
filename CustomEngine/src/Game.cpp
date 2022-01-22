@@ -260,12 +260,12 @@ void Game::processInput(GLFWwindow* window, bool internal)
         mouse_left_down = false;
     }
 
-    if (mouse_left_down)
+    /*if (mouse_left_down)
     {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         setTrackingPoint(window, m_camera, xpos, ypos);
-    }
+    }*/
 
 
     if (actor->velocity.ismoving()) {
@@ -335,7 +335,7 @@ void Game::RunGameLoop()
     bool render = false; 
 
     // GET nodes 
-    SceneNode* sunNode = m_scene->getNodebyId("SN5");
+    SceneNode* sunNode = m_scene->getNodebyId("SN6");
     
     
     // render loop
@@ -447,6 +447,73 @@ void Game::Update(float deltaTime)
     m_scene->Update(deltaTime); 
 }
 
+// Display a node Scene in ImGUI
+static void displayGraphNode(SceneNode* node, int& selectable)
+{
+    // Node ID 
+    if (ImGui::TreeNode(node->getId().c_str()))
+    {
+        // Display GameObject 
+        if (node->haveGmo())
+        {
+            int ngmo = node->getObject()->getId(); 
+            const std::string label = "GameObj " + std::to_string(ngmo);
+            if (ImGui::Selectable(label.c_str(), selectable == ngmo)) {
+                selectable = ngmo;
+            }
+            ImGui::Text("Tag:"); 
+            ImGui::SameLine();
+            ImGui::Text(node->getObject()->getTag().c_str());
+            if (node->getObject()->hasMesh())
+            {
+                ImGui::SameLine();
+                
+                if (ImGui::SmallButton("Set Red")) {
+                    GameObject* gmo = (GameObject*)node->getObject();
+                    if (gmo->getMesh()->getColor() == Mesh::basicColor)
+                    {
+                        gmo->getMesh()->setColor(1.0f, 0.0f, 0.0f, 1.0f);
+                    }
+                    else
+                    {
+                        gmo->getMesh()->setColor(Mesh::basicColor);
+                    }
+                    
+                }
+            }
+            
+                
+        }
+
+        for (int i = 0; i < node->getChildrenNumber(); i++)
+        {
+            displayGraphNode(node->getNode(i), selectable);
+        }
+
+        
+        ImGui::TreePop();    
+    }
+
+    
+}; 
+
+void Game::DisplayUISceneGraph(SceneNode* root)
+{
+    // Scene Graph 
+    if (ImGui::CollapsingHeader("SceneGraph"))
+    {
+        static int selected = -1;
+
+        if (m_scene != nullptr)
+        {
+            // Nodes 
+            displayGraphNode(m_scene, selected); 
+        }
+    }
+
+    
+}
+
 void Game::RenderDebugMenu() {
 
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
@@ -470,6 +537,8 @@ void Game::RenderDebugMenu() {
     ImGui::SliderFloat("translationZ", &ftranslate.z, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
     ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
     
+    //Graphe de Scene 
+    DisplayUISceneGraph(m_scene); 
                                                             
     // Checkbox for scene
     ImGui::Checkbox("Wireframe Mode", &wireframeMode);
@@ -573,12 +642,12 @@ void Game::handleInput(GLFWwindow* window, GameObject* actor, Camera* cam)
         mouse_left_down = false;
     }
 
-    if (mouse_left_down)
+    /*if (mouse_left_down)
     {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         setTrackingPoint(window, cam, xpos, ypos);
-    }
+    }*/
 
 
     if (actor->velocity.ismoving()) {
@@ -621,9 +690,6 @@ void Game::initScene()
     // -------------
     m_scene = new SceneNode(); //  ROOT NODE 
 
-    
-
-
     // Player
     SceneNode* nodePlayer = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
     GameObject* player = new GameObject(nodePlayer, glm::vec3(2.0, 0.0, 0.0), -1, "", "Player");
@@ -634,9 +700,6 @@ void Game::initScene()
     GameObject* satPlayer = new GameObject(nodeSatPlayer, glm::vec3(0.0f, 1.0f, 0.0f), -1);
     satPlayer->initMesh(0); 
     satPlayer->Scale(0.1f, 0.1f, 0.1f, true); 
-    
-
-
 
     // Camera Node 
     SceneNode* cameraNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -644,13 +707,16 @@ void Game::initScene()
     m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
     m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
 
+    // System Solar 
+    SceneNode* solarNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    
     // Sun Node 
-    SceneNode* suNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    SceneNode* suNode = new SceneNode(solarNode, glm::vec3(0.0f, 0.0f, 0.0f));
     GameObject* sun = new GameObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
     sun->initMesh(3);
     
     // Mars Node 
-    SceneNode* marsNode = new SceneNode(suNode, glm::vec3(0.0f, 0.0f, 0.0f));
+    SceneNode* marsNode = new SceneNode(solarNode, glm::vec3(0.0f, 0.0f, 0.0f));
     GameObject* mars = new GameObject(marsNode, glm::vec3(3.0f, 0.0, 0.0f), -1);
     mars->initMesh(3);
     SpaceEngine::Transform transfolune;
@@ -670,13 +736,13 @@ void Game::initScene()
 
     // Ajout Planete 
     {
-        SceneNode* planeteNode = this->addPlanet(suNode, glm::vec3(0.0f, 0.0f, 0.0f),
+        SceneNode* planeteNode = this->addPlanet(solarNode, glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3(0.0f, 0.0f, 1.5f), 0.25f);
     }
     
     // Ajout Planete + Satellite 
     {
-        SceneNode* planeteNode = this->addPlanet(suNode, glm::vec3(0.0f, 0.0f, 0.0f),
+        SceneNode* planeteNode = this->addPlanet(solarNode, glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3(4.0f, 0.0f, 2.0f), 0.6f,
             glm::vec3(0.0f, 23.0f, 0.0f),
             glm::vec3(0.0f, 0.0f, 0.0f));

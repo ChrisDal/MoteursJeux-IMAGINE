@@ -6,13 +6,14 @@ layout(location = 2) in vec2 aTextureCoord;
 uniform mat4 u_vp;
 uniform mat4 u_transform;
 uniform mat4 u_internal_transform;
+uniform vec4 u_color;
 
-out vec3 vColor; 
+out vec4 vColor; 
 out vec2 vTextureCoord;
 
 void main()
 {
-    vColor = aNormal;
+    vColor = u_color;
     vTextureCoord = aTextureCoord;
     // Position 
     gl_Position = u_vp * u_transform * u_internal_transform * vec4(aPos, 1.0);
