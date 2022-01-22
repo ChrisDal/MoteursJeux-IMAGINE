@@ -6,7 +6,7 @@
 
 
 // Constructos
-GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId,
+/*GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId,
     std::string filename, std::string tag)
     : m_mesh(nullptr),
     m_ntexture(textureId),
@@ -14,14 +14,14 @@ GameObject::GameObject(GameObject* parent, glm::vec3 center, short int textureId
     BasicGameObject(parent, center, tag), 
     m_mat(nullptr)
 {
-    /*m_position = glm::vec3(center);
+    m_position = glm::vec3(center);
     // matrice de transformation interne
     m_internal.setAsIdentity();
     m_internal.setTranslate(m_position);
     // matrice de transformation monde
     m_world = glm::translate(glm::mat4x4(1.0f), parent->Position());
-    m_id = ++g_id;*/
-};
+    m_id = ++g_id;
+};*/
 
 GameObject::GameObject(SceneNode* parent, glm::vec3 center, short int textureId,
     std::string filename, std::string tag)
@@ -341,20 +341,25 @@ glm::mat4x4 GameObject::getMatTransformation()
 
 void GameObject::Update(float deltatime)
 {
-    // Pass 
+
+    // -------------------------------
     // Make object rotate in degrees
-    glm::vec3 velocityrot = glm::vec3(1.0f, 1.0f, 1.0f);
-    glm::vec3 rotaVec  = glm::vec3(0.0f, 0.0f, 5.0f); 
-    glm::vec3 finalrot = deltatime * (velocityrot * rotaVec);
+    if (false) 
+    {
+        glm::vec3 velocityrot = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec3 rotaVec  = glm::vec3(0.0f, 0.0f, 5.0f); 
+        glm::vec3 finalrot = deltatime * (velocityrot * rotaVec);
     
-    // Hard Rotation 
-    Rotate(finalrot.x, finalrot.y, finalrot.z, true);
+        // Hard Rotation 
+        Rotate(finalrot.x, finalrot.y, finalrot.z, true);
+    }
+
+    // ----------------------------------
 
     // Update position 
     if (velocity.vx != 0.0 || velocity.vy != 0.0 || velocity.vz != 0.0)
     {
         velocity.move(this, deltatime);
-        
     }
     
 

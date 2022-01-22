@@ -86,10 +86,18 @@ protected :
     void initScene(const char* filename);       //!< Future initScene with file 
     void saveScene(const char* filename);       //!< Future saveScene in file 
 
-    
+    SceneNode* addSatellite(SceneNode* planetNode, const glm::vec3& satpos,
+        float scale = 1.0f,
+        const glm::vec3& rotationInDegree = glm::vec3(0.0f, 0.0f, 0.0f),
+        const glm::vec3& translation = glm::vec3(0.0f, 0.0f, 0.0f)); 
+
+    SceneNode* addPlanet(SceneNode* root, const glm::vec3& nodepos,
+        const glm::vec3& planetpos,
+        float scale = 1.0f, const glm::vec3& rotation = glm::vec3(0.0f, 0.0f, 0.0f),
+        const glm::vec3& translation = glm::vec3(0.0f, 0.0f, 0.0f)); 
 
 private:
-    void processInput(GLFWwindow* window);      //!< Process Keyboard Inputs 
+    void processInput(GLFWwindow* window, bool internal=false);      //!< Process Keyboard Inputs 
     void retrievePlayer(SceneNode* root);       //!< Utility function Retrieve GameObject Player
     GLFWwindow* m_Window;                       /*!< GLFW Window */
 
@@ -101,7 +109,7 @@ private:
     const glm::vec3 m_zpos{ 0.0f, 0.0f,  1.0f };
     const glm::vec3 m_zneg{ 0.0f, 0.0f, -1.0f };
 
-    float sensitivity = 0.05f;              /*!< Mouse Sensitivity */
+    float sensitivity = 0.02f;              /*!< Mouse Sensitivity */
 
     bool mouse_left_down;
     bool mouse_right_down;

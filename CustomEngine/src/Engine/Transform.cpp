@@ -105,7 +105,7 @@ namespace SpaceEngine {
 	}
 
 	// Move constructor 
-	Transform::Transform(Transform&& source)
+	Transform::Transform(Transform&& source) noexcept
 	{
 		m_scale = source.m_scale;
 		m_rotation = source.m_rotation;
@@ -132,27 +132,16 @@ namespace SpaceEngine {
 	// process 4x4 Matrix Transform
 	inline void Transform::processMat4x4Transform()
 	{
-
-		// 1. scaling, 2.rotation, 
-		/*glm::mat3x3 scaled = glm::mat3x3();
-		scaled = glm::mat3x3(1.0f);
+		// 1. Scale
+		glm::mat3x3 scaled = glm::mat3x3(1.0f);
 		scaled[0][0] *= m_scale.x;
 		scaled[1][1] *= m_scale.y;
-		scaled[2][2] *= m_scale.z;*/
-		// Rotation
-		//glm::mat3x3 rotscaled = scaled * m_rotation.getRotation();
+		scaled[2][2] *= m_scale.z;
 
-		// 1. Rotation
-		glm::mat3x3 rotscaled = m_rotation.getRotation(); 
-		// 2. Scale
-		rotscaled[0][0] *= m_scale.x;
-		rotscaled[1][1] *= m_scale.y;
-		rotscaled[2][2] *= m_scale.z;
+		// 2. Rotation
+		glm::mat3x3 rotscaled = scaled * m_rotation.getRotation();
 
-
-		
-
-		// Tranform matrix
+		// Transform matrix
 		m_transform = glm::mat4(1.0f);
 		m_transform[0][0] = rotscaled[0][0];
 		m_transform[0][1] = rotscaled[0][1];
@@ -164,7 +153,7 @@ namespace SpaceEngine {
 		m_transform[2][1] = rotscaled[2][1];
 		m_transform[2][2] = rotscaled[2][2];
 
-		// 3. apply translation
+		// 3. Translation
 		m_transform[3][0] = m_translation.x;
 		m_transform[3][1] = m_translation.y;
 		m_transform[3][2] = m_translation.z;
@@ -287,6 +276,14 @@ namespace SpaceEngine {
 		m_translation.z += tz;
 	}
 
+	// add a translation : vec3 
+	void Transform::addTranslate(const glm::vec3& txyz)
+	{
+		m_translation.x += txyz.x;
+		m_translation.y += txyz.y;
+		m_translation.z += txyz.z;
+	}
+
 	// add a translation += (txyz, txyz, txyz)
 	void Transform::addHomogenousTranslate(float txyz)
 	{
@@ -349,6 +346,8 @@ namespace SpaceEngine {
 		combined.m_rotation = combined.m_rotation + MatIn.m_rotation;
 		combined.m_translation += MatIn.m_translation;
 		combined.m_scale *= MatIn.m_scale;
+
+		combined.processMat4x4Transform(); 
 
 		return combined;
 	}

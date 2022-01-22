@@ -32,6 +32,8 @@ protected:
 	void resetRotation();
 	void resetMat4x4Transformation();
 
+	// Rotoform 
+
 public:
 
 	// --------------------------------------------
@@ -41,7 +43,7 @@ public:
 	Transform(glm::vec3 scaleVec3, Rotoform rotMat, glm::vec3 transVec3);
 	Transform(const Transform& source);
 	Transform& operator=(const Transform& source);
-	Transform(Transform&& source);
+	Transform(Transform&& source) noexcept;
 
 	~Transform(); // destructor 
 
@@ -92,6 +94,8 @@ public:
 	glm::mat3x3 getRotationMat() const;
 	inline Rotoform getRotation() const;
 
+	void setRotationMat(const glm::mat3x3& mat); 
+
 	// --------------------------------------------
 	// SCALING 
 	// --------------------------------------------
@@ -125,6 +129,7 @@ public:
 
 	// add a translation : tx, ty, tz
 	void addTranslate(float tx, float ty, float tz);
+	void addTranslate(const glm::vec3& txyz);
 	// add a translation += (txyz, txyz, txyz)
 	void addHomogenousTranslate(float txyz);
 

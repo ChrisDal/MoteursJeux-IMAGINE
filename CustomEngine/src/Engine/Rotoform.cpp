@@ -80,7 +80,7 @@ Rotoform& Rotoform::operator=(const Rotoform& source)
 
 
 // Move Constructor
-Rotoform::Rotoform(Rotoform&& source)
+Rotoform::Rotoform(Rotoform&& source) noexcept
 {
     m_rotx = source.m_rotx;
     m_roty = source.m_roty;

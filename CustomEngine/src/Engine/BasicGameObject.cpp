@@ -7,19 +7,17 @@ int BasicGameObject::g_id = 0;
 
 BasicGameObject::BasicGameObject(SceneNode* parent, glm::vec3 center, std::string tag)
 	: m_tag(tag), m_internal(SpaceEngine::Transform()), 
-	m_position(center), m_parent(parent), m_gparent(nullptr)
+	m_position(center), m_parent(parent)
 {
 	parent->addObject(this);
 	m_parent = parent;
 	// matrice de transformation interne
 	m_internal.setAsIdentity();
 	m_internal.setTranslate(m_position);
-	// matrice de transformation monde
-	m_world = glm::translate(glm::mat4x4(1.0f), parent->getPosition());
 	m_id = ++g_id;
 }
 
-BasicGameObject::BasicGameObject(BasicGameObject* parent, glm::vec3 center, std::string tag)
+/*BasicGameObject::BasicGameObject(BasicGameObject* parent, glm::vec3 center, std::string tag)
 	: m_tag(tag), m_internal(SpaceEngine::Transform()),
 	m_position(center), m_gparent(parent), m_parent(nullptr)
 {
@@ -31,11 +29,11 @@ BasicGameObject::BasicGameObject(BasicGameObject* parent, glm::vec3 center, std:
 	m_world = glm::translate(glm::mat4x4(1.0f), parent->Position());
 	m_id = ++g_id;
 
-}
+}*/
 
 BasicGameObject::BasicGameObject()
 	: m_tag("Default"), m_internal(SpaceEngine::Transform()), m_parent(nullptr),
-	m_position(glm::vec3(0.0f, 0.0f, 0.0f)), m_world(glm::mat4(1.0f)), m_gparent(nullptr)
+	m_position(glm::vec3(0.0f, 0.0f, 0.0f))
 {
 }
 
@@ -56,7 +54,7 @@ void BasicGameObject::setTransformation(SpaceEngine::Transform transfo, bool int
 	}
 	else
 	{
-		m_transfo = transfo;
+		m_parent->setTransformation(transfo, false); 
 	}
 
 }
@@ -69,29 +67,26 @@ void BasicGameObject::addTransformation(const SpaceEngine::Transform& transfo, b
 	}
 	else
 	{
-		m_transfo = m_transfo.tfm_combine_with(transfo);
+		m_parent->addTransformation(transfo);
 	}
 
 }
 
-SpaceEngine::Transform BasicGameObject::getTransformation(bool internal) const
+// Get Object Transformationq
+SpaceEngine::Transform BasicGameObject::getTransformation() const
 {
-	if (internal)
-	{
-		return m_internal;
-	}
+	return m_internal;
 
-	return m_transfo;
 }
 
 void BasicGameObject::applyTransformation()
 {
-	m_transfo.applyOnPoint(m_position, m_position);
+	m_internal.applyOnPoint(m_position, m_position);
 }
 
 glm::mat4x4 BasicGameObject::getMatTransformation()
 {
-	return glm::mat4x4(1.0f);
+	return m_internal.getMatrixTransform();
 }
 
 glm::mat4x4 BasicGameObject::getWorldMat()
@@ -100,42 +95,28 @@ glm::mat4x4 BasicGameObject::getWorldMat()
 
 		return m_parent->getMatWorldTransform();
 	}
-	else if (m_gparent != nullptr) {
 
-		return m_gparent->getTransformationAllIn()* m_world;
-	}
+	return glm::mat4x4(1.0f); 
 	
 }
 
 glm::vec4 BasicGameObject::getWorldPosition()
 {
-	/*glm::vec3 pos = this->Position();
-	SpaceEngine::Transform t_interne = this->getTransformation(true);
-	SpaceEngine::Transform t_externe = this->getTransformation();
-	glm::mat4x4 worldmat = this->getWorldMat();
-
-	pos = t_interne.applyToPoint(pos, glm::vec3(0.0f, 0.0f, 0.0f));
-	glm::vec4 pos4act = worldmat * glm::vec4(pos[0], pos[1], pos[2], 1.0f);
-	pos4act = this->getTransformation().getMatrixTransform() * pos4act;*/
-
-	glm::vec4 pos = glm::vec4(this->Position(), 1.0f);
+	glm::vec4 pos = glm::vec4(m_position, 1.0f);
 
 	return this->getTransformationAllIn() * pos; ;
 }
 
 glm::mat4x4 BasicGameObject::getTransformationAllIn()
 {
-	glm::mat4x4 t_interne = this->getTransformation(true).getMatrixTransform();
-	glm::mat4x4 t_externe = this->getTransformation().getMatrixTransform();
-	glm::mat4x4 worldmat  = this->getWorldMat();
+	// Transformation of game object 
+	glm::mat4x4 t_interne = this->getTransformation().getMatrixTransform();
+	// Scene Node global transformation
+	glm::mat4x4 t_externe = m_parent->getMatTransform(); 
 
-	return t_externe * worldmat * t_interne;
+	return t_externe * t_interne;
 }
 
-void BasicGameObject::addChild(BasicGameObject* obj)
-{
-	m_children.push_back(obj); 
-}
 
 
 // ==================================================
@@ -154,7 +135,7 @@ BasicGameObject& BasicGameObject::Rotate(float alpha, float beta, float gamma, b
 	}
 	else
 	{
-		m_transfo.addRotation(alpha, beta, gamma);
+		m_parent->Rotate(alpha, beta, gamma, false);
 	}
 	return *this;
 }
@@ -170,8 +151,25 @@ BasicGameObject& BasicGameObject::Translate(float tx, float ty, float tz, bool i
 	}
 	else
 	{
-		m_transfo.addTranslate(tx, ty, tz);
+		m_parent->Translate(tx, ty, tz, false); 
 	}
+	
+
+	return *this;
+}
+
+BasicGameObject& BasicGameObject::Translate(const glm::vec3& transvec, bool internal)
+{
+	if (internal)
+	{
+		m_internal.addTranslate(transvec.x, transvec.y, transvec.z);
+	}
+	else
+	{
+		m_parent->Translate(transvec.x, transvec.y, transvec.z, false);
+	}
+
+
 	return *this;
 }
 
@@ -186,15 +184,18 @@ BasicGameObject& BasicGameObject::Scale(float sx, float sy, float sz, bool inter
 	}
 	else
 	{
-		m_transfo.addScale(sx, sy, sz);
+		m_parent->Scale(sx, sy, sz, false);
 	}
 
 	return *this;
 }
 
+// Global World Position
 glm::vec3 BasicGameObject::Position() const
 {
-	return m_position; 
+	
+	//glm::vec4 pos = m_parent->getMatWorldTransform() * glm::vec4(m_position, 1.0f);
+	return  m_position; 
 }
 
 void BasicGameObject::Position(float x, float y, float z)

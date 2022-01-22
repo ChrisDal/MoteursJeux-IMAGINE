@@ -3,7 +3,7 @@
 #include <glm/vec2.hpp> // glm::vec3
 #include <glm/vec3.hpp> // glm::vec3
 #include <glm/vec4.hpp> // glm::vec4
-#include <glm/mat3x3.hpp> // glm::mat4
+#include <glm/mat3x3.hpp> // glm::mat3
 #include <glm/mat4x4.hpp> // glm::mat4
 
 #include <vector>
@@ -22,27 +22,18 @@ protected:
 
     glm::vec3 m_position{ 0.0, 0.0, 0.0 };
 
-    // Hierarchie
-    std::vector<BasicGameObject*> m_children;
-    SceneNode* m_parent;
-    BasicGameObject* m_gparent; 
-
-    // ----------------
-    // Transformations 
-    // ----------------
-    SpaceEngine::Transform m_transfo;  // transformation en temps réel repere world
-    SpaceEngine::Transform m_internal; // transformation repere interne
-    glm::mat4x4 m_world;   // transformation at time T=0 , position in world
+    // ------------------------
+    // Scene Graph & Transforms 
+    // ------------------------
+    SceneNode* m_parent; // Transformation World Repere 
+    SpaceEngine::Transform m_internal; // Internal Transformation 
 
 
 public:
 
     static int g_id;
 
-    BasicGameObject(SceneNode* parent, glm::vec3 center,
-        std::string tag = "Default");
-    BasicGameObject(BasicGameObject* parent, glm::vec3 center,
-        std::string tag = "Default");
+    BasicGameObject(SceneNode* parent, glm::vec3 center, std::string tag = "Default");
     BasicGameObject(); 
     // for prog
     virtual ~BasicGameObject();
@@ -50,7 +41,7 @@ public:
     // Define Transformation
     void setTransformation(SpaceEngine::Transform transfo, bool internal = false);
     void addTransformation(const SpaceEngine::Transform& transfo, bool internal = false);
-    SpaceEngine::Transform getTransformation(bool internal = false) const;
+    SpaceEngine::Transform getTransformation() const; // Get Object transformation
 
 
     // Transformation in memory
@@ -60,13 +51,12 @@ public:
     glm::vec4 getWorldPosition();
     glm::mat4x4 getTransformationAllIn();
 
-    /// Hierarchy 
-    void addChild(BasicGameObject* obj); 
-    BasicGameObject* getChild(int index) const { return m_children.at(index);  }
-
+    // ---------------------------------------------
     // Interface
+    // ---------------------------------------------
     BasicGameObject& Rotate(float alpha, float beta, float gamma, bool internal = false);
     BasicGameObject& Translate(float tx, float ty, float tz, bool internal = false);
+    BasicGameObject& Translate(const glm::vec3& transvec, bool internal = false);
     BasicGameObject& Scale(float sx, float sy, float sz, bool internal = false);
     glm::vec3 Position() const;
     void Position(float x, float y, float z);
@@ -87,6 +77,9 @@ public:
 
     // Update 
     virtual void Update(float deltatime) = 0; 
+
+    // Node 
+    SceneNode* getNode() { return m_parent; }
 
 
 

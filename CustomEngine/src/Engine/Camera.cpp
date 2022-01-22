@@ -28,7 +28,7 @@ Camera::Camera(SceneNode* parent, const glm::vec3& position,
 }
 
 
-Camera::Camera(BasicGameObject* parent, const glm::vec3& position,
+/*Camera::Camera(BasicGameObject* parent, const glm::vec3& position,
 	std::string tag)
 	: BasicGameObject(parent, position, tag),
 	m_zNear(0.1f), m_zFar(100.f),
@@ -40,7 +40,7 @@ Camera::Camera(BasicGameObject* parent, const glm::vec3& position,
 	velocity.setId(getId());
 	velocity.setVelocity(0.015f, 0.01f, 0.015f);
 
-}
+}*/
 
 
 
@@ -52,7 +52,7 @@ Camera::~Camera()
 
 void Camera::Update(float deltatime) {
 
-	SimulateWalking(0.015f, glfwGetTime());
+	SimulateWalking(0.015f, static_cast<float>(glfwGetTime()));
 	movements.move(this, deltatime);
 
 };
