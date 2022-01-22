@@ -69,7 +69,7 @@ public:
 	Rotoform& operator=(const Rotoform& source);
 
 	// Move Constructor
-	Rotoform(Rotoform&& source);
+	Rotoform(Rotoform&& source) noexcept;
 	// Destructor 
 	~Rotoform();
 
@@ -106,6 +106,10 @@ public:
 	// Get global matrix rotation
 	glm::mat3x3 getRotation() const;
 	inline void setMatrixRotation(const glm::mat3x3& mat);
+	inline void setMatrixRotationXYZ(const glm::mat3x3& matX, const glm::mat3x3& matY, const glm::mat3x3& matZ) {
+		m_rotx = matX; m_roty = matY; m_rotz = matZ; 
+		processTransformation(); 
+	};
 
 	// Get inverse rotation => transpose 
 	inline glm::mat3x3 getInvMatRot();

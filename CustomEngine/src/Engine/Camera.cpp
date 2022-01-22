@@ -52,7 +52,7 @@ Camera::~Camera()
 
 void Camera::Update(float deltatime) {
 
-	SimulateWalking(0.015f, glfwGetTime());
+	SimulateWalking(0.015f, static_cast<float>(glfwGetTime()));
 	movements.move(this, deltatime);
 
 };

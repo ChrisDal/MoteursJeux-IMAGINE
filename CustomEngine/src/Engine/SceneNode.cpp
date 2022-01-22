@@ -122,7 +122,7 @@ bool SceneNode::isValid()
 
 int SceneNode::getChildrenNumber() const
 {
-    return m_children.size();
+    return static_cast<int>(m_children.size());
 }
 
 std::vector<SceneNode*> SceneNode::getNodes()
@@ -383,32 +383,24 @@ void SceneNode::Update(float deltatime)
 
 glm::mat4x4 SceneNode::getMatWorldTransform() {
 
+    glm::mat4x4 transfoMat = m_tsfm_world.getMatrixTransform();
+
     if (m_parent != nullptr)
     {
-        glm::mat4x4 transfo = m_tsfm_world.getMatrixTransform();
         // Add object transformation
         if (m_parent->haveGmo()) {
-            transfo = transfo * m_parent->getObject()->getMatTransformation(); 
+            transfoMat = transfoMat * m_parent->getObject()->getMatTransformation();
+            return m_parent->getMatWorldTransform() * transfoMat;
         }
 
-        return m_parent->getMatWorldTransform() * transfo;
+        return m_parent->getMatWorldTransform() * transfoMat;
     }
 
-    return m_tsfm_world.getMatrixTransform();
+    return transfoMat;
 
 }
 
 
-SpaceEngine::Transform SceneNode::getWorldTransform() {
-
-    if (m_parent != nullptr)
-    {
-        
-        return m_parent->getNodeTransform().tfm_combine_with(m_tsfm_world);
-    }
-
-    return m_tsfm_world; 
-}
 
 // Get One node Transformation
 SpaceEngine::Transform SceneNode::getNodeTransform()
@@ -416,7 +408,7 @@ SpaceEngine::Transform SceneNode::getNodeTransform()
     SpaceEngine::Transform objtransfo = SpaceEngine::Transform(m_tsfm_world); 
     if (m_object != nullptr) 
     {
-        objtransfo.tfm_combine_with(m_object->getTransformation(true)); 
+        objtransfo.tfm_combine_with(m_object->getTransformation()); 
     }
 
     return objtransfo;
@@ -430,17 +422,6 @@ glm::mat4x4 SceneNode::getMatNodeTransform()
 }
 
 
-
-// Get Total World Transformation
-SpaceEngine::Transform SceneNode::getTotalNodeTransform()
-{
-    SpaceEngine::Transform objtransfo(m_object->getTransformation(true)); 
-    SpaceEngine::Transform worldTsfm = getWorldTransform(); 
-    // combined with node 
-    objtransfo.tfm_combine_with(worldTsfm);
-    
-    return objtransfo;
-}
 
 // Get Matrix of Total World Transformation
 glm::mat4x4 SceneNode::getMatTotalNodeTransform()
@@ -541,22 +522,4 @@ SceneNode* SceneNode::getNodebyId(const int& sId, const int& maxDepth)
     return foundId; 
 }
 
-bool SceneNode::operator==(const SceneNode* other)
-{
-    return this->getId() == other->getId();
-}
 
-bool SceneNode::operator!=(const SceneNode* other)
-{
-    return !(this == other);
-}
-
-bool SceneNode::operator==(const SceneNode other)
-{
-    return getId() == other.getId();
-}
-
-bool SceneNode::operator!=(const SceneNode other)
-{
-    return !(*this == other);
-}

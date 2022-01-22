@@ -72,14 +72,11 @@ void BasicGameObject::addTransformation(const SpaceEngine::Transform& transfo, b
 
 }
 
-SpaceEngine::Transform BasicGameObject::getTransformation(bool internal) const
+// Get Object Transformationq
+SpaceEngine::Transform BasicGameObject::getTransformation() const
 {
-	if (internal)
-	{
-		return m_internal;
-	}
-	
-	return m_parent->getWorldTransform();
+	return m_internal;
+
 }
 
 void BasicGameObject::applyTransformation()
@@ -113,9 +110,9 @@ glm::vec4 BasicGameObject::getWorldPosition()
 glm::mat4x4 BasicGameObject::getTransformationAllIn()
 {
 	// Transformation of game object 
-	glm::mat4x4 t_interne = this->getTransformation(true).getMatrixTransform();
+	glm::mat4x4 t_interne = this->getTransformation().getMatrixTransform();
 	// Scene Node global transformation
-	glm::mat4x4 t_externe = this->getTransformation().getMatrixTransform();
+	glm::mat4x4 t_externe = m_parent->getMatTransform(); 
 
 	return t_externe * t_interne;
 }

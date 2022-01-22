@@ -142,22 +142,16 @@ void Renderer::Draw(GameObject* gmo, Material* mat, int shadertype) const
 	// ------------
 	// Set Uniforms 
 	// -------------
-	// set uniform transform 
-	
-	glm::mat4x4 test_ones = glm::mat4(1.0f);
-
+	glm::mat4x4 test_ones(1.0f); 
 	// set transformation matrix for each game object
 	//SpaceEngine::Transform tNode = gmo->getTransformation(false);
 	glm::mat4x4 matTnode = gmo->getNode()->getMatTransform(); 
-	chosenShader->setMat4("u_transform_matrix", glm::value_ptr(matTnode));
-
-	
-	chosenShader->setMat4("u_world_matrix", glm::value_ptr(test_ones));
+	chosenShader->setMat4("u_transform", glm::value_ptr(test_ones));
 
 	// set internal transform matrix
-	SpaceEngine::Transform t_interne = gmo->getTransformation(true);
-	glm::mat4 modelTransfointern = t_interne.getMatrixTransform() * meshobject->getModelView();
-	chosenShader->setMat4("u_internal_tsfm_matrix", glm::value_ptr(modelTransfointern));
+	SpaceEngine::Transform t_interne = gmo->getTransformation();
+	glm::mat4 modelTransfointern = gmo->getNode()->getMatTotalNodeTransform() * meshobject->getModelView();
+	chosenShader->setMat4("u_internal_transform", glm::value_ptr(modelTransfointern));
 	
 	// View Proj Matrix 
 	chosenShader->setMat4("u_vp", glm::value_ptr(vpmat));

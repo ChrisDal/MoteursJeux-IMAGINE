@@ -8,7 +8,9 @@ void Velocity::move(BasicGameObject* gmo, float dt)
 	Velocity::clampV();
 
 	// position += velocity 
-	gmo->Translate(dt * vx, dt * vy, dt * vz, true); 
+	gmo->Translate(dt * static_cast<float>(vx),
+					dt * static_cast<float>(vy), 
+					dt * static_cast<float>(vz), true);
 
 	vx *= dv; 
 	vy *= dv; 

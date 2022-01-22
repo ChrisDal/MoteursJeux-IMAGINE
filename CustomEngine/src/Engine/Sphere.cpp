@@ -74,8 +74,8 @@ void Sphere::init(float radius, const glm::vec3& center)
 	m_pvertices = &this->vertices[0];
 	m_pindices = (GLushort*)&this->indices[0];
 
-	m_nVertex = this->vertices.size();
-	indexCount = this->indices.size();
+	m_nVertex  = static_cast<unsigned int>(this->vertices.size());
+	indexCount = static_cast<unsigned int>(this->indices.size());
 
 	setPrimitives(GL_TRIANGLES);
 

@@ -63,9 +63,9 @@ void Mesh::setupMesh()
 	m_vao = new VertexArrayBuffer();
 	m_vao->bind();
 	// vertex buffer 
-	m_vbo = new VertexBuffer(this->vertices.data(), this->vertices.size() * sizeof(this->vertices[0]));
+	m_vbo = new VertexBuffer(this->vertices.data(), static_cast<unsigned int>(this->vertices.size() * sizeof(this->vertices[0])));
 	// indices buffer 
-	m_ibo = new IndexBuffer(this->indices.data(), this->indices.size());
+	m_ibo = new IndexBuffer(this->indices.data(), static_cast<unsigned int>(this->indices.size()));
 	// Layout
 	m_layout = VertexBufferLayout();
 	m_layout.Push<float>(3); // layout position 
@@ -92,7 +92,7 @@ void Mesh::initTerrain(const char* filename, int sqrtTerrain)
 	}
 
 	// afficher une surface plane (16*16 sommets) composée de triangles.
-	unsigned int sqrtnVertex = std::sqrt(sqrtTerrain);
+	unsigned int sqrtnVertex = static_cast<unsigned int>(std::sqrt(sqrtTerrain));
 	unsigned int vertexNumber = sqrtnVertex * sqrtnVertex;
 
 	this->vertices.reserve(vertexNumber);
@@ -142,7 +142,7 @@ void Mesh::initTerrain(const char* filename, int sqrtTerrain)
 	}
 
 	unsigned int countVertex = 0;  // every N=2*sqrtnVertex samples we duplicate the vertices k and k+1,
-	for (unsigned int k = 0; k < tmpCount; k++)
+	for (int k = 0; k < (int)tmpCount; k++)
 	{
 		countVertex++;
 		this->indices.push_back(tmpindices[k]);
@@ -150,7 +150,7 @@ void Mesh::initTerrain(const char* filename, int sqrtTerrain)
 		if (countVertex % (2 * sqrtnVertex) == 0)
 		{
 			this->indices.push_back(tmpindices[k]);
-			this->indices.push_back(tmpindices[(int)k + 1]);
+			this->indices.push_back(tmpindices[k + 1]);
 		}
 	}
 
@@ -269,8 +269,8 @@ void Mesh::initCapsule(float radius, float distance)
 	m_pvertices = &this->vertices[0];
 	m_pindices = (GLushort*)&this->indices[0];
 
-	m_nVertex = this->vertices.size();
-	indexCount = this->indices.size();
+	m_nVertex  = static_cast<unsigned int>(this->vertices.size());
+	indexCount = static_cast<unsigned int>(this->indices.size());
 
 	setPrimitives(GL_TRIANGLES);
 
@@ -364,8 +364,8 @@ void Mesh::initSphere(float radius)
 	m_pvertices = &this->vertices[0];
 	m_pindices = (GLushort*)&this->indices[0];
 
-	m_nVertex = this->vertices.size();
-	indexCount = this->indices.size();
+	m_nVertex  = static_cast<unsigned int>(this->vertices.size());
+	indexCount = static_cast<unsigned int>(this->indices.size());
 
 	setPrimitives(GL_TRIANGLES);
 
@@ -415,8 +415,6 @@ void Mesh::initCube()
 	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f),glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.33f, 1.0f) })); // v22
 	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.66f, 1.0f) })); // v23
 
-	m_nVertex = this->vertices.size();
-
 	// Sommets
 	this->indices =  {
 		 0,  1,  2,  3,  3,     // Face 0 - triangle strip ( v0,  v1,  v2,  v3)
@@ -427,18 +425,12 @@ void Mesh::initCube()
 		20, 20, 21, 22, 23      // Face 5 - triangle strip (v20, v21, v22, v23)
 	};
 
-
-#if 0
-	debugMesh(); 
-#endif 
-	
-
 	// set pointers
 	m_pvertices = &this->vertices[0];
 	m_pindices = (GLushort*)&this->indices[0];
 
-	m_nVertex = this->vertices.size();
-	indexCount = this->indices.size();
+	m_nVertex = static_cast<unsigned int>(this->vertices.size());
+	indexCount = static_cast<unsigned int>(this->indices.size());
 	
 	setPrimitives(GL_TRIANGLE_STRIP);
 	setupMesh();

@@ -11,8 +11,8 @@
 const char* glsl_version = "#version 130";
 
 // settings
-unsigned int SCR_WIDTH = 800;
-unsigned int SCR_HEIGHT = 600;
+unsigned int SCR_WIDTH = 1280;
+unsigned int SCR_HEIGHT = 720;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 static constexpr float APP_MAX_FRAMERATE{ 60.0f };
 bool callbackWindows = false;
@@ -179,14 +179,20 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     
     if (firstMouse)
     {
-        lastX = xpos;
-        lastY = ypos;
+        lastX = static_cast<float>(xpos);
+        lastY = static_cast<float>(ypos);
         firstMouse = false;
     }
 
-    // In dead Zone wont treat  
-    bool inDeadZoneX = ((float)SCR_WIDTH / 2.0f) - Game::camDeadZone.x < xpos && xpos < ((float)SCR_WIDTH / 2.0f ) + Game::camDeadZone.x; 
-    bool inDeadZoneY = ((float)SCR_HEIGHT / 2.0f) - Game::camDeadZone.y < ypos && ypos < ((float)SCR_HEIGHT / 2.0f)  + Game::camDeadZone.y;
+    // In dead Zone wont treat
+    glm::vec2 xDZN{ ((float)SCR_WIDTH / 2.0f) - Game::camDeadZone.x ,
+                    ((float)SCR_WIDTH / 2.0f) + Game::camDeadZone.x };
+    glm::vec2 yDZN{ ((float)SCR_HEIGHT / 2.0f) - Game::camDeadZone.y ,
+                    ((float)SCR_HEIGHT / 2.0f) + Game::camDeadZone.y };
+
+    bool inDeadZoneX = static_cast<float>(xDZN.x) < xpos && xpos < static_cast<float>(xDZN.y);
+    bool inDeadZoneY = static_cast<float>(yDZN.x) < ypos && ypos < static_cast<float>(yDZN.y);
+
     if (inDeadZoneX && inDeadZoneY)
     {
         processCamera = false;
@@ -194,11 +200,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }
 
 
-    Game::camoffsetx = xpos - lastX;
-    Game::camoffsety = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    Game::camoffsetx = static_cast<float>(xpos) - lastX;
+    Game::camoffsety = lastY - static_cast<float>(ypos); // reversed since y-coordinates go from bottom to top
 
-    lastX = xpos;
-    lastY = ypos;
+    lastX = static_cast<float>(xpos);
+    lastY = static_cast<float>(ypos);
 
     processCamera = true; 
 }
@@ -329,7 +335,7 @@ void Game::RunGameLoop()
     bool render = false; 
 
     // GET nodes 
-    SceneNode* marsNode = m_scene->getNodebyId("SN5"); 
+    SceneNode* sunNode = m_scene->getNodebyId("SN5");
     
     
     // render loop
@@ -358,9 +364,6 @@ void Game::RunGameLoop()
         // input
         // -----
         processInput(m_Window, useInternal);
-        // Rotation automatic
-        //m_player->Rotate(0.0f, 0.5f, 0.0f, true);
-       // m_player->Rotate(0.0f, 0.2f, 0.0f, false);
         
 
         if (processCamera && cameraRotation)
@@ -372,12 +375,11 @@ void Game::RunGameLoop()
         {
             // Update Game 
             // -----------
-
-            //SceneNode* nodeMars = m_scene->getNode(2)->getNode(0);
-            marsNode->Rotate(0.0f, 1.0f, 0.0f, false);
-
+            // Test Graph Scene 
+            sunNode->Rotate(0.0f, 1.0f, 0.0f, false);
             m_player->Rotate(0.5f, 0.0f, 0.0f, true); 
 
+            
             Update(static_cast<float>(deltaTime));
 
             mFrameTime -= 1.0f / APP_MAX_FRAMERATE;
@@ -619,14 +621,22 @@ void Game::initScene()
     // -------------
     m_scene = new SceneNode(); //  ROOT NODE 
 
+    
+
+
+    // Player
     SceneNode* nodePlayer = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
-    //SceneNode* etape1 = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
-
-
-    // Game Objects
     GameObject* player = new GameObject(nodePlayer, glm::vec3(2.0, 0.0, 0.0), -1, "", "Player");
     player->initMesh(2);
     player->velocity.setVelocity(0.0f, 0.0f, 0.0f);
+
+    SceneNode* nodeSatPlayer = new SceneNode(nodePlayer);
+    GameObject* satPlayer = new GameObject(nodeSatPlayer, glm::vec3(0.0f, 1.0f, 0.0f), -1);
+    satPlayer->initMesh(0); 
+    satPlayer->Scale(0.1f, 0.1f, 0.1f, true); 
+    
+
+
 
     // Camera Node 
     SceneNode* cameraNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -638,25 +648,62 @@ void Game::initScene()
     SceneNode* suNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
     GameObject* sun = new GameObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
     sun->initMesh(3);
-
+    
     // Mars Node 
     SceneNode* marsNode = new SceneNode(suNode, glm::vec3(0.0f, 0.0f, 0.0f));
     GameObject* mars = new GameObject(marsNode, glm::vec3(3.0f, 0.0, 0.0f), -1);
     mars->initMesh(3);
     SpaceEngine::Transform transfolune;
-    transfolune.setHomogenousScale(0.5f); 
-    transfolune.setRotation(100.0f, 0.0f, 0.0f);
+    transfolune.setHomogenousScale(0.35f); 
+    transfolune.setRotation(0.0f, 0.0f, 0.0f);
     mars->addTransformation(transfolune, true);
 
-    // Mars Node 
-    SceneNode* marsSatNode = new SceneNode(marsNode, mars->Position());
-    GameObject* marsSat = new GameObject(marsSatNode, 
-                                    glm::vec3(0.0f, 0.0, 0.0f), -1);
+    // MarsSat  Node 
+    SceneNode* marsSatNode = new SceneNode(marsNode);
+    GameObject* marsSat = new GameObject(marsSatNode, glm::vec3(1.0f, 1.0f, 1.0f), -1);
     marsSat->initMesh(3);
     SpaceEngine::Transform transfoSat;
     transfoSat.setHomogenousScale(0.2f);
     transfoSat.setRotation(0.0f, 65.0f, 15.0f);
     marsSat->addTransformation(transfoSat, true);
+
+
+    // Ajout Planete 
+    {
+        SceneNode* planeteNode = this->addPlanet(suNode, glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3(0.0f, 0.0f, 1.5f), 0.25f);
+    }
+    
+    // Ajout Planete + Satellite 
+    {
+        SceneNode* planeteNode = this->addPlanet(suNode, glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3(4.0f, 0.0f, 2.0f), 0.6f,
+            glm::vec3(0.0f, 23.0f, 0.0f),
+            glm::vec3(0.0f, 0.0f, 0.0f));
+
+        SceneNode* satelliteNode = this->addSatellite(planeteNode, glm::vec3(0.0f, 2.0f, 0.0f),
+            0.2f, glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3(0.0f, 0.0f, 0.0f));
+    }
+
+    // Venus Node 
+    /*SceneNode* venusNode = new SceneNode(suNode, glm::vec3(0.0f, 0.0f, 0.0f));
+    GameObject* venus = new GameObject(venusNode, glm::vec3(5.0f, 0.0, 0.0f), -1);
+    venus->initMesh(3);
+    SpaceEngine::Transform transfonus;
+    transfonus.setHomogenousScale(0.6f);
+    transfonus.setRotation(0.0f, 23.0f, 0.0f);
+    venus->addTransformation(transfonus, true);
+
+    // VenusSat  Node 
+    SceneNode* venusSatNode = new SceneNode(venusNode);
+    GameObject* venusSat = new GameObject(venusSatNode, glm::vec3(0.0f, 2.0f, 0.0f), -1);
+    venusSat->initMesh(3);
+    SpaceEngine::Transform transfovenusSat;
+    transfovenusSat.setHomogenousScale(0.2f);
+    transfovenusSat.setRotation(0.0f, 0.0f, 15.0f);
+    venusSat->addTransformation(transfovenusSat, true);*/
+
 
     /*GameObject* other = new GameObject(etape1, glm::vec3(0.0, 0.0, 0.0), -1);
     std::string meshfilepath = m_datadir;
@@ -682,3 +729,43 @@ void Game::initScene()
     m_scene->print();
     m_scene->sceneInit(m_scene);
 }
+
+
+
+SceneNode* Game::addPlanet(SceneNode* root, const glm::vec3& nodepos,
+                const glm::vec3& planetpos, float scale, const glm::vec3& rotation,
+                const glm::vec3& translation)
+{
+    // Venus Node 
+    SceneNode* planetNode = new SceneNode(root, nodepos);
+    GameObject* planet = new GameObject(planetNode, planetpos, -1);
+    planet->initMesh(3); // by default its round
+
+    // Add an internal transformation 
+    SpaceEngine::Transform transfoplanet(glm::vec3(scale, scale, scale), 
+                                        Rotoform(rotation.x, rotation.y, rotation.z, false), 
+                                        translation);
+    planet->addTransformation(transfoplanet, true);
+
+    return planetNode; 
+}
+
+
+SceneNode* Game::addSatellite(SceneNode* planetNode, const glm::vec3& satpos,
+                float scale, const glm::vec3& rotationInDegree,
+                const glm::vec3& translation)
+{
+    // Satellite  Node 
+    SceneNode* satNode = new SceneNode(planetNode);
+    GameObject* planetSat = new GameObject(satNode, satpos, -1);
+    planetSat->initMesh(3);
+
+    // Add an internal transformation 
+    SpaceEngine::Transform transfoSat(glm::vec3(scale, scale, scale),
+                                    Rotoform(rotationInDegree.x, rotationInDegree.y, rotationInDegree.z, false),
+                                    translation);
+    planetSat->addTransformation(transfoSat, true);
+
+    return satNode; 
+}
+

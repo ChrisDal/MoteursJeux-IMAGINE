@@ -41,9 +41,9 @@ struct Player : Component
 
 struct Velocity : Component
 {
-	double vx;
-	double vy;
-	double vz;
+	double vx = 0.0f;
+	double vy = 0.0f;
+	double vz = 0.0f;
 
 	// Max and min speed 
 	double max_v = 50.0;

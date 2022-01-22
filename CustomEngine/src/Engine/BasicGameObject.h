@@ -3,7 +3,7 @@
 #include <glm/vec2.hpp> // glm::vec3
 #include <glm/vec3.hpp> // glm::vec3
 #include <glm/vec4.hpp> // glm::vec4
-#include <glm/mat3x3.hpp> // glm::mat4
+#include <glm/mat3x3.hpp> // glm::mat3
 #include <glm/mat4x4.hpp> // glm::mat4
 
 #include <vector>
@@ -29,21 +29,6 @@ protected:
     SpaceEngine::Transform m_internal; // Internal Transformation 
 
 
-    /*
-    // Hierarchie
-    std::vector<BasicGameObject*> m_children;
-    SceneNode* m_parent;
-    BasicGameObject* m_gparent; 
-
-    // ----------------
-    // Transformations 
-    // ----------------
-    SpaceEngine::Transform m_transfo;  // transformation en temps réel repere world
-    SpaceEngine::Transform m_internal; // transformation repere interne
-    glm::mat4x4 m_world;   // transformation at time T=0 , position in world
-    */
-
-
 public:
 
     static int g_id;
@@ -56,7 +41,7 @@ public:
     // Define Transformation
     void setTransformation(SpaceEngine::Transform transfo, bool internal = false);
     void addTransformation(const SpaceEngine::Transform& transfo, bool internal = false);
-    SpaceEngine::Transform getTransformation(bool internal = false) const;
+    SpaceEngine::Transform getTransformation() const; // Get Object transformation
 
 
     // Transformation in memory

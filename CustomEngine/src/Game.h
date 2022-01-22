@@ -86,7 +86,15 @@ protected :
     void initScene(const char* filename);       //!< Future initScene with file 
     void saveScene(const char* filename);       //!< Future saveScene in file 
 
-    
+    SceneNode* addSatellite(SceneNode* planetNode, const glm::vec3& satpos,
+        float scale = 1.0f,
+        const glm::vec3& rotationInDegree = glm::vec3(0.0f, 0.0f, 0.0f),
+        const glm::vec3& translation = glm::vec3(0.0f, 0.0f, 0.0f)); 
+
+    SceneNode* addPlanet(SceneNode* root, const glm::vec3& nodepos,
+        const glm::vec3& planetpos,
+        float scale = 1.0f, const glm::vec3& rotation = glm::vec3(0.0f, 0.0f, 0.0f),
+        const glm::vec3& translation = glm::vec3(0.0f, 0.0f, 0.0f)); 
 
 private:
     void processInput(GLFWwindow* window, bool internal=false);      //!< Process Keyboard Inputs 

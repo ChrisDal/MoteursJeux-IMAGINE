@@ -105,7 +105,7 @@ namespace SpaceEngine {
 	}
 
 	// Move constructor 
-	Transform::Transform(Transform&& source)
+	Transform::Transform(Transform&& source) noexcept
 	{
 		m_scale = source.m_scale;
 		m_rotation = source.m_rotation;
