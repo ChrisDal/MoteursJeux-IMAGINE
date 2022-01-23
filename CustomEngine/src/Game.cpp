@@ -525,19 +525,150 @@ void Game::RenderDebugMenu() {
     static bool orthoprojection = false;
 
 
-    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-
-    ImGui::SliderFloat("rotationX", &frotate.x, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("rotationY", &frotate.y, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("rotationZ", &frotate.z, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("translationX", &ftranslate.x, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("translationY", &ftranslate.y, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("translationZ", &ftranslate.z, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
     
-    //Graphe de Scene 
+
+    // Transforms
+    static glm::vec3 transVec3 = { 0.0f, 0.0f, 0.0f };
+    static glm::vec3 rotVec3   = { 0.0f, 0.0f, 0.0f };
+    static glm::vec3 scaleVec3 = { 1.0f, 1.0f, 1.0f };
+    static const char* axesnames[3] = { "X", "Y", "Z" }; 
+
+    ImGui::Begin("Transformations");
+
+    // Translation
+    {
+        
+        ImGui::Text("Translation"); 
+        ImGui::PushItemWidth(80);
+        for (int i = 0; i < 3; i++)
+        {
+            // X , Y , Z 
+            ImGui::PushID(i);
+            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+            std::string label = std::string(axesnames[i]) + "##" + std::string("Tsl");
+            if (ImGui::Button(label.c_str())) {
+                // Reset If its clicked
+                transVec3[i] = 0.0f;
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Reset to 0.0f");
+            }
+            
+            ImGui::PopStyleColor(3);
+            ImGui::PopID();
+            ImGui::SameLine(0.0f, 1.0f); 
+
+            // Give Unique ID for Sliders but do not display
+            std::string uid = "##" + std::string("Tsl") + std::string(axesnames[i]);
+            ImGui::DragFloat(uid.c_str(), &transVec3[i], 0.1f, -FLT_MAX, FLT_MAX);
+            if (ImGui::IsItemHovered()) {
+                std::string message = "Translation over axe " + std::string(axesnames[i]);
+                ImGui::SetTooltip(message.c_str());
+            }
+
+            if (i == 2) {
+                continue; 
+            }
+
+            ImGui::SameLine();
+        }
+
+        ImGui::PopItemWidth();
+
+    }
+
+    // Rotation
+    {
+
+        ImGui::Text("Rotation");
+        ImGui::PushItemWidth(80);
+        for (int i = 0; i < 3; i++)
+        {
+            // X , Y , Z 
+            ImGui::PushID(i);
+            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+            std::string label = std::string(axesnames[i]) + "##" + std::string("Rot") ;
+            if (ImGui::Button(label.c_str())) {
+                // Reset If its clicked
+                rotVec3[i] = 0.0f;
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Reset to 0.0f");
+            }
+
+            ImGui::PopStyleColor(3);
+            ImGui::PopID();
+            ImGui::SameLine(0.0f, 1.0f);
+
+            // Give Unique ID for Sliders but do not display
+            std::string uid = "##" + std::string("Rot") + std::string(axesnames[i]);
+            ImGui::DragFloat(uid.c_str(), &rotVec3[i], 1.0f, -359.99f, 360.0f);
+            if (ImGui::IsItemHovered()) {
+                std::string message = "Rotation -359:360 over axe " + std::string(axesnames[i]);
+                ImGui::SetTooltip(message.c_str());
+            }
+
+            if (i == 2) {
+                continue;
+            }
+
+            ImGui::SameLine();
+        }
+
+        ImGui::PopItemWidth();
+
+    }
+
+    // Scale
+    {
+        ImGui::Text("Scale");
+        ImGui::PushItemWidth(80);
+        for (int i = 0; i < 3; i++)
+        {
+            // X , Y , Z 
+            ImGui::PushID(i);
+            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+            std::string label = std::string(axesnames[i]) + "##" + std::string("Scl");
+            if (ImGui::Button(label.c_str())) {
+                // Reset If its clicked
+                scaleVec3[i] = 1.0f;
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Reset to 1.0f");
+            }
+
+            ImGui::PopStyleColor(3);
+            ImGui::PopID();
+            ImGui::SameLine(0.0f, 1.0f);
+
+            // Give Unique ID for Sliders but do not display
+            std::string uid = "##" + std::string("Scl") + std::string(axesnames[i]);
+            ImGui::DragFloat(uid.c_str(), &scaleVec3[i], 0.01f, 0.0f, 100.0f);
+            if (ImGui::IsItemHovered()) {
+                std::string message = "Scale 0:100 over axe " + std::string(axesnames[i]);
+                ImGui::SetTooltip(message.c_str());
+            }
+
+            if (i == 2) {
+                continue;
+            }
+
+            ImGui::SameLine();
+        }
+
+        ImGui::PopItemWidth();
+    }
+
+    ImGui::Text("Color");
+    ImGui::ColorEdit3("GameObject Color", (float*)&clear_color); // Edit 3 floats representing a color
+    
+    // Graphe de Scene 
     DisplayUISceneGraph(m_scene); 
                                                             
     // Checkbox for scene
