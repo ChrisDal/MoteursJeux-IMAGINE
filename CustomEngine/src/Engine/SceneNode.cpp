@@ -271,6 +271,38 @@ BasicGameObject* SceneNode::getObject()
     return m_object;
 }
 
+/// <summary>
+/// Search and return GameObject by Id(int)
+/// </summary>
+/// <param name="idobj"></param>
+/// <returns>GameObject* </returns>
+BasicGameObject* SceneNode::getObjectbyID( int& idobj)
+{
+
+    if (this->haveGmo()) 
+    {
+        if (getObject()->getId() == idobj)
+        {
+            return this->getObject();
+        }
+    } 
+    
+    if (m_children.size() > 0)
+    {
+        for (SceneNode* child : m_children) {
+            if (child->getObjectbyID(idobj) != nullptr)
+            {
+                return child->getObjectbyID(idobj); 
+            }
+        }
+    }
+
+    return nullptr;
+
+
+}
+
+
 
 
 

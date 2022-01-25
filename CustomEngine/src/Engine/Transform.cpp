@@ -58,7 +58,9 @@ namespace SpaceEngine {
 	// ================================================
 
 	Transform::Transform()
-		: m_scale(glm::vec3(1.0f, 1.0f, 1.0f)), m_translation(glm::vec3(0.0f, 0.0f, 0.0f))
+		: m_scale(glm::vec3(1.0f, 1.0f, 1.0f)), m_translation(glm::vec3(0.0f, 0.0f, 0.0f)), 
+		m_readable_scale(m_scale), m_readable_angle(glm::vec3(0.0f)), 
+		m_readable_transl(glm::vec3(0.0f))
 	{
 		m_rotation = Rotoform();
 
@@ -69,7 +71,9 @@ namespace SpaceEngine {
 
 
 	Transform::Transform(glm::vec3 scaleVec3, Rotoform rotMat, glm::vec3 transVec3)
-		: m_scale(scaleVec3), m_rotation(rotMat), m_translation(transVec3)
+		: m_scale(scaleVec3), m_rotation(rotMat), m_translation(transVec3), 
+		m_readable_scale(scaleVec3), m_readable_angle(glm::vec3(0.0f)),
+		m_readable_transl(glm::vec3(0.0f))
 	{
 		// init global transform 
 		m_transform = glm::mat4(1.0f);
@@ -448,6 +452,13 @@ namespace SpaceEngine {
 
 	Transform Transform::getTransform() const {
 		return *this;
+	}
+
+	glm::mat3x3 Transform::getPackedTransform() const
+	{
+		return glm::mat3x3(m_rotation.getAngles(), 
+							m_translation, 
+							m_scale);
 	}
 
 

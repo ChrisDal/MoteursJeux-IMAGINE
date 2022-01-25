@@ -56,6 +56,7 @@ public:
     // One GameObject Per node 
     void addObject(BasicGameObject* gmo);
     BasicGameObject* getObject();
+    BasicGameObject* getObjectbyID(int& idobj);
 
     // have a valid game object 
     inline bool haveGmo() const { return m_object != nullptr; }
@@ -63,6 +64,8 @@ public:
     SceneNode* getNodebyId(const int& sId, const int& maxDepth = -1);                         //!< From this node look for node by int ID (down)
 
     SceneNode* getParent() { return m_parent; }
+
+    
 
     // -----------------
     // Transformations

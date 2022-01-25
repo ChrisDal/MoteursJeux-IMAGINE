@@ -260,12 +260,12 @@ void Game::processInput(GLFWwindow* window, bool internal)
         mouse_left_down = false;
     }
 
-    if (mouse_left_down)
+    /*if (mouse_left_down)
     {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         setTrackingPoint(window, m_camera, xpos, ypos);
-    }
+    }*/
 
 
     if (actor->velocity.ismoving()) {
@@ -335,7 +335,7 @@ void Game::RunGameLoop()
     bool render = false; 
 
     // GET nodes 
-    SceneNode* sunNode = m_scene->getNodebyId("SN5");
+    SceneNode* sunNode = m_scene->getNodebyId("SN6");
     
     
     // render loop
@@ -377,7 +377,7 @@ void Game::RunGameLoop()
             // -----------
             // Test Graph Scene 
             sunNode->Rotate(0.0f, 1.0f, 0.0f, false);
-            m_player->Rotate(0.5f, 0.0f, 0.0f, true); 
+            m_player->Rotate(-0.5f, 0.0f, 0.0f, true); 
 
             
             Update(static_cast<float>(deltaTime));
@@ -447,6 +447,75 @@ void Game::Update(float deltaTime)
     m_scene->Update(deltaTime); 
 }
 
+// Display a node Scene in ImGUI
+static void displayGraphNode(SceneNode* node, int& selectable)
+{
+    // Node ID 
+    if (ImGui::TreeNode(node->getId().c_str()))
+    {
+        // Display GameObject 
+        if (node->haveGmo())
+        {
+            int ngmo = node->getObject()->getId(); 
+            const std::string label = "GameObj " + std::to_string(ngmo);
+            if (ImGui::Selectable(label.c_str(), selectable == ngmo)) {
+                selectable = ngmo;
+            }
+            ImGui::Text("Tag:"); 
+            ImGui::SameLine();
+            ImGui::Text(node->getObject()->getTag().c_str());
+            if (node->getObject()->hasMesh())
+            {
+                ImGui::SameLine();
+                
+                if (ImGui::SmallButton("Set Red")) {
+                    GameObject* gmo = (GameObject*)node->getObject();
+                    if (gmo->getMesh()->getColor() == Mesh::basicColor)
+                    {
+                        gmo->getMesh()->setColor(1.0f, 0.0f, 0.0f, 1.0f);
+                    }
+                    else
+                    {
+                        gmo->getMesh()->setColor(Mesh::basicColor);
+                    }
+                    
+                }
+            }
+            
+                
+        }
+
+        
+        for (int i = 0; i < node->getChildrenNumber(); i++)
+        {
+            displayGraphNode(node->getNode(i), selectable);
+        }
+
+        
+        ImGui::TreePop();    
+    }
+
+    
+}; 
+
+void Game::DisplayUISceneGraph(SceneNode* root, int& selected)
+{
+    // Scene Graph 
+    if (ImGui::CollapsingHeader("SceneGraph"))
+    {
+        
+
+        if (m_scene != nullptr)
+        {
+            // Nodes 
+            ImGui::SetNextTreeNodeOpen(true);
+            displayGraphNode(m_scene, selected); 
+        }
+    }
+
+    
+}
+
 void Game::RenderDebugMenu() {
 
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
@@ -457,24 +526,216 @@ void Game::RenderDebugMenu() {
     static bool wireframeMode = false;
     static bool orthoprojection = false;
 
+    // Transforms
+    static glm::mat3 objtransfm; 
+    static glm::vec3 transVec3 = { 0.0f, 0.0f, 0.0f };
+    static glm::vec3 rotVec3   = { 0.0f, 0.0f, 0.0f };
+    static glm::vec3 scaleVec3 = { 1.0f, 1.0f, 1.0f };
+    static const char* axesnames[3] = { "X", "Y", "Z" }; 
+    static bool applyTransform[3] = { false, false, false }; // TRS Modifications have been made
 
-    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+    // ImGui TreeNode
+    ImGui::Begin("Inspector");
+    ImGui::SetNextTreeNodeOpen(true);
 
-    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+    // Graphe de Scene 
+    static int selected = -1;
+    BasicGameObject* foundObj = nullptr;
+    DisplayUISceneGraph(m_scene, selected);
 
-    ImGui::SliderFloat("rotationX", &frotate.x, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("rotationY", &frotate.y, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("rotationZ", &frotate.z, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("translationX", &ftranslate.x, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("translationY", &ftranslate.y, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("translationZ", &ftranslate.z, -50.0f, 50.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+    if (selected != -1) {
+        
+        foundObj = m_scene->getObjectbyID(selected);
+
+        if (foundObj != nullptr)
+        {
+            objtransfm = foundObj->getTransformation().getPackedTransform();
+            rotVec3 = objtransfm[0];
+            transVec3 = objtransfm[1];
+            scaleVec3 = objtransfm[2]; 
+        }
+    }
+
+        
+
+    ImGui::SetNextTreeNodeOpen(true);
     
-                                                            
-    // Checkbox for scene
-    ImGui::Checkbox("Wireframe Mode", &wireframeMode);
-    ImGui::Checkbox("Internal Transform translation", &useInternal); 
+    // Transforms
+    if (ImGui::CollapsingHeader("Transformations"))
+    {
+        // Translation
+        {
+            ImGui::Text("Translation"); 
+            ImGui::PushItemWidth(80);
+            for (int i = 0; i < 3; i++)
+            {
+                // X , Y , Z 
+                ImGui::PushID(i);
+                ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+                std::string label = std::string(axesnames[i]) + "##" + std::string("Tsl");
+                if (ImGui::Button(label.c_str())) {
+                    // Reset If its clicked
+                    transVec3[i] = 0.0f;
+                    applyTransform[0] = true;
+                }
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Reset to 0.0f");
+                }
+            
+                ImGui::PopStyleColor(3);
+                ImGui::PopID();
+                ImGui::SameLine(0.0f, 1.0f); 
+
+                // Give Unique ID for Sliders but do not display
+                std::string uid = "##" + std::string("Tsl") + std::string(axesnames[i]);
+                applyTransform[0] |= ImGui::DragFloat(uid.c_str(), &transVec3[i], 0.1f, -FLT_MAX, FLT_MAX);
+                if (ImGui::IsItemHovered()) {
+                    std::string message = "Translation over axe " + std::string(axesnames[i]);
+                    ImGui::SetTooltip(message.c_str());
+                }
+
+                if (i == 2) {
+                    continue; 
+                }
+
+                ImGui::SameLine();
+            }
+
+            ImGui::PopItemWidth();
+
+        }
+
+        
+
+        
+
+        // Rotation
+        {
+
+            ImGui::Text("Rotation");
+            ImGui::PushItemWidth(80);
+            for (int i = 0; i < 3; i++)
+            {
+                // X , Y , Z 
+                ImGui::PushID(i);
+                ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+                std::string label = std::string(axesnames[i]) + "##" + std::string("Rot") ;
+                if (ImGui::Button(label.c_str())) {
+                    // Reset If its clicked
+                    rotVec3[i] = 0.0f;
+                    applyTransform[1] = true;
+                }
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Reset to 0.0f");
+                }
+
+                ImGui::PopStyleColor(3);
+                ImGui::PopID();
+                ImGui::SameLine(0.0f, 1.0f);
+
+                // Give Unique ID for Sliders but do not display
+                std::string uid = "##" + std::string("Rot") + std::string(axesnames[i]);
+                applyTransform[1] |= ImGui::DragFloat(uid.c_str(), &rotVec3[i], 1.0f, -359.99f, 360.0f);
+                if (ImGui::IsItemHovered()) {
+                    std::string message = "Rotation -359:360 over axe " + std::string(axesnames[i]);
+                    ImGui::SetTooltip(message.c_str());
+                }
+
+                if (i == 2) {
+                    continue;
+                }
+
+                ImGui::SameLine();
+            }
+
+            ImGui::PopItemWidth();
+
+        }
+
+        // Scale
+        {
+            ImGui::Text("Scale");
+            ImGui::PushItemWidth(80);
+            for (int i = 0; i < 3; i++)
+            {
+                // X , Y , Z 
+                ImGui::PushID(i);
+                ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+                std::string label = std::string(axesnames[i]) + "##" + std::string("Scl");
+                if (ImGui::Button(label.c_str())) {
+                    // Reset If its clicked
+                    scaleVec3[i] = 1.0f;
+                    applyTransform[2] = true;
+                }
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Reset to 1.0f");
+                }
+
+                ImGui::PopStyleColor(3);
+                ImGui::PopID();
+                ImGui::SameLine(0.0f, 1.0f);
+
+                // Give Unique ID for Sliders but do not display
+                std::string uid = "##" + std::string("Scl") + std::string(axesnames[i]);
+                applyTransform[2] |= ImGui::DragFloat(uid.c_str(), &scaleVec3[i], 0.01f, 0.0f, 100.0f);
+                if (ImGui::IsItemHovered()) {
+                    std::string message = "Scale 0:100 over axe " + std::string(axesnames[i]);
+                    ImGui::SetTooltip(message.c_str());
+                }
+
+                if (i == 2) {
+                    continue;
+                }
+
+                ImGui::SameLine();
+            }
+
+            ImGui::PopItemWidth();
+        }
+
+        ImGui::Separator();
+
+        ImGui::Text("Color");
+        ImGui::ColorEdit3("GameObject", (float*)&clear_color); // Edit 3 floats representing a color
+
+    }
+
+
+
+    ImGui::SetNextTreeNodeOpen(true);
+    if (ImGui::CollapsingHeader("Divers"))
+    {
+        // Checkbox for scene
+        ImGui::Checkbox("Wireframe Mode", &wireframeMode);
+        ImGui::Checkbox("Internal Transform translation", &useInternal);
+        
+    }
+
     ImGui::End();
+
+
+    // Apply Transformation for selected obj : TRS
+    if (applyTransform[0] && foundObj != nullptr)
+    {
+        foundObj->setTranslate(transVec3, true);
+    }
+
+    if (applyTransform[1] && foundObj != nullptr)
+    {
+        foundObj->setRotate(rotVec3, true);
+    }
+
+    if (applyTransform[2] && foundObj != nullptr)
+    {
+        foundObj->setScale(scaleVec3, true);
+    }
+    
 
 
 
@@ -521,6 +782,7 @@ void Game::RenderDebugMenu() {
     ImGui::End();
 
     m_renderer.setPolymode(!wireframeMode);
+
     if (m_camera != nullptr)
     {
         m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
@@ -573,12 +835,12 @@ void Game::handleInput(GLFWwindow* window, GameObject* actor, Camera* cam)
         mouse_left_down = false;
     }
 
-    if (mouse_left_down)
+    /*if (mouse_left_down)
     {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         setTrackingPoint(window, cam, xpos, ypos);
-    }
+    }*/
 
 
     if (actor->velocity.ismoving()) {
@@ -621,9 +883,6 @@ void Game::initScene()
     // -------------
     m_scene = new SceneNode(); //  ROOT NODE 
 
-    
-
-
     // Player
     SceneNode* nodePlayer = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
     GameObject* player = new GameObject(nodePlayer, glm::vec3(2.0, 0.0, 0.0), -1, "", "Player");
@@ -634,9 +893,6 @@ void Game::initScene()
     GameObject* satPlayer = new GameObject(nodeSatPlayer, glm::vec3(0.0f, 1.0f, 0.0f), -1);
     satPlayer->initMesh(0); 
     satPlayer->Scale(0.1f, 0.1f, 0.1f, true); 
-    
-
-
 
     // Camera Node 
     SceneNode* cameraNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -644,13 +900,16 @@ void Game::initScene()
     m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
     m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
 
+    // System Solar 
+    SceneNode* solarNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    
     // Sun Node 
-    SceneNode* suNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    SceneNode* suNode = new SceneNode(solarNode, glm::vec3(0.0f, 0.0f, 0.0f));
     GameObject* sun = new GameObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
     sun->initMesh(3);
     
     // Mars Node 
-    SceneNode* marsNode = new SceneNode(suNode, glm::vec3(0.0f, 0.0f, 0.0f));
+    SceneNode* marsNode = new SceneNode(solarNode, glm::vec3(0.0f, 0.0f, 0.0f));
     GameObject* mars = new GameObject(marsNode, glm::vec3(3.0f, 0.0, 0.0f), -1);
     mars->initMesh(3);
     SpaceEngine::Transform transfolune;
@@ -670,19 +929,19 @@ void Game::initScene()
 
     // Ajout Planete 
     {
-        SceneNode* planeteNode = this->addPlanet(suNode, glm::vec3(0.0f, 0.0f, 0.0f),
+        SceneNode* planeteNode = this->addPlanet(solarNode, glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3(0.0f, 0.0f, 1.5f), 0.25f);
     }
     
     // Ajout Planete + Satellite 
     {
-        SceneNode* planeteNode = this->addPlanet(suNode, glm::vec3(0.0f, 0.0f, 0.0f),
+        SceneNode* planeteNode = this->addPlanet(solarNode, glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3(4.0f, 0.0f, 2.0f), 0.6f,
             glm::vec3(0.0f, 23.0f, 0.0f),
             glm::vec3(0.0f, 0.0f, 0.0f));
 
         SceneNode* satelliteNode = this->addSatellite(planeteNode, glm::vec3(0.0f, 2.0f, 0.0f),
-            0.2f, glm::vec3(0.0f, 0.0f, 0.0f),
+            0.2f, glm::vec3(0.0f, 15.0f, 0.0f),
             glm::vec3(0.0f, 0.0f, 0.0f));
     }
 

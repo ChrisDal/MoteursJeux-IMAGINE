@@ -190,6 +190,63 @@ BasicGameObject& BasicGameObject::Scale(float sx, float sy, float sz, bool inter
 	return *this;
 }
 
+BasicGameObject& BasicGameObject::setRotate(float alpha, float beta, float gamma, bool internal)
+{
+	if (internal)
+	{
+		m_internal.setRotation(alpha, beta, gamma);
+	}
+	else
+	{
+		m_parent->Rotate(alpha, beta, gamma, false);
+	}
+	return *this;
+}
+
+BasicGameObject& BasicGameObject::setRotate(const glm::vec3& rotvec, bool internal)
+{
+	return setRotate(rotvec.x, rotvec.y, rotvec.z, internal); 
+}
+
+BasicGameObject& BasicGameObject::setTranslate(float tx, float ty, float tz, bool internal)
+{
+	if (internal)
+	{
+		m_internal.setTranslate(tx, ty, tz);
+	}
+	else
+	{
+		m_parent->Translate(tx, ty, tz, false);
+	}
+
+
+	return *this;
+}
+
+BasicGameObject& BasicGameObject::setTranslate(const glm::vec3& transvec, bool internal)
+{
+	return setTranslate(transvec.x, transvec.y, transvec.z, internal);
+}
+
+BasicGameObject& BasicGameObject::setScale(float sx, float sy, float sz, bool internal)
+{
+	if (internal)
+	{
+		m_internal.setScale(sx, sy, sz);
+	}
+	else
+	{
+		m_parent->Scale(sx, sy, sz, false);
+	}
+
+	return *this;
+}
+
+BasicGameObject& BasicGameObject::setScale(const glm::vec3& scalevec, bool internal)
+{
+	return setScale(scalevec.x, scalevec.y, scalevec.z, internal); 
+}
+
 // Global World Position
 glm::vec3 BasicGameObject::Position() const
 {

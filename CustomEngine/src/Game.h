@@ -73,6 +73,7 @@ protected:
     void Update(float deltaTime);       //!< Game Loop : Update Game state
     //virtual void Render();
     void RenderDebugMenu();             //!< Render ImGui Window 
+    void DisplayUISceneGraph(SceneNode* root, int& selected);
     void initWindow();                  //!< Init GLFW Window and ImGui
 
     // Camera handling 
