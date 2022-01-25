@@ -52,8 +52,11 @@ Camera::~Camera()
 
 void Camera::Update(float deltatime) {
 
-	SimulateWalking(0.015f, static_cast<float>(glfwGetTime()));
-	movements.move(this, deltatime);
+	/*SimulateWalking(0.015f, static_cast<float>(glfwGetTime()));
+	movements.move(this, deltatime);*/
+
+	// set Matrix
+	move(glm::vec3(0.0f), 0.0f); 
 
 };
 
@@ -61,7 +64,7 @@ void Camera::setTargetPoint(const glm::vec3& target)
 {
 	m_target = target; 
 
-	glm::vec4 worldposition = this->getTransformationAllIn() * glm::vec4(m_position, 1.0f);
+	glm::vec4 worldposition = this->getNode()->getMatTotalNodeTransform() * glm::vec4(m_position, 1.0f);
 	m_direction = glm::normalize(glm::vec3(worldposition.x, worldposition.y, worldposition.z) - m_target);
 	this->setRight(); 
 	this->setUp();
@@ -83,9 +86,9 @@ void Camera::setUp()
 
 void Camera::setLookAt()
 {
-	glm::vec4 worldposition = this->getTransformationAllIn() * glm::vec4(m_position, 1.0f);
+	glm::vec4 worldposition = this->getNode()->getMatTotalNodeTransform() * glm::vec4(m_position, 1.0f);
 	glm::vec3 posWorld = glm::vec3(worldposition.x, worldposition.y, worldposition.z); 
-	m_view = glm::lookAt(posWorld, posWorld + m_direction, m_up);
+	m_view = glm::lookAt(posWorld, posWorld - m_direction, m_up);
 }
 
 void Camera::setPerspective(float znear, float zfar, float w, float h, bool ortho)

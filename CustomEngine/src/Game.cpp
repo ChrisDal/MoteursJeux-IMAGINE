@@ -336,6 +336,10 @@ void Game::RunGameLoop()
 
     // GET nodes 
     SceneNode* sunNode = m_scene->getNodebyId("SN6");
+    SceneNode* satPlayer = m_scene->getNodebyId("SN3"); 
+
+    m_camera->processMovement(Game::camoffsetx, Game::camoffsety);
+
     
     
     // render loop
@@ -366,10 +370,10 @@ void Game::RunGameLoop()
         processInput(m_Window, useInternal);
         
 
-        if (processCamera && cameraRotation)
+        /*if (processCamera && cameraRotation)
         {
             m_camera->processMovement(Game::camoffsetx, Game::camoffsety);
-        }
+        }*/
 
         while (mFrameTime >= 1.0f/APP_MAX_FRAMERATE) 
         {
@@ -377,7 +381,7 @@ void Game::RunGameLoop()
             // -----------
             // Test Graph Scene 
             sunNode->Rotate(0.0f, 1.0f, 0.0f, false);
-            m_player->Rotate(-0.5f, 0.0f, 0.0f, true); 
+            satPlayer->getObject()->Rotate(-0.5f, 0.0f, 0.0f, true);
 
             
             Update(static_cast<float>(deltaTime));
@@ -607,10 +611,6 @@ void Game::RenderDebugMenu() {
 
         }
 
-        
-
-        
-
         // Rotation
         {
 
@@ -706,8 +706,6 @@ void Game::RenderDebugMenu() {
 
     }
 
-
-
     ImGui::SetNextTreeNodeOpen(true);
     if (ImGui::CollapsingHeader("Divers"))
     {
@@ -736,9 +734,6 @@ void Game::RenderDebugMenu() {
         foundObj->setScale(scaleVec3, true);
     }
     
-
-
-
     // ImGui example menu overlay 
     static bool show_app_simple_overlay = true;
     const float DISTANCE = 10.0f;
@@ -895,8 +890,8 @@ void Game::initScene()
     satPlayer->Scale(0.1f, 0.1f, 0.1f, true); 
 
     // Camera Node 
-    SceneNode* cameraNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
-    m_camera = new Camera(cameraNode, glm::vec3(0.0, 0.0, 4.0));
+    SceneNode* cameraNode = new SceneNode(nodePlayer, glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera = new Camera(cameraNode, glm::vec3(0.0, 0.0, 8.0));
     m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
     m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
 
