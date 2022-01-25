@@ -1,4 +1,5 @@
 #include "Rotoform.h"
+#define Float_AngleModulo(x) (x - int((x) / 360.0f)*360.0f);
 
 // ================================================
 // Constructors 
@@ -6,7 +7,8 @@
 
 Rotoform::Rotoform()
     : m_rotx(glm::mat3x3(1.0f)), m_roty(glm::mat3x3(1.0f)),
-    m_rotz(glm::mat3x3(1.0f)), m_rotation(glm::mat3x3(1.0f))
+    m_rotz(glm::mat3x3(1.0f)), m_rotation(glm::mat3x3(1.0f)), 
+    m_angleX(0.0f), m_angleY(0.0f), m_angleZ(0.0f)
 {
     // All Rotations are set to identity 
     
@@ -16,7 +18,7 @@ Rotoform::Rotoform()
 
 
 Rotoform::Rotoform(const glm::mat3x3& rotx, const glm::mat3x3& roty, const glm::mat3x3& rotz)
-    : m_rotx(rotx), m_roty(roty), m_rotz(rotz)
+    : m_rotx(rotx), m_roty(roty), m_rotz(rotz), m_angleX(0.0f), m_angleY(0.0f), m_angleZ(0.0f) //TODO 
 {
     // set main rotation
     processTransformation();
@@ -32,12 +34,20 @@ Rotoform::Rotoform(float alpha, float beta, float gamma, bool inRad = false)
         setRotationX(alpha);
         setRotationY(beta);
         setRotationZ(gamma);
+        m_angleX = alpha;
+        m_angleY = beta;
+        m_angleZ = gamma;
     }
     else
     {
         setRotationX_rad(alpha);
         setRotationY_rad(beta);
         setRotationZ_rad(gamma);
+
+        m_angleX = degreeToRad(alpha);
+        m_angleY = degreeToRad(beta);
+        m_angleZ = degreeToRad(gamma);
+        
     }
 
     // set m_rotation
@@ -59,6 +69,10 @@ Rotoform::Rotoform(const Rotoform& source)
     m_rotz = source.m_rotz;
     m_rotation = m_roty * m_rotx * m_rotz;
 
+    m_angleX = source.m_angleX;
+    m_angleY = source.m_angleY;
+    m_angleZ = source.m_angleZ; 
+
 }
 
 // Copy Assignement 
@@ -73,6 +87,10 @@ Rotoform& Rotoform::operator=(const Rotoform& source)
     m_rotz = source.m_rotz;
     m_rotation = m_roty * m_rotx * m_rotz;
 
+    m_angleX = source.m_angleX;
+    m_angleY = source.m_angleY;
+    m_angleZ = source.m_angleZ;
+
 
     return *this;
 }
@@ -86,6 +104,10 @@ Rotoform::Rotoform(Rotoform&& source) noexcept
     m_roty = source.m_roty;
     m_rotz = source.m_rotz;
     m_rotation = m_roty * m_rotx * m_rotz;
+
+    m_angleX = source.m_angleX;
+    m_angleY = source.m_angleY;
+    m_angleZ = source.m_angleZ;
 
     source.resetRotation();
 
@@ -201,6 +223,7 @@ inline glm::mat3x3 Rotoform::getMat3rotationZ(float angle)
 
 // Set rotation theta in degrees around axe X 
 inline void Rotoform::setRotationX(float theta) {
+    m_angleX = theta; 
     m_rotx = getMat3rotationX(theta);
     // update Rotation matrix
     processTransformation();
@@ -208,6 +231,7 @@ inline void Rotoform::setRotationX(float theta) {
 
 // Set rotation theta in degrees around axe Y
 inline void Rotoform::setRotationY(float theta) {
+    m_angleY = theta;
     m_roty = getMat3rotationY(theta);
     // update Rotation matrix
     processTransformation();
@@ -216,6 +240,7 @@ inline void Rotoform::setRotationY(float theta) {
 
 // Set rotation theta in degrees around axe Z 
 inline void Rotoform::setRotationZ(float theta) {
+    m_angleZ = theta;
     m_rotz = getMat3rotationZ(theta);
     // update Rotation matrix
     processTransformation();
@@ -224,6 +249,7 @@ inline void Rotoform::setRotationZ(float theta) {
 
 // Set rotation eta in radians around axe X 
 inline void Rotoform::setRotationX_rad(float eta) {
+    m_angleX = degreeToRad(eta);
     m_rotx = getMat3rotationX_rad(eta);
     // update Rotation matrix
     processTransformation();
@@ -231,6 +257,7 @@ inline void Rotoform::setRotationX_rad(float eta) {
 
 // Set rotation eta in radians around axe Y 
 inline void Rotoform::setRotationY_rad(float eta) {
+    m_angleY = degreeToRad(eta);
     m_roty = getMat3rotationY_rad(eta);
     // update Rotation matrix
     processTransformation();
@@ -238,6 +265,7 @@ inline void Rotoform::setRotationY_rad(float eta) {
 
 // Set rotation eta in radians around axe Z
 inline void Rotoform::setRotationZ_rad(float eta) {
+    m_angleZ = degreeToRad(eta);
     m_rotz = getMat3rotationZ_rad(eta);
     // update Rotation matrix
     processTransformation();
@@ -277,6 +305,7 @@ void Rotoform::setRotation_rad(float alpha, float beta, float gamma)
 
 void Rotoform::addRotationX(float theta)
 {
+    m_angleX = Float_AngleModulo(m_angleX + theta);
     m_rotx = getMat3rotationX(theta) * m_rotx;
     // update Rotation matrix
     processTransformation();
@@ -285,6 +314,7 @@ void Rotoform::addRotationX(float theta)
 
 void Rotoform::addRotationY(float theta)
 {
+    m_angleY = Float_AngleModulo(m_angleY + theta);
     m_roty = getMat3rotationY(theta) * m_roty;
     // update Rotation matrix
     processTransformation();
@@ -292,6 +322,7 @@ void Rotoform::addRotationY(float theta)
 
 void Rotoform::addRotationZ(float theta)
 {
+    m_angleZ += Float_AngleModulo(m_angleZ + theta);
     m_rotz = getMat3rotationZ(theta) * m_rotz;
     // update Rotation matrix
     processTransformation();
@@ -303,17 +334,20 @@ void Rotoform::addRotationZ(float theta)
 // ----------------------------------------------------
 void Rotoform::addRotationX_rad(float eta)
 {
+    m_angleX = Float_AngleModulo(m_angleX + degreeToRad(eta)) ;
     m_rotx = getMat3rotationX_rad(eta) * m_rotx;
 }
 
 
 void Rotoform::addRotationY_rad(float eta)
 {
+    m_angleY = Float_AngleModulo(m_angleY + degreeToRad(eta));
     m_roty = getMat3rotationY_rad(eta) * m_roty;
 }
 
 void Rotoform::addRotationZ_rad(float eta)
 {
+    m_angleZ = Float_AngleModulo(m_angleZ + degreeToRad(eta));
     m_rotz = getMat3rotationZ_rad(eta) * m_rotz;
 }
 
@@ -367,14 +401,18 @@ void Rotoform::resetRotation()
     m_rotz = glm::mat3x3(1.0f);
     m_rotation = glm::mat3x3(1.0f);
 
+    m_angleX = 0.0f;
+    m_angleY = 0.0f;
+    m_angleZ = 0.0f;
+
 }
 
 // ================================================
 // Getters / setters
 // ================================================
 
-
 glm::mat3x3 Rotoform::getRotation() const { return m_rotation; }
+glm::vec3 Rotoform::getAngles() const { return glm::vec3(m_angleX, m_angleY, m_angleZ); }
 
 
 inline void Rotoform::setMatrixRotation(const glm::mat3x3& mat)
@@ -482,6 +520,10 @@ Rotoform Rotoform::getInvRot()
     roto.m_rotz = glm::transpose(m_rotz);
     roto.processTransformation();
 
+    roto.m_angleX = -this->m_angleX;
+    roto.m_angleY = -this->m_angleY;
+    roto.m_angleZ = -this->m_angleZ;
+
     return roto;
 
 }
@@ -500,6 +542,10 @@ Rotoform Rotoform::operator+(const Rotoform& other)
     roto.m_roty = this->m_roty * other.m_roty;
     roto.m_rotz = this->m_rotz * other.m_rotz;
     roto.processTransformation();
+
+    roto.m_angleX = this->m_angleX + other.m_angleX; 
+    roto.m_angleY = this->m_angleY + other.m_angleY; 
+    roto.m_angleZ = this->m_angleZ + other.m_angleZ; 
 
     return roto;
 }

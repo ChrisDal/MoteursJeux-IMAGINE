@@ -32,7 +32,10 @@ protected:
 	void resetRotation();
 	void resetMat4x4Transformation();
 
-	// Rotoform 
+	// Packed transformations 
+	glm::vec3 m_readable_scale; 
+	glm::vec3 m_readable_angle; 
+	glm::vec3 m_readable_transl; 
 
 public:
 
@@ -165,6 +168,7 @@ public:
 	// Transform  
 	// --------------------------------------------
 	Transform getTransform() const;
+	glm::mat3x3 getPackedTransform() const; 
 
 	glm::mat4x4 getMatrixTransform();
 	glm::mat4x4 getTransposedTransform();

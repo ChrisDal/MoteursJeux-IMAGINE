@@ -23,6 +23,11 @@ private:
 	glm::mat3x3 m_rotz; // rotation axe z 
 	glm::mat3x3 m_rotation; // global rotation matrix 
 
+	// Angles 
+	float m_angleX; 
+	float m_angleY; 
+	float m_angleZ; 
+
 protected:
 
 	// process the global transformation of the class
@@ -105,6 +110,7 @@ public:
 
 	// Get global matrix rotation
 	glm::mat3x3 getRotation() const;
+	glm::vec3 getAngles() const;
 	inline void setMatrixRotation(const glm::mat3x3& mat);
 	inline void setMatrixRotationXYZ(const glm::mat3x3& matX, const glm::mat3x3& matY, const glm::mat3x3& matZ) {
 		m_rotx = matX; m_roty = matY; m_rotz = matZ; 

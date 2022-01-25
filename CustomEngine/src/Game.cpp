@@ -377,7 +377,7 @@ void Game::RunGameLoop()
             // -----------
             // Test Graph Scene 
             sunNode->Rotate(0.0f, 1.0f, 0.0f, false);
-            m_player->Rotate(0.5f, 0.0f, 0.0f, true); 
+            m_player->Rotate(-0.5f, 0.0f, 0.0f, true); 
 
             
             Update(static_cast<float>(deltaTime));
@@ -485,6 +485,7 @@ static void displayGraphNode(SceneNode* node, int& selectable)
                 
         }
 
+        
         for (int i = 0; i < node->getChildrenNumber(); i++)
         {
             displayGraphNode(node->getNode(i), selectable);
@@ -497,16 +498,17 @@ static void displayGraphNode(SceneNode* node, int& selectable)
     
 }; 
 
-void Game::DisplayUISceneGraph(SceneNode* root)
+void Game::DisplayUISceneGraph(SceneNode* root, int& selected)
 {
     // Scene Graph 
     if (ImGui::CollapsingHeader("SceneGraph"))
     {
-        static int selected = -1;
+        
 
         if (m_scene != nullptr)
         {
             // Nodes 
+            ImGui::SetNextTreeNodeOpen(true);
             displayGraphNode(m_scene, selected); 
         }
     }
@@ -524,157 +526,216 @@ void Game::RenderDebugMenu() {
     static bool wireframeMode = false;
     static bool orthoprojection = false;
 
-
-    
-
     // Transforms
+    static glm::mat3 objtransfm; 
     static glm::vec3 transVec3 = { 0.0f, 0.0f, 0.0f };
     static glm::vec3 rotVec3   = { 0.0f, 0.0f, 0.0f };
     static glm::vec3 scaleVec3 = { 1.0f, 1.0f, 1.0f };
     static const char* axesnames[3] = { "X", "Y", "Z" }; 
+    static bool applyTransform[3] = { false, false, false }; // TRS Modifications have been made
 
-    ImGui::Begin("Transformations");
+    // ImGui TreeNode
+    ImGui::Begin("Inspector");
+    ImGui::SetNextTreeNodeOpen(true);
 
-    // Translation
-    {
-        
-        ImGui::Text("Translation"); 
-        ImGui::PushItemWidth(80);
-        for (int i = 0; i < 3; i++)
-        {
-            // X , Y , Z 
-            ImGui::PushID(i);
-            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-            std::string label = std::string(axesnames[i]) + "##" + std::string("Tsl");
-            if (ImGui::Button(label.c_str())) {
-                // Reset If its clicked
-                transVec3[i] = 0.0f;
-            }
-            if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Reset to 0.0f");
-            }
-            
-            ImGui::PopStyleColor(3);
-            ImGui::PopID();
-            ImGui::SameLine(0.0f, 1.0f); 
-
-            // Give Unique ID for Sliders but do not display
-            std::string uid = "##" + std::string("Tsl") + std::string(axesnames[i]);
-            ImGui::DragFloat(uid.c_str(), &transVec3[i], 0.1f, -FLT_MAX, FLT_MAX);
-            if (ImGui::IsItemHovered()) {
-                std::string message = "Translation over axe " + std::string(axesnames[i]);
-                ImGui::SetTooltip(message.c_str());
-            }
-
-            if (i == 2) {
-                continue; 
-            }
-
-            ImGui::SameLine();
-        }
-
-        ImGui::PopItemWidth();
-
-    }
-
-    // Rotation
-    {
-
-        ImGui::Text("Rotation");
-        ImGui::PushItemWidth(80);
-        for (int i = 0; i < 3; i++)
-        {
-            // X , Y , Z 
-            ImGui::PushID(i);
-            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-            std::string label = std::string(axesnames[i]) + "##" + std::string("Rot") ;
-            if (ImGui::Button(label.c_str())) {
-                // Reset If its clicked
-                rotVec3[i] = 0.0f;
-            }
-            if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Reset to 0.0f");
-            }
-
-            ImGui::PopStyleColor(3);
-            ImGui::PopID();
-            ImGui::SameLine(0.0f, 1.0f);
-
-            // Give Unique ID for Sliders but do not display
-            std::string uid = "##" + std::string("Rot") + std::string(axesnames[i]);
-            ImGui::DragFloat(uid.c_str(), &rotVec3[i], 1.0f, -359.99f, 360.0f);
-            if (ImGui::IsItemHovered()) {
-                std::string message = "Rotation -359:360 over axe " + std::string(axesnames[i]);
-                ImGui::SetTooltip(message.c_str());
-            }
-
-            if (i == 2) {
-                continue;
-            }
-
-            ImGui::SameLine();
-        }
-
-        ImGui::PopItemWidth();
-
-    }
-
-    // Scale
-    {
-        ImGui::Text("Scale");
-        ImGui::PushItemWidth(80);
-        for (int i = 0; i < 3; i++)
-        {
-            // X , Y , Z 
-            ImGui::PushID(i);
-            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-            std::string label = std::string(axesnames[i]) + "##" + std::string("Scl");
-            if (ImGui::Button(label.c_str())) {
-                // Reset If its clicked
-                scaleVec3[i] = 1.0f;
-            }
-            if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Reset to 1.0f");
-            }
-
-            ImGui::PopStyleColor(3);
-            ImGui::PopID();
-            ImGui::SameLine(0.0f, 1.0f);
-
-            // Give Unique ID for Sliders but do not display
-            std::string uid = "##" + std::string("Scl") + std::string(axesnames[i]);
-            ImGui::DragFloat(uid.c_str(), &scaleVec3[i], 0.01f, 0.0f, 100.0f);
-            if (ImGui::IsItemHovered()) {
-                std::string message = "Scale 0:100 over axe " + std::string(axesnames[i]);
-                ImGui::SetTooltip(message.c_str());
-            }
-
-            if (i == 2) {
-                continue;
-            }
-
-            ImGui::SameLine();
-        }
-
-        ImGui::PopItemWidth();
-    }
-
-    ImGui::Text("Color");
-    ImGui::ColorEdit3("GameObject Color", (float*)&clear_color); // Edit 3 floats representing a color
-    
     // Graphe de Scene 
-    DisplayUISceneGraph(m_scene); 
-                                                            
-    // Checkbox for scene
-    ImGui::Checkbox("Wireframe Mode", &wireframeMode);
-    ImGui::Checkbox("Internal Transform translation", &useInternal); 
+    static int selected = -1;
+    BasicGameObject* foundObj = nullptr;
+    DisplayUISceneGraph(m_scene, selected);
+
+    if (selected != -1) {
+        
+        foundObj = m_scene->getObjectbyID(selected);
+
+        if (foundObj != nullptr)
+        {
+            objtransfm = foundObj->getTransformation().getPackedTransform();
+            rotVec3 = objtransfm[0];
+            transVec3 = objtransfm[1];
+            scaleVec3 = objtransfm[2]; 
+        }
+    }
+
+        
+
+    ImGui::SetNextTreeNodeOpen(true);
+    
+    // Transforms
+    if (ImGui::CollapsingHeader("Transformations"))
+    {
+        // Translation
+        {
+            ImGui::Text("Translation"); 
+            ImGui::PushItemWidth(80);
+            for (int i = 0; i < 3; i++)
+            {
+                // X , Y , Z 
+                ImGui::PushID(i);
+                ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+                std::string label = std::string(axesnames[i]) + "##" + std::string("Tsl");
+                if (ImGui::Button(label.c_str())) {
+                    // Reset If its clicked
+                    transVec3[i] = 0.0f;
+                    applyTransform[0] = true;
+                }
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Reset to 0.0f");
+                }
+            
+                ImGui::PopStyleColor(3);
+                ImGui::PopID();
+                ImGui::SameLine(0.0f, 1.0f); 
+
+                // Give Unique ID for Sliders but do not display
+                std::string uid = "##" + std::string("Tsl") + std::string(axesnames[i]);
+                applyTransform[0] |= ImGui::DragFloat(uid.c_str(), &transVec3[i], 0.1f, -FLT_MAX, FLT_MAX);
+                if (ImGui::IsItemHovered()) {
+                    std::string message = "Translation over axe " + std::string(axesnames[i]);
+                    ImGui::SetTooltip(message.c_str());
+                }
+
+                if (i == 2) {
+                    continue; 
+                }
+
+                ImGui::SameLine();
+            }
+
+            ImGui::PopItemWidth();
+
+        }
+
+        
+
+        
+
+        // Rotation
+        {
+
+            ImGui::Text("Rotation");
+            ImGui::PushItemWidth(80);
+            for (int i = 0; i < 3; i++)
+            {
+                // X , Y , Z 
+                ImGui::PushID(i);
+                ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+                std::string label = std::string(axesnames[i]) + "##" + std::string("Rot") ;
+                if (ImGui::Button(label.c_str())) {
+                    // Reset If its clicked
+                    rotVec3[i] = 0.0f;
+                    applyTransform[1] = true;
+                }
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Reset to 0.0f");
+                }
+
+                ImGui::PopStyleColor(3);
+                ImGui::PopID();
+                ImGui::SameLine(0.0f, 1.0f);
+
+                // Give Unique ID for Sliders but do not display
+                std::string uid = "##" + std::string("Rot") + std::string(axesnames[i]);
+                applyTransform[1] |= ImGui::DragFloat(uid.c_str(), &rotVec3[i], 1.0f, -359.99f, 360.0f);
+                if (ImGui::IsItemHovered()) {
+                    std::string message = "Rotation -359:360 over axe " + std::string(axesnames[i]);
+                    ImGui::SetTooltip(message.c_str());
+                }
+
+                if (i == 2) {
+                    continue;
+                }
+
+                ImGui::SameLine();
+            }
+
+            ImGui::PopItemWidth();
+
+        }
+
+        // Scale
+        {
+            ImGui::Text("Scale");
+            ImGui::PushItemWidth(80);
+            for (int i = 0; i < 3; i++)
+            {
+                // X , Y , Z 
+                ImGui::PushID(i);
+                ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+                std::string label = std::string(axesnames[i]) + "##" + std::string("Scl");
+                if (ImGui::Button(label.c_str())) {
+                    // Reset If its clicked
+                    scaleVec3[i] = 1.0f;
+                    applyTransform[2] = true;
+                }
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Reset to 1.0f");
+                }
+
+                ImGui::PopStyleColor(3);
+                ImGui::PopID();
+                ImGui::SameLine(0.0f, 1.0f);
+
+                // Give Unique ID for Sliders but do not display
+                std::string uid = "##" + std::string("Scl") + std::string(axesnames[i]);
+                applyTransform[2] |= ImGui::DragFloat(uid.c_str(), &scaleVec3[i], 0.01f, 0.0f, 100.0f);
+                if (ImGui::IsItemHovered()) {
+                    std::string message = "Scale 0:100 over axe " + std::string(axesnames[i]);
+                    ImGui::SetTooltip(message.c_str());
+                }
+
+                if (i == 2) {
+                    continue;
+                }
+
+                ImGui::SameLine();
+            }
+
+            ImGui::PopItemWidth();
+        }
+
+        ImGui::Separator();
+
+        ImGui::Text("Color");
+        ImGui::ColorEdit3("GameObject", (float*)&clear_color); // Edit 3 floats representing a color
+
+    }
+
+
+
+    ImGui::SetNextTreeNodeOpen(true);
+    if (ImGui::CollapsingHeader("Divers"))
+    {
+        // Checkbox for scene
+        ImGui::Checkbox("Wireframe Mode", &wireframeMode);
+        ImGui::Checkbox("Internal Transform translation", &useInternal);
+        
+    }
+
     ImGui::End();
+
+
+    // Apply Transformation for selected obj : TRS
+    if (applyTransform[0] && foundObj != nullptr)
+    {
+        foundObj->setTranslate(transVec3, true);
+    }
+
+    if (applyTransform[1] && foundObj != nullptr)
+    {
+        foundObj->setRotate(rotVec3, true);
+    }
+
+    if (applyTransform[2] && foundObj != nullptr)
+    {
+        foundObj->setScale(scaleVec3, true);
+    }
+    
 
 
 
@@ -721,6 +782,7 @@ void Game::RenderDebugMenu() {
     ImGui::End();
 
     m_renderer.setPolymode(!wireframeMode);
+
     if (m_camera != nullptr)
     {
         m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
@@ -879,7 +941,7 @@ void Game::initScene()
             glm::vec3(0.0f, 0.0f, 0.0f));
 
         SceneNode* satelliteNode = this->addSatellite(planeteNode, glm::vec3(0.0f, 2.0f, 0.0f),
-            0.2f, glm::vec3(0.0f, 0.0f, 0.0f),
+            0.2f, glm::vec3(0.0f, 15.0f, 0.0f),
             glm::vec3(0.0f, 0.0f, 0.0f));
     }
 

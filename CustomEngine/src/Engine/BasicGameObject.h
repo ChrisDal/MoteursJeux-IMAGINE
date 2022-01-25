@@ -55,12 +55,23 @@ public:
     // Interface
     // ---------------------------------------------
     BasicGameObject& Rotate(float alpha, float beta, float gamma, bool internal = false);
+    BasicGameObject& setRotate(float alpha, float beta, float gamma, bool internal = false);
+    BasicGameObject& setRotate(const glm::vec3& rotvec, bool internal = false);
+
     BasicGameObject& Translate(float tx, float ty, float tz, bool internal = false);
     BasicGameObject& Translate(const glm::vec3& transvec, bool internal = false);
+    BasicGameObject& setTranslate(float tx, float ty, float tz, bool internal = false);
+    BasicGameObject& setTranslate(const glm::vec3& transvec, bool internal = false);
+
     BasicGameObject& Scale(float sx, float sy, float sz, bool internal = false);
+    BasicGameObject& setScale(float sx, float sy, float sz, bool internal = false);
+    BasicGameObject& setScale(const glm::vec3& scalevec, bool internal = false);
+
     glm::vec3 Position() const;
     void Position(float x, float y, float z);
     void Position(const glm::vec3& pos); 
+
+    
 
     // Print game object informations
     virtual void print() = 0;
