@@ -48,7 +48,7 @@ public:
     void applyTransformation();
     glm::mat4x4 getMatTransformation();
     glm::mat4x4 getWorldMat();
-    glm::vec4 getWorldPosition();
+    virtual glm::vec4 getWorldPosition();
     glm::mat4x4 getTransformationAllIn();
 
     // ---------------------------------------------

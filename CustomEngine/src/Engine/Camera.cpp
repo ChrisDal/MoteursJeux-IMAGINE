@@ -2,6 +2,8 @@
 
 
 
+
+
 Camera::Camera()
 	: m_zNear(0.1f), m_zFar(100.f),
 	m_target(glm::vec3(0.0f, 0.0f, 0.0f)),
@@ -49,6 +51,24 @@ Camera::~Camera()
 
 }
 
+/// <summary>
+/// Return World position 
+/// Doesn't take into account rotation and scaling 
+/// </summary>
+/// <returns></returns>
+glm::vec4 Camera::getWorldPosition()
+{
+	// Get total transformation from parent 
+	glm::mat4 parentTransfo = this->getNode()->getParent()->getMatTotalNodeTransform();
+	// Remove Rotation and Scale from parent : 
+	// Camera is not under scale or rotation of parent just translation (position)
+	SpaceEngine::setTranslationOnly(parentTransfo);
+
+	// Camera Transformation : parent(Translation) * NodeCamera(Transform) * Cam(Transform)
+	glm::mat4 ourworldTransform = parentTransfo * this->getNode()->getMatNodeTransform();
+	// Basic World Position
+	return ourworldTransform * glm::vec4(m_position, 1.0f);
+}
 
 void Camera::Update(float deltatime) {
 
@@ -64,8 +84,7 @@ void Camera::setTargetPoint(const glm::vec3& target)
 {
 	m_target = target; 
 
-	glm::vec4 worldposition = this->getNode()->getMatTotalNodeTransform() * glm::vec4(m_position, 1.0f);
-	m_direction = glm::normalize(glm::vec3(worldposition.x, worldposition.y, worldposition.z) - m_target);
+	m_direction = glm::normalize(glm::vec3(getWorldPosition()) - m_target);
 	this->setRight(); 
 	this->setUp();
 	this->setLookAt();
@@ -86,8 +105,8 @@ void Camera::setUp()
 
 void Camera::setLookAt()
 {
-	glm::vec4 worldposition = this->getNode()->getMatTotalNodeTransform() * glm::vec4(m_position, 1.0f);
-	glm::vec3 posWorld = glm::vec3(worldposition.x, worldposition.y, worldposition.z); 
+
+	glm::vec3 posWorld = glm::vec3(getWorldPosition());
 	m_view = glm::lookAt(posWorld, posWorld - m_direction, m_up);
 }
 
@@ -106,11 +125,13 @@ void Camera::setPerspective(float znear, float zfar, float w, float h, bool orth
 
 	if (ortho) // Orthographic Camera 
 	{
-		m_projection = glm::ortho(0.0f, m_width, 0.0f, m_height, m_zNear, m_zFar);
+		m_zNear = znear > 0.0f ? -znear : znear;
+		m_zFar = zfar > 0.0f ? zfar : -zfar;
+		m_projection = glm::ortho<float>(0.0f, m_width, 0.0f, m_height, m_zNear, m_zFar);
 	}
 	else // Use perspective 
 	{
-		m_projection = glm::perspective(glm::radians(m_fov), ratio, m_zNear, m_zFar);
+		m_projection = glm::perspective<float>(glm::radians(m_fov), ratio, m_zNear, m_zFar);
 	}
 
 }

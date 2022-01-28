@@ -85,7 +85,7 @@ public:
     glm::mat4x4 getMatTransform();
     // Get Transformation of the Node 
     SpaceEngine::Transform getTransform() const { return m_tsfm_world; }
-    glm::mat4x4 getMatTransform() const { return getTransform().getMatrixTransform(); }
+    glm::mat4x4 getMatOnlyNodeTransform() const { return getTransform().getMatrixTransform(); }
 
     // ----------------------------
     // Interface : Transformations

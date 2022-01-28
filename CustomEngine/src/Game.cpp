@@ -363,20 +363,20 @@ void Game::RunGameLoop()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        
-        
-        // input
-        // -----
-        processInput(m_Window, useInternal);
-        
 
-        /*if (processCamera && cameraRotation)
-        {
-            m_camera->processMovement(Game::camoffsetx, Game::camoffsety);
-        }*/
+        
 
         while (mFrameTime >= 1.0f/APP_MAX_FRAMERATE) 
         {
+            // input
+            // -----
+            processInput(m_Window, useInternal);
+
+            /*if (processCamera && cameraRotation)
+            {
+                m_camera->processMovement(Game::camoffsetx, Game::camoffsety);
+            }*/
+
             // Update Game 
             // -----------
             // Test Graph Scene 
@@ -387,6 +387,9 @@ void Game::RunGameLoop()
             Update(static_cast<float>(deltaTime));
 
             mFrameTime -= 1.0f / APP_MAX_FRAMERATE;
+
+
+            
             
         }
         
@@ -394,6 +397,8 @@ void Game::RunGameLoop()
         // -----------------
         RenderDebugMenu();
         ImGui::Render();
+        
+        
 
         // Render : Game LOOP 
         // ------------------
@@ -523,12 +528,7 @@ void Game::DisplayUISceneGraph(SceneNode* root, int& selected)
 void Game::RenderDebugMenu() {
 
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-
-    static glm::vec3 frotate = glm::vec3(0.0f, 0.0f, 0.0f);
-    static glm::vec3 ftranslate = glm::vec3(0.0f, 0.0f, 0.0f);
-    static int counter = 0;
-    static bool wireframeMode = false;
-    static bool orthoprojection = false;
+    
 
     // Transforms
     static glm::mat3 objtransfm; 
@@ -537,6 +537,10 @@ void Game::RenderDebugMenu() {
     static glm::vec3 scaleVec3 = { 1.0f, 1.0f, 1.0f };
     static const char* axesnames[3] = { "X", "Y", "Z" }; 
     static bool applyTransform[3] = { false, false, false }; // TRS Modifications have been made
+
+    // Other checkbox 
+    static bool wireframeMode = false;
+    static bool orthoprojection = false;
 
     // ImGui TreeNode
     ImGui::Begin("Inspector");
@@ -554,7 +558,7 @@ void Game::RenderDebugMenu() {
         if (foundObj != nullptr)
         {
             objtransfm = foundObj->getTransformation().getPackedTransform();
-            rotVec3 = objtransfm[0];
+            rotVec3   = objtransfm[0];
             transVec3 = objtransfm[1];
             scaleVec3 = objtransfm[2]; 
         }
@@ -707,18 +711,20 @@ void Game::RenderDebugMenu() {
     }
 
     ImGui::SetNextTreeNodeOpen(true);
+    static bool onChangeCamera = false; 
     if (ImGui::CollapsingHeader("Divers"))
     {
         // Checkbox for scene
         ImGui::Checkbox("Wireframe Mode", &wireframeMode);
         ImGui::Checkbox("Internal Transform translation", &useInternal);
+        onChangeCamera = ImGui::Checkbox("Orthographic Camera", &orthoprojection);
         
     }
 
     ImGui::End();
 
 
-    // Apply Transformation for selected obj : TRS
+    // Apply Transformations for selected obj : TRS
     if (applyTransform[0] && foundObj != nullptr)
     {
         foundObj->setTranslate(transVec3, true);
@@ -780,6 +786,17 @@ void Game::RenderDebugMenu() {
 
     if (m_camera != nullptr)
     {
+        if (onChangeCamera) {
+            if (orthoprojection) 
+            {
+                m_camera->setPerspective(-1.0f, 1.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, true);
+            }
+            else
+            {
+                m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, false);
+            }
+            
+        }
         m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
     }
 
@@ -882,6 +899,7 @@ void Game::initScene()
     SceneNode* nodePlayer = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
     GameObject* player = new GameObject(nodePlayer, glm::vec3(2.0, 0.0, 0.0), -1, "", "Player");
     player->initMesh(2);
+    //player->Rotate(-60.0f, 0.0f, 0.0f, true); 
     player->velocity.setVelocity(0.0f, 0.0f, 0.0f);
 
     SceneNode* nodeSatPlayer = new SceneNode(nodePlayer);
@@ -891,7 +909,7 @@ void Game::initScene()
 
     // Camera Node 
     SceneNode* cameraNode = new SceneNode(nodePlayer, glm::vec3(0.0f, 0.0f, 0.0f));
-    m_camera = new Camera(cameraNode, glm::vec3(0.0, 0.0, 8.0));
+    m_camera = new Camera(cameraNode, glm::vec3(0.0, 1.0f, 2.0));
     m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
     m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
 
