@@ -576,6 +576,11 @@ static void displayGraphNode(SceneNode* node, int& selectable)
     
 }; 
 
+/// <summary>
+/// Display SceneGraph as a TreeNode
+/// </summary>
+/// <param name="root"> Root of SceneGraph</param>
+/// <param name="selected"> int to specify the selected game object </param>
 void Game::DisplayUISceneGraph(SceneNode* root, int& selected)
 {
     // Scene Graph 
@@ -594,8 +599,6 @@ void Game::DisplayUISceneGraph(SceneNode* root, int& selected)
 
 void Game::RenderDebugMenu() {
 
-    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-    
 
     // Transforms
     static glm::mat3 objtransfm; 
@@ -784,7 +787,13 @@ void Game::RenderDebugMenu() {
         // Checkbox for scene
         ImGui::Checkbox("Wireframe Mode", &wireframeMode);
         ImGui::Checkbox("Internal Transform translation", &useInternal);
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("When moving Player if true use internal matrix transform");
+        }
         onChangeCamera = ImGui::Checkbox("Orthographic Camera", &orthoprojection);
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Broken Ortho");
+        }
         
     }
 
