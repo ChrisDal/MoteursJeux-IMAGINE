@@ -33,6 +33,7 @@ ThirdPersonCamera::ThirdPersonCamera(SceneNode* node, GameObject* target, const 
 
 void ThirdPersonCamera::setTargetPoint(const glm::vec3& target, float deltatime)
 {
+	
 	m_target = target;
 	// camera position in world 
 	glm::vec4 worldposition = this->getWorldPosition(); 
@@ -168,8 +169,18 @@ glm::vec4 ThirdPersonCamera::getWorldPosition()
 
 void ThirdPersonCamera::Update(float deltatime)
 {
+	
+	// Get total transformation from parent
+	glm::mat4 transfo = m_targetobj->getTransformationAllIn();
+	// Remove Rotation and Scale from parent : 
+	// Camera is not under scale or rotation of parent just translation (position)
+	SpaceEngine::setTranslationOnly(transfo);
+
+	// Basic World Position
+	glm::vec3 target = transfo * glm::vec4(m_targetobj->Position(), 1.0f); 
+
 	// Very basic follow perso at the center of the screen 
-	setTargetPoint(glm::vec3(m_targetobj->getWorldPosition()), deltatime);
+	setTargetPoint(target, deltatime);
 
 }
 
