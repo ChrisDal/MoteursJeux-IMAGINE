@@ -986,9 +986,14 @@ void Game::initScene()
     satPlayer->Scale(0.1f, 0.1f, 0.1f, true); 
 
     // Camera Node 
-    SceneNode* cameraNode = new SceneNode(nodePlayer, glm::vec3(0.0f, 0.0f, 0.0f));
+    /*SceneNode* cameraNode = new SceneNode(nodePlayer, glm::vec3(0.0f, 0.0f, 0.0f));
     m_camera = new Camera(cameraNode, glm::vec3(0.0, 1.0f, 2.0));
     m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);*/
+
+    // Third Person Camera 
+    SceneNode* cameraNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera = new ThirdPersonCamera(cameraNode, player,  glm::vec3(0.0, 1.0f, 5.0));
     m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
 
     // System Solar 
