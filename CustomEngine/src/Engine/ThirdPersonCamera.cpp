@@ -17,7 +17,8 @@ ThirdPersonCamera::ThirdPersonCamera()
 ThirdPersonCamera::ThirdPersonCamera(SceneNode* parent, const glm::vec3& position, std::string tag)
 	: Camera(parent, position, tag), m_targetobj(nullptr)
 {
-	setTargetPoint(m_target);
+	m_prevtarget = m_target; 
+	setTargetPoint(m_target, 0.0f);
 }
 
 ThirdPersonCamera::ThirdPersonCamera(SceneNode* node, GameObject* target, const glm::vec3& position, std::string tag)
@@ -27,11 +28,12 @@ ThirdPersonCamera::ThirdPersonCamera(SceneNode* node, GameObject* target, const 
 	glm::mat4 trfmgmo = m_targetobj->getTransformationAllIn();
 	glm::vec4 posgmo = trfmgmo * glm::vec4(m_targetobj->Position(), 1.0f);
 	// Very basic follow perso at the center of the screen 
-	setTargetPoint(glm::vec3(posgmo));
+	m_prevtarget = glm::vec3(posgmo); 
+	setTargetPoint(glm::vec3(posgmo), 0.0f);
 }
 
 
-void ThirdPersonCamera::setTargetPoint(const glm::vec3& target)
+void ThirdPersonCamera::setTargetPoint(const glm::vec3& target, float deltatime)
 {
 	m_target = target;
 	// camera position in world 
@@ -41,18 +43,35 @@ void ThirdPersonCamera::setTargetPoint(const glm::vec3& target)
 	float normvec = std::sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
 	m_direction = glm::normalize(diff);
 
-	// Move camera each frame until we are in acceptable bounds with a maximal magnitude of 1.0f
+	// Move camera each frame until we are in acceptable bounds 
 	if (normvec > dist2target.y) {
-		m_position -= m_direction;
+		m_position -= deltatime * m_direction * m_sensitivity;
 	}
 
 	if (normvec < dist2target.x) {
-		m_position +=  m_direction;
+		m_position += deltatime * m_direction * m_sensitivity;
 	}
-	
+
+
 	this->setRight();
+
+	//
+	// Vec : Player -> Camera 
+	glm::vec3 camPlayer = glm::vec3(worldposition) - target; 
+	// Vec for which cosTheta = 0 // ?? 
+	glm::vec3 playerTowards = glm::vec3(-1.0f, 0.0f, 0.0f); 
+
+	float costheta = glm::dot(camPlayer, playerTowards);
+
+	if (std::fabs(costheta) > 0.5f ) {
+		m_position += costheta * deltatime *  m_right * m_sensitivity;
+	}
+
+
+
 	this->setUp();
 	this->setLookAt();
+
 }
 
 void ThirdPersonCamera::setRight()
@@ -120,6 +139,7 @@ glm::vec4 ThirdPersonCamera::getWorldPosition()
 void ThirdPersonCamera::Update(float deltatime)
 {
 	// Very basic follow perso at the center of the screen 
-	setTargetPoint(glm::vec3(m_targetobj->getWorldPosition()));
+	setTargetPoint(glm::vec3(m_targetobj->getWorldPosition()), deltatime);
+	m_prevtarget = glm::vec3(m_targetobj->getWorldPosition());
 }
 

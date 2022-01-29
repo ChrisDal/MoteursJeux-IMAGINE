@@ -14,11 +14,12 @@ class ThirdPersonCamera : public Camera
 private:
 
     GameObject* m_targetobj; 
+    glm::vec3 m_prevtarget{ 0.0f, 0.0f, 0.0f};
 
 
 public: 
-    glm::vec2 dist2target = { 5.0f, 15.0f };  // distance min = x , max = y 
-    float m_sensitivity = 0.02f;
+    glm::vec2 dist2target = { 14.0f, 15.0f };  // distance min = x , max = y 
+    float m_sensitivity = 5.0f;
 
 public : 
 
@@ -35,7 +36,7 @@ public :
     // ----------------------------
     // Target 
     // ----------------------------
-    void setTargetPoint(const glm::vec3& target) override;
+    void setTargetPoint(const glm::vec3& target, float deltatime);
 
     // ----------------------------
     // Set Vectors & View Matrix 
