@@ -271,6 +271,8 @@ BasicGameObject* SceneNode::getObject()
     return m_object;
 }
 
+
+
 /// <summary>
 /// Search and return GameObject by Id(int)
 /// </summary>
@@ -458,8 +460,8 @@ glm::mat4x4 SceneNode::getMatNodeTransform()
 // Get Matrix of Total World Transformation
 glm::mat4x4 SceneNode::getMatTotalNodeTransform()
 {
-    glm::mat4x4 transfo = m_object->getMatTransformation(); 
-    return this->getMatWorldTransform() * transfo;
+    glm::mat4x4 objtransfo = m_object != nullptr ? m_object->getMatTransformation() : glm::mat4x4(1.0f);
+    return this->getMatWorldTransform() * objtransfo;
 }
 
 

@@ -64,8 +64,7 @@ namespace SpaceEngine {
 	{
 		m_rotation = Rotoform();
 
-		// global transform 
-		m_transform = glm::mat4(1.0f);
+		reset(); 
 
 	}
 

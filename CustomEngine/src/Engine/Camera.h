@@ -12,11 +12,28 @@
 #include "SceneNode.h"
 #include "Components.h"
 
+namespace SpaceEngine {
 
+    static glm::mat4 getTranslationOnly(const glm::mat4& transformation)
+    {
+        glm::mat4 transfo(1.0f);
+        transfo[3][0] = transformation[3][0];
+        transfo[3][1] = transformation[3][1];
+        transfo[3][2] = transformation[3][2];
+        return transfo;
+    };
+
+    inline static void setTranslationOnly(glm::mat4& transformation)
+    {
+        transformation[0] = { 1.0f , 0.0f, 0.0f, 0.0f };
+        transformation[1] = { 0.0f , 1.0f, 0.0f, 0.0f };
+        transformation[2] = { 0.0f , 0.0f, 1.0f, 0.0f };
+    };
+}; 
 
 class Camera : public BasicGameObject
 {
-private:
+protected:
 
     float m_zNear; 
     float m_zFar; 
@@ -38,6 +55,8 @@ private:
 
     bool m_walking; 
 
+    
+
 public : // Components 
     Velocity velocity; 
     Velocity movements; 
@@ -52,7 +71,9 @@ public:
 
     ~Camera(); 
 
-
+    // ----------------------------
+    // Camera Attributes 
+    // ----------------------------
     void setzFar(float far)   { m_zFar = far;  }
     void setzNear(float near) { m_zNear = near;  }
     float getzFar() const { return m_zFar; }
@@ -60,21 +81,33 @@ public:
     void setFov(float fov) { m_fov = fov;  }
     float getFov() const { return m_fov; }
 
-    void setTargetPoint(const glm::vec3& target); 
+    // ----------------------------
+    // Target 
+    // ----------------------------
+    virtual void setTargetPoint(const glm::vec3& target); 
     glm::vec3 getTargetPoint() const { return m_target;  }
 
-    void setRight();
-    void setUp();
-
-    void setLookAt();
+    // ----------------------------
+    // Set Vectors Up Right & View Matrix 
+    // ----------------------------
+    virtual void setRight();
+    virtual void setUp();
+    virtual void setLookAt();
     glm::mat4 getLookAt() const { return m_view; }
 
+    // ----------------------------
+    // Perspective  
+    // ----------------------------
     void setPerspective(float znear, float zfar, float w, float h, bool ortho=false);
     glm::mat4 getPerspective() const { return m_projection;  }
 
+    // ----------------------------
+    // Movements 
+    // ----------------------------
     void move(const glm::vec3& direction, float dmove);
     void updateVectors(); 
     void processMovement(float dx, float dy); 
+    virtual glm::vec4 getWorldPosition() override;
 
     void SimulateWalking(float intensity, float dt);
     inline void setWalking(bool walk) { m_walking = walk;  }

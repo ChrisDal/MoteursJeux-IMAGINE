@@ -336,6 +336,10 @@ void Game::RunGameLoop()
 
     // GET nodes 
     SceneNode* sunNode = m_scene->getNodebyId("SN6");
+    SceneNode* satPlayer = m_scene->getNodebyId("SN3"); 
+
+    m_camera->processMovement(Game::camoffsetx, Game::camoffsety);
+
     
     
     // render loop
@@ -359,30 +363,33 @@ void Game::RunGameLoop()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        
-        
-        // input
-        // -----
-        processInput(m_Window, useInternal);
-        
 
-        if (processCamera && cameraRotation)
-        {
-            m_camera->processMovement(Game::camoffsetx, Game::camoffsety);
-        }
+        
 
         while (mFrameTime >= 1.0f/APP_MAX_FRAMERATE) 
         {
+            // input
+            // -----
+            processInput(m_Window, useInternal);
+
+            /*if (processCamera && cameraRotation)
+            {
+                m_camera->processMovement(Game::camoffsetx, Game::camoffsety);
+            }*/
+
             // Update Game 
             // -----------
             // Test Graph Scene 
             sunNode->Rotate(0.0f, 1.0f, 0.0f, false);
-            m_player->Rotate(-0.5f, 0.0f, 0.0f, true); 
+            satPlayer->getObject()->Rotate(-0.5f, 0.0f, 0.0f, true);
 
             
             Update(static_cast<float>(deltaTime));
 
             mFrameTime -= 1.0f / APP_MAX_FRAMERATE;
+
+
+            
             
         }
         
@@ -390,6 +397,8 @@ void Game::RunGameLoop()
         // -----------------
         RenderDebugMenu();
         ImGui::Render();
+        
+        
 
         // Render : Game LOOP 
         // ------------------
@@ -447,9 +456,41 @@ void Game::Update(float deltaTime)
     m_scene->Update(deltaTime); 
 }
 
+// Internal Matrix glm::mat4 in a ImGui::Table
+static void displayMat4(const std::string& labeltable, const glm::mat4& matrice, const int& tablecount)
+{
+    // Parameters 
+    static const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+    static ImVec2 outer_size = ImVec2(0, TEXT_BASE_HEIGHT * 4.1f);
+    // Labels & flags 
+    std::string name = labeltable + "##TableTransformChild" + std::to_string(tablecount); 
+    static ImGuiTableFlags tableflags = ImGuiTableFlags_Borders | 
+                                        ImGuiTableFlags_ContextMenuInBody | ImGuiTableFlags_RowBg |
+                                        ImGuiTableFlags_SizingFixedSame | 
+                                        ImGuiTableFlags_NoHostExtendX;
+
+    if (ImGui::BeginTable(labeltable.c_str(), 4, tableflags, outer_size))
+    {
+        for (int k = 0; k < 4; k++)
+        {
+            ImGui::TableNextRow();
+            for (int i = 0; i < 4; i++)
+            {
+                ImGui::TableNextColumn();
+                ImGui::Text("%.2f", matrice[i][k]);
+            }
+        }
+        ImGui::EndTable();
+    }
+}
+
+
+
 // Display a node Scene in ImGUI
 static void displayGraphNode(SceneNode* node, int& selectable)
 {
+    
+    
     // Node ID 
     if (ImGui::TreeNode(node->getId().c_str()))
     {
@@ -461,9 +502,63 @@ static void displayGraphNode(SceneNode* node, int& selectable)
             if (ImGui::Selectable(label.c_str(), selectable == ngmo)) {
                 selectable = ngmo;
             }
+            
+            // Display Debug Data :  Internal and Total Transform Matrix 
+            if (ImGui::BeginPopupContextItem()) // <-- use last item id as popup id
+            {
+                if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_FittingPolicyDefault_))
+                {
+                    std::string tabname = "Internal Transform##" + label;
+                    if (ImGui::BeginTabItem(tabname.c_str()))
+                    {
+                        // Internal Matrix in Table 
+                        glm::mat4 matTransform = node->getObject()->getMatTransformation();
+                        displayMat4(label, matTransform, 1);
+                        ImGui::EndTabItem();
+                    }
+
+                    tabname = "Total Transform##" + label;
+                    if (ImGui::BeginTabItem(tabname.c_str()))
+                    {
+                        // Total Transform Matrix in Table 
+                        glm::mat4 matTransform = node->getMatTotalNodeTransform();
+                        displayMat4(label, matTransform, 2);
+                        ImGui::EndTabItem();
+                    }
+
+                    ImGui::EndTabBar();
+                }
+
+                ImGui::EndPopup();
+            }
+
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Right-click to open Transform Matrix");
+            }
+                
+
+
             ImGui::Text("Tag:"); 
             ImGui::SameLine();
             ImGui::Text(node->getObject()->getTag().c_str());
+            // Check if is Camera 
+            if (node->getObject()->isCamera()) {
+                // ThirdP or Camera 
+                static glm::vec3 tpoint; 
+                if (node->getObject()->getTag().compare("3PCamera") == 0) {
+                    ThirdPersonCamera* cam = dynamic_cast<ThirdPersonCamera*>(node->getObject());
+                    tpoint = cam->getTargetPoint();
+                }
+                else
+                {
+                    Camera* cam = dynamic_cast<Camera*>(node->getObject());
+                    tpoint = cam->getTargetPoint();
+                }
+
+                ImGui::Text("Target Point : ( %.1f, %.1f, %.1f )", tpoint.x, tpoint.y, tpoint.z);
+                
+                
+            }
             if (node->getObject()->hasMesh())
             {
                 ImGui::SameLine();
@@ -498,13 +593,16 @@ static void displayGraphNode(SceneNode* node, int& selectable)
     
 }; 
 
+/// <summary>
+/// Display SceneGraph as a TreeNode
+/// </summary>
+/// <param name="root"> Root of SceneGraph</param>
+/// <param name="selected"> int to specify the selected game object </param>
 void Game::DisplayUISceneGraph(SceneNode* root, int& selected)
 {
     // Scene Graph 
     if (ImGui::CollapsingHeader("SceneGraph"))
     {
-        
-
         if (m_scene != nullptr)
         {
             // Nodes 
@@ -518,13 +616,6 @@ void Game::DisplayUISceneGraph(SceneNode* root, int& selected)
 
 void Game::RenderDebugMenu() {
 
-    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-
-    static glm::vec3 frotate = glm::vec3(0.0f, 0.0f, 0.0f);
-    static glm::vec3 ftranslate = glm::vec3(0.0f, 0.0f, 0.0f);
-    static int counter = 0;
-    static bool wireframeMode = false;
-    static bool orthoprojection = false;
 
     // Transforms
     static glm::mat3 objtransfm; 
@@ -533,6 +624,10 @@ void Game::RenderDebugMenu() {
     static glm::vec3 scaleVec3 = { 1.0f, 1.0f, 1.0f };
     static const char* axesnames[3] = { "X", "Y", "Z" }; 
     static bool applyTransform[3] = { false, false, false }; // TRS Modifications have been made
+
+    // Other checkbox 
+    static bool wireframeMode = false;
+    static bool orthoprojection = false;
 
     // ImGui TreeNode
     ImGui::Begin("Inspector");
@@ -550,7 +645,7 @@ void Game::RenderDebugMenu() {
         if (foundObj != nullptr)
         {
             objtransfm = foundObj->getTransformation().getPackedTransform();
-            rotVec3 = objtransfm[0];
+            rotVec3   = objtransfm[0];
             transVec3 = objtransfm[1];
             scaleVec3 = objtransfm[2]; 
         }
@@ -606,10 +701,6 @@ void Game::RenderDebugMenu() {
             ImGui::PopItemWidth();
 
         }
-
-        
-
-        
 
         // Rotation
         {
@@ -706,21 +797,27 @@ void Game::RenderDebugMenu() {
 
     }
 
-
-
     ImGui::SetNextTreeNodeOpen(true);
+    static bool onChangeCamera; 
     if (ImGui::CollapsingHeader("Divers"))
     {
         // Checkbox for scene
         ImGui::Checkbox("Wireframe Mode", &wireframeMode);
         ImGui::Checkbox("Internal Transform translation", &useInternal);
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("When moving Player if true use internal matrix transform");
+        }
+        onChangeCamera = ImGui::Checkbox("Orthographic Camera", &orthoprojection);
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Broken Ortho");
+        }
         
     }
 
     ImGui::End();
 
 
-    // Apply Transformation for selected obj : TRS
+    // Apply Transformations for selected obj : TRS
     if (applyTransform[0] && foundObj != nullptr)
     {
         foundObj->setTranslate(transVec3, true);
@@ -736,9 +833,6 @@ void Game::RenderDebugMenu() {
         foundObj->setScale(scaleVec3, true);
     }
     
-
-
-
     // ImGui example menu overlay 
     static bool show_app_simple_overlay = true;
     const float DISTANCE = 10.0f;
@@ -766,7 +860,9 @@ void Game::RenderDebugMenu() {
         }
 
 
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 
+                        1000.0f / ImGui::GetIO().Framerate, 
+                        ImGui::GetIO().Framerate);
 
         if (ImGui::BeginPopupContextWindow())
         {
@@ -785,6 +881,17 @@ void Game::RenderDebugMenu() {
 
     if (m_camera != nullptr)
     {
+        if (onChangeCamera) {
+            if (orthoprojection) 
+            {
+                m_camera->setPerspective(-1.0f, 1.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, true);
+            }
+            else
+            {
+                m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, false);
+            }
+            
+        }
         m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
     }
 
@@ -887,6 +994,7 @@ void Game::initScene()
     SceneNode* nodePlayer = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
     GameObject* player = new GameObject(nodePlayer, glm::vec3(2.0, 0.0, 0.0), -1, "", "Player");
     player->initMesh(2);
+    //player->Rotate(-60.0f, 0.0f, 0.0f, true); 
     player->velocity.setVelocity(0.0f, 0.0f, 0.0f);
 
     SceneNode* nodeSatPlayer = new SceneNode(nodePlayer);
@@ -895,9 +1003,14 @@ void Game::initScene()
     satPlayer->Scale(0.1f, 0.1f, 0.1f, true); 
 
     // Camera Node 
-    SceneNode* cameraNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
-    m_camera = new Camera(cameraNode, glm::vec3(0.0, 0.0, 4.0));
+    /*SceneNode* cameraNode = new SceneNode(nodePlayer, glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera = new Camera(cameraNode, glm::vec3(0.0, 1.0f, 2.0));
     m_camera->setTargetPoint(glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);*/
+
+    // Third Person Camera 
+    SceneNode* cameraNode = new SceneNode(m_scene, glm::vec3(0.0f, 0.0f, 0.0f));
+    m_camera = new ThirdPersonCamera(cameraNode, player,  glm::vec3(0.0, 1.0f, 5.0));
     m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT);
 
     // System Solar 

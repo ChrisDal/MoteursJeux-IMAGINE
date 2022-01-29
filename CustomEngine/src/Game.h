@@ -16,6 +16,7 @@
 
 #include "Engine/SceneNode.h"
 #include "Engine/Camera.h"
+#include "Engine/ThirdPersonCamera.h"
 
 
 /**

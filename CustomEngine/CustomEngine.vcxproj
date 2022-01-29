@@ -186,6 +186,7 @@
     <ClCompile Include="src\Engine\Rendering\VertexBuffer.cpp" />
     <ClCompile Include="src\Engine\Rendering\VertexBufferLayout.cpp" />
     <ClCompile Include="src\Engine\Rendering\Texture.cpp" />
+    <ClCompile Include="src\Engine\ThirdPersonCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Engine\Collider.h" />
@@ -511,6 +512,7 @@
     <ClInclude Include="src\Engine\Rendering\VertexArrayBuffer.h" />
     <ClInclude Include="src\Engine\Rendering\VertexBufferLayout.h" />
     <ClInclude Include="src\Engine\Rendering\Texture.h" />
+    <ClInclude Include="src\Engine\ThirdPersonCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="dependencies\lib\glfw3.lib" />
