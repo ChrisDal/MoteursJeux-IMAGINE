@@ -456,9 +456,41 @@ void Game::Update(float deltaTime)
     m_scene->Update(deltaTime); 
 }
 
+// Internal Matrix glm::mat4 in a ImGui::Table
+static void displayMat4(const std::string& labeltable, const glm::mat4& matrice, const int& tablecount)
+{
+    // Parameters 
+    static const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+    static ImVec2 outer_size = ImVec2(0, TEXT_BASE_HEIGHT * 4.1f);
+    // Labels & flags 
+    std::string name = labeltable + "##TableTransformChild" + std::to_string(tablecount); 
+    static ImGuiTableFlags tableflags = ImGuiTableFlags_Borders | 
+                                        ImGuiTableFlags_ContextMenuInBody | ImGuiTableFlags_RowBg |
+                                        ImGuiTableFlags_SizingFixedSame | 
+                                        ImGuiTableFlags_NoHostExtendX;
+
+    if (ImGui::BeginTable(labeltable.c_str(), 4, tableflags, outer_size))
+    {
+        for (int k = 0; k < 4; k++)
+        {
+            ImGui::TableNextRow();
+            for (int i = 0; i < 4; i++)
+            {
+                ImGui::TableNextColumn();
+                ImGui::Text("%.2f", matrice[i][k]);
+            }
+        }
+        ImGui::EndTable();
+    }
+}
+
+
+
 // Display a node Scene in ImGUI
 static void displayGraphNode(SceneNode* node, int& selectable)
 {
+    
+    
     // Node ID 
     if (ImGui::TreeNode(node->getId().c_str()))
     {
@@ -470,6 +502,43 @@ static void displayGraphNode(SceneNode* node, int& selectable)
             if (ImGui::Selectable(label.c_str(), selectable == ngmo)) {
                 selectable = ngmo;
             }
+            
+            // Display Debug Data :  Internal and Total Transform Matrix 
+            if (ImGui::BeginPopupContextItem()) // <-- use last item id as popup id
+            {
+
+                if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_FittingPolicyDefault_))
+                {
+                    std::string tabname = "Internal Transform##" + label;
+                    if (ImGui::BeginTabItem(tabname.c_str()))
+                    {
+                        // Internal Matrix in Table 
+                        glm::mat4 matTransform = node->getObject()->getMatTransformation();
+                        displayMat4(label, matTransform, 1);
+                        ImGui::EndTabItem();
+                    }
+
+                    tabname = "Total Transform##" + label;
+                    if (ImGui::BeginTabItem(tabname.c_str()))
+                    {
+                        // Total Transform Matrix in Table 
+                        glm::mat4 matTransform = node->getMatTotalNodeTransform();
+                        displayMat4(label, matTransform, 2);
+                        ImGui::EndTabItem();
+                    }
+                    
+                    ImGui::EndTabBar();
+                }
+
+                ImGui::EndPopup();
+            }
+
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Right-click to open Transform Matrix");
+            }
+                
+
+
             ImGui::Text("Tag:"); 
             ImGui::SameLine();
             ImGui::Text(node->getObject()->getTag().c_str());
@@ -512,8 +581,6 @@ void Game::DisplayUISceneGraph(SceneNode* root, int& selected)
     // Scene Graph 
     if (ImGui::CollapsingHeader("SceneGraph"))
     {
-        
-
         if (m_scene != nullptr)
         {
             // Nodes 
@@ -711,7 +778,7 @@ void Game::RenderDebugMenu() {
     }
 
     ImGui::SetNextTreeNodeOpen(true);
-    static bool onChangeCamera = false; 
+    static bool onChangeCamera; 
     if (ImGui::CollapsingHeader("Divers"))
     {
         // Checkbox for scene
@@ -767,7 +834,9 @@ void Game::RenderDebugMenu() {
         }
 
 
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 
+                        1000.0f / ImGui::GetIO().Framerate, 
+                        ImGui::GetIO().Framerate);
 
         if (ImGui::BeginPopupContextWindow())
         {
