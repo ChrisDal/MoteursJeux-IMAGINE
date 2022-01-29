@@ -17,7 +17,6 @@ ThirdPersonCamera::ThirdPersonCamera()
 ThirdPersonCamera::ThirdPersonCamera(SceneNode* parent, const glm::vec3& position, std::string tag)
 	: Camera(parent, position, tag), m_targetobj(nullptr)
 {
-	m_prevtarget = m_target; 
 	setTargetPoint(m_target, 0.0f);
 }
 
@@ -28,7 +27,6 @@ ThirdPersonCamera::ThirdPersonCamera(SceneNode* node, GameObject* target, const 
 	glm::mat4 trfmgmo = m_targetobj->getTransformationAllIn();
 	glm::vec4 posgmo = trfmgmo * glm::vec4(m_targetobj->Position(), 1.0f);
 	// Very basic follow perso at the center of the screen 
-	m_prevtarget = glm::vec3(posgmo); 
 	setTargetPoint(glm::vec3(posgmo), 0.0f);
 }
 
@@ -43,7 +41,7 @@ void ThirdPersonCamera::setTargetPoint(const glm::vec3& target, float deltatime)
 	float normvec = std::sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
 	m_direction = glm::normalize(diff);
 
-	// Move camera each frame until we are in acceptable bounds 
+	// Move camerauntil we are in acceptable bounds 
 	if (normvec > dist2target.y) {
 		m_position -= deltatime * m_direction * m_sensitivity;
 	}
@@ -55,15 +53,13 @@ void ThirdPersonCamera::setTargetPoint(const glm::vec3& target, float deltatime)
 
 	this->setRight();
 
-	//
 	// Vec : Player -> Camera 
-	glm::vec3 camPlayer = glm::vec3(worldposition) - target; 
+	glm::vec3 camPlayer = glm::vec3(worldposition) - m_target;
 	// Vec for which cosTheta = 0 // ?? 
 	glm::vec3 playerTowards = glm::vec3(-1.0f, 0.0f, 0.0f); 
-
 	float costheta = glm::dot(camPlayer, playerTowards);
-
-	if (std::fabs(costheta) > 0.5f ) {
+	// Move if angle is too wide 
+	if (std::fabs(costheta) > m_cosangleCamera) {
 		m_position += costheta * deltatime *  m_right * m_sensitivity;
 	}
 
@@ -72,6 +68,40 @@ void ThirdPersonCamera::setTargetPoint(const glm::vec3& target, float deltatime)
 	this->setUp();
 	this->setLookAt();
 
+}
+
+void ThirdPersonCamera::setTargetObject(GameObject* obj)
+{
+	if (obj != nullptr) {
+		m_targetobj = obj; 
+	}
+}
+
+void ThirdPersonCamera::setDistanceToTarget(float mindist, float maxdist)
+{
+	if (mindist < 0.0f || maxdist < 0.0f)
+	{
+		std::cout << "Distances have to be positive.\n";
+		return; 
+	}
+
+	if (mindist < maxdist)
+	{
+		dist2target = glm::vec2(mindist, maxdist); 
+	}
+	else if (maxdist < mindist)
+	{
+		dist2target = glm::vec2(maxdist, mindist);
+	}
+	else
+	{
+		std::cout << "Min and Max distances have to be differents.\n"; 
+	}
+}
+
+void ThirdPersonCamera::setMaxTowardsAngle(float angledegree)
+{
+	m_cosangleCamera = std::fabs(std::cosf(angledegree)); 
 }
 
 void ThirdPersonCamera::setRight()
@@ -140,6 +170,6 @@ void ThirdPersonCamera::Update(float deltatime)
 {
 	// Very basic follow perso at the center of the screen 
 	setTargetPoint(glm::vec3(m_targetobj->getWorldPosition()), deltatime);
-	m_prevtarget = glm::vec3(m_targetobj->getWorldPosition());
+
 }
 

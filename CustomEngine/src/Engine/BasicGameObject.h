@@ -85,6 +85,10 @@ public:
     bool isMainCamera() { return m_tag.compare("MainCamera") == 0; }
     bool isTerrain() { return m_tag.compare("Terrain") == 0; }
     bool isPlayer() { return m_tag.compare("Player") == 0; }
+    bool isCamera() {
+        // tag contains Camera
+        return m_tag.find("Camera", 0) != std::string::npos; 
+    }
 
     // Update 
     virtual void Update(float deltatime) = 0; 

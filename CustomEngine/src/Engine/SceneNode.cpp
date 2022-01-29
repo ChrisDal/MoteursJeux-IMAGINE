@@ -271,6 +271,8 @@ BasicGameObject* SceneNode::getObject()
     return m_object;
 }
 
+
+
 /// <summary>
 /// Search and return GameObject by Id(int)
 /// </summary>

@@ -12,14 +12,12 @@
 class ThirdPersonCamera : public Camera
 {
 private:
-
     GameObject* m_targetobj; 
-    glm::vec3 m_prevtarget{ 0.0f, 0.0f, 0.0f};
-
 
 public: 
     glm::vec2 dist2target = { 14.0f, 15.0f };  // distance min = x , max = y 
     float m_sensitivity = 5.0f;
+    float m_cosangleCamera = 0.5f; 
 
 public : 
 
@@ -37,6 +35,9 @@ public :
     // Target 
     // ----------------------------
     void setTargetPoint(const glm::vec3& target, float deltatime);
+    void setTargetObject(GameObject* obj); 
+    void setDistanceToTarget(float mindist, float maxdist); 
+    void setMaxTowardsAngle(float angledegree); 
 
     // ----------------------------
     // Set Vectors & View Matrix 
@@ -49,9 +50,8 @@ public :
     // Getters 
     // ----------------------------
     glm::mat4 getPerspective() const { return m_projection; }
-
-
     glm::vec4 getWorldPosition() override; 
+
 
     // ----------------------------
     // Game Object Functions 

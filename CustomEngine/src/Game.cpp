@@ -506,7 +506,6 @@ static void displayGraphNode(SceneNode* node, int& selectable)
             // Display Debug Data :  Internal and Total Transform Matrix 
             if (ImGui::BeginPopupContextItem()) // <-- use last item id as popup id
             {
-
                 if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_FittingPolicyDefault_))
                 {
                     std::string tabname = "Internal Transform##" + label;
@@ -526,7 +525,7 @@ static void displayGraphNode(SceneNode* node, int& selectable)
                         displayMat4(label, matTransform, 2);
                         ImGui::EndTabItem();
                     }
-                    
+
                     ImGui::EndTabBar();
                 }
 
@@ -542,6 +541,24 @@ static void displayGraphNode(SceneNode* node, int& selectable)
             ImGui::Text("Tag:"); 
             ImGui::SameLine();
             ImGui::Text(node->getObject()->getTag().c_str());
+            // Check if is Camera 
+            if (node->getObject()->isCamera()) {
+                // ThirdP or Camera 
+                static glm::vec3 tpoint; 
+                if (node->getObject()->getTag().compare("3PCamera") == 0) {
+                    ThirdPersonCamera* cam = dynamic_cast<ThirdPersonCamera*>(node->getObject());
+                    tpoint = cam->getTargetPoint();
+                }
+                else
+                {
+                    Camera* cam = dynamic_cast<Camera*>(node->getObject());
+                    tpoint = cam->getTargetPoint();
+                }
+
+                ImGui::Text("Target Point : ( %.1f, %.1f, %.1f )", tpoint.x, tpoint.y, tpoint.z);
+                
+                
+            }
             if (node->getObject()->hasMesh())
             {
                 ImGui::SameLine();
