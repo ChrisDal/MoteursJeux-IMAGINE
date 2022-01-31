@@ -76,6 +76,7 @@ public:
     // Print game object informations
     virtual void print() = 0;
     virtual bool hasMesh() { return false;  }
+    virtual bool isLight() { return false;  }
 
     // ID and tag check
     int getId() const { return m_id; }
@@ -85,10 +86,8 @@ public:
     bool isMainCamera() { return m_tag.compare("MainCamera") == 0; }
     bool isTerrain() { return m_tag.compare("Terrain") == 0; }
     bool isPlayer() { return m_tag.compare("Player") == 0; }
-    bool isCamera() {
-        // tag contains Camera
-        return m_tag.find("Camera", 0) != std::string::npos; 
-    }
+    bool isCamera() {  return m_tag.find("Camera", 0) != std::string::npos; } // tag contains Camera
+   
 
     // Update 
     virtual void Update(float deltatime) = 0; 

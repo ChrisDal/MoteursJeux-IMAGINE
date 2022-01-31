@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Engine/Transform.h"
 #include "Engine/GameObject.hpp"
+#include "Engine/LightObject.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -79,13 +80,33 @@ Game::Game()
     vertexsource += "basicVShader.shader";
 
     std::string fragmentsource = m_shaderdir; 
-    fragmentsource += "basicFragShader.shader";
+    fragmentsource += "lightingFragShader.shader";
+
 
     // Renderer Initialisation 
     // -------------------------
 
     // Shader Program : by Default 
-    m_renderer.createShaderProg(vertexsource, fragmentsource);
+    m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::CLASSIC);
+
+    // Light Shader 
+    // ------------
+    vertexsource = m_shaderdir;
+    vertexsource += "basicVShader.shader";
+    fragmentsource = m_shaderdir;
+    fragmentsource += "lightSourceShader.shader";
+
+    m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::PHONG);
+
+
+    fragmentsource = m_shaderdir;
+    fragmentsource += "lightingFragShader.shader";
+
+    m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::OTHER);
+
+
+
+    std::cout << "LIGHT : " << std::endl; 
     std::cout << fragmentsource << std::endl; 
 
     this->initScene(); 
@@ -136,9 +157,7 @@ void Game::initWindow()
     glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     glfwSetCursorPosCallback(m_Window, mouse_callback);
 
-    
-
-
+  
 
     // ImGUI 
     // Setup Dear ImGui context
@@ -441,8 +460,6 @@ void Game::RunGameLoop()
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(m_Window);
         // glfwPoll
-
-
 
     }
 }
@@ -1018,8 +1035,11 @@ void Game::initScene()
     
     // Sun Node 
     SceneNode* suNode = new SceneNode(solarNode, glm::vec3(0.0f, 0.0f, 0.0f));
-    GameObject* sun = new GameObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
-    sun->initMesh(3);
+    
+    //GameObject* sun = new GameObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
+    //sun->initMesh(3);
+    LightObject* sun = new LightObject(solarNode, glm::vec3(0.0f, 0.0, 0.0f)); 
+    sun->setColor(glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)); 
     
     // Mars Node 
     SceneNode* marsNode = new SceneNode(solarNode, glm::vec3(0.0f, 0.0f, 0.0f));

@@ -66,9 +66,6 @@
     <ClCompile Include="src\Engine\Rendering\IndexBuffer.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\Engine\Rendering\VertexBufferLayout.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="src\Engine\Rendering\Texture.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -109,6 +106,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\ThirdPersonCamera.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\LightObject.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1085,6 +1085,9 @@
     <ClInclude Include="src\Engine\ThirdPersonCamera.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="src\Engine\LightObject.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="dependencies\lib\glfw3.lib" />
@@ -1512,6 +1515,8 @@
     <None Include="src\shaders\basicFragShader.shader" />
     <None Include="src\shaders\basicVShader.shader" />
     <None Include="src\shaders\basicfragment.fs" />
+    <None Include="src\shaders\lightingFragShader.shader" />
+    <None Include="src\shaders\lightSourceShader.shader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="data\cube.png">

@@ -18,6 +18,7 @@
 
 
 class GameObject; 
+class LightObject; 
 class SceneNode; 
 
 void GLClearError();
@@ -28,6 +29,10 @@ class Renderer
 private: 
 	unsigned int m_id; 
 	std::vector<ShaderProgram> m_shaderprograms; 
+
+	ShaderProgram* m_shaderprog_classic = nullptr ;
+	ShaderProgram* m_shaderprog_phong   = nullptr ;
+	ShaderProgram* m_shaderprog_other   = nullptr ;
 	
 	// Set the projection view mat 
 	glm::mat4 vpmat; 
@@ -36,10 +41,13 @@ private:
 	GLenum m_polymode;
 
 public: 
+	enum RENDERING_STYLE { CLASSIC = 0, PHONG, OTHER };
+
+public: 
 
 	Renderer(float _w, float _h); 
 	
-	~Renderer() {};
+	~Renderer();
 
 	void initGraphics() const; 
 	void Clear() const; 
@@ -48,6 +56,7 @@ public:
 	void Draw(const VertexArrayBuffer* vao, const IndexBuffer* ibo, const ShaderProgram* shader) const;
 	void Draw(Mesh* mesh, const ShaderProgram* shader) const;
 	void Draw(GameObject* gmo, Material* mat = nullptr, int shadertype = -1) const;
+	void Draw(LightObject* lgtobj, Material* mat = nullptr, int shadertype = -1) const;
 	void Draw(SceneNode* scene) const;
 	void Draw(Mesh* mesh, int shaderType) const;
 	
@@ -56,6 +65,8 @@ public:
 
 	
 	void createShaderProg(const std::string& vertexshad, const std::string& fragmentshad); 
+
+	void createShaderProg(const std::string& vertexshad, const std::string& fragmentshad, Renderer::RENDERING_STYLE style);
 
 	// Set Wireframe or polygon mode
 	void setPolymode(bool polygon); 

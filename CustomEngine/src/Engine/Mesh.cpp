@@ -26,7 +26,9 @@ Mesh::Mesh(const char* filename)
 	}
 	else
 	{
-		std::cout << "Cannot handle this extension file\n" << std::endl; 
+		initCube(); 
+		std::cout << "[ERROR - Mesh] Cannot handle this extension file\n" << std::endl;
+		std::cout << "[ERROR - Mesh] Init Default Cube, error loading file mesh" << std::endl;
 	}
 
 }
@@ -576,6 +578,10 @@ bool Mesh::loadMesh(const char* filename)
 				
 			
 		}
+	}
+	else
+	{
+		return false; 
 	}
 
 	

@@ -17,17 +17,15 @@ struct Component
 
 struct Light : Component
 {
-	glm::vec3 color;
+	glm::vec3 m_color;
 	float intensity;
 
 	void setIntensity(float intens) {
-		if (intens < 0) { 
-			intens = 0.0f;  
-		}
-		else
-		{
-			intensity = intens; 
-		}
+		intensity = intens < 0.0f ? 0.0f : intens; 
+	}
+
+	void setLightColor(const glm::vec3& color) {
+		m_color = color; 
 	}
 
 };
