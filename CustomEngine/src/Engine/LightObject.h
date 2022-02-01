@@ -48,6 +48,7 @@ public:
     void initMesh(const char* filename);
     bool loadMesh(const std::string& filename);
     void setColor(const glm::vec4& color) { m_mesh->setColor(color); }
+    glm::vec4 getColor() const { return m_mesh->getColor(); }
 
     // Material  
     void initMaterial(Texture* texture, const glm::vec3& color);
@@ -59,6 +60,23 @@ public:
 
     // Update 
     void Update(float deltatime) override;
+
+    // Operators
+    inline bool operator==(const LightObject* other) {
+        return this->getId() == other->getId();
+    }
+
+    inline bool operator!=(const LightObject* other) {
+        return !(this == other);
+    }
+
+    inline bool operator==(const LightObject other) {
+        return getId() == other.getId();
+    }
+
+    inline bool operator!=(const LightObject other) {
+        return !(*this == other);
+    }
 
 
 };

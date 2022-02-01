@@ -1,7 +1,9 @@
 #include "SceneNode.h"
+#include "LightObject.h"
 
 // static define
 unsigned int SceneNode::nodeNumber = 0;
+std::vector<LightObject*> SceneNode::m_lights = {}; 
 
 
 // ===================
@@ -255,10 +257,25 @@ void SceneNode::addObject(BasicGameObject* gmo)
 {
     // Node is responsible for gameobject deletion 
     if (m_object != nullptr) {
+        // check if it's a light to remove from light vecotr 
+        if (m_object->isLight())
+        {
+            auto it = std::find(m_lights.begin(), m_lights.end(), m_object); 
+            if (it != m_lights.end())
+            {
+                m_lights.erase(it); 
+            }
+        }
         delete m_object; 
     }
 
     m_object = gmo; 
+
+    // add to lights data 
+    if (gmo->isLight())
+    {
+        m_lights.push_back(static_cast<LightObject*>(gmo));
+    }
 }
 
 

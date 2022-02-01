@@ -100,5 +100,22 @@ public:
 
     glm::vec3 getNearestPos(int x, int y);
 
+    // Operators
+    inline bool operator==(const GameObject* other) {
+        return this->getId() == other->getId();
+    }
+
+    inline bool operator!=(const GameObject* other) {
+        return !(this == other);
+    }
+
+    inline bool operator==(const GameObject other) {
+        return getId() == other.getId();
+    }
+
+    inline bool operator!=(const GameObject other) {
+        return !(*this == other);
+    }
+
 };
 

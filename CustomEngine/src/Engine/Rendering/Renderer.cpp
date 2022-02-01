@@ -103,7 +103,7 @@ void Renderer::Draw(Mesh* mesh, const ShaderProgram* shader) const
 
 
 // IF no Shader attach to mesh use default shader 
-void Renderer::Draw(GameObject* gmo, Material* mat, int shadertype) const
+void Renderer::Draw(GameObject* gmo, LightObject* lgtobj, Material* mat, int shadertype) const
 {
 
 	Mesh * meshobject = gmo->getMesh(); 
@@ -161,6 +161,19 @@ void Renderer::Draw(GameObject* gmo, Material* mat, int shadertype) const
 
 	glm::vec4 color = meshobject->getColor(); 
 	chosenShader->setUniform4f("u_acolor", color.x, color.y, color.z, color.w);
+
+	// Light Color 
+	if (lgtobj != nullptr) {
+		glm::vec4 lightcolor = lgtobj->getColor();
+		chosenShader->setUniform4f("u_lightColor", 
+					lightcolor.r, lightcolor.g, 
+					lightcolor.b, lightcolor.a);
+		glm::vec4 lightpos = lgtobj->getWorldPosition();
+		chosenShader->setUniform4f("u_lightPos", 
+			lightpos.x, lightpos.y,
+			lightpos.z, lightpos.w);
+	}
+	
 
 	// Texture 
 	bool texturebind = false; 
@@ -261,13 +274,15 @@ void Renderer::Draw(LightObject* lgtobj, Material* mat, int shadertype) const
 
 void Renderer::Draw(SceneNode* scene) const
 {
+	std::vector<LightObject*> lights = scene->getLights(); 
+	
 	if (scene->haveGmo()) {
 		BasicGameObject* obj = scene->getObject();
 		if (obj->hasMesh())
 		{
 			if ( ! obj->isLight())
 			{
-				this->Draw(static_cast<GameObject*>(obj), nullptr, 1);
+				this->Draw(static_cast<GameObject*>(obj), lights[0],  nullptr, 1);
 			}
 			else
 			{
@@ -279,8 +294,41 @@ void Renderer::Draw(SceneNode* scene) const
 
 	for (int i = 0; i < scene->getChildrenNumber(); i++)
 	{
-		this->Draw(scene->getNode(i));
+		this->Draw(scene->getNode(i), lights[0]);
 	}
+}
+
+void Renderer::Draw(SceneNode* scene, LightObject* light) const
+{
+	if (scene->haveGmo()) {
+		BasicGameObject* obj = scene->getObject();
+		if (obj->hasMesh())
+		{
+			if (!obj->isLight())
+			{
+				this->Draw(static_cast<GameObject*>(obj), light, nullptr, 1);
+			}
+			else
+			{
+				this->Draw(static_cast<LightObject*>(obj), nullptr, 1);
+			}
+		}
+	}
+
+
+	for (int i = 0; i < scene->getChildrenNumber(); i++)
+	{
+		this->Draw(scene->getNode(i), light);
+	}
+}
+
+void Renderer::Draw(SceneNode* scene, std::vector<LightObject*> lights) const
+{
+	for (LightObject* light : lights)
+	{
+
+	}
+
 }
 
 void Renderer::Draw(Mesh* mesh, int shaderType) const

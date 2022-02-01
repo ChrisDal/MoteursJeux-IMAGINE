@@ -27,6 +27,8 @@ bool processCamera = true;
 bool cameraRotation = true; 
 bool useInternal = false; 
 
+glm::vec3 suncolor = glm::vec3(1.0f, 1.0f, 1.0f); 
+
 
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -1038,8 +1040,8 @@ void Game::initScene()
     
     //GameObject* sun = new GameObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
     //sun->initMesh(3);
-    LightObject* sun = new LightObject(solarNode, glm::vec3(0.0f, 0.0, 0.0f)); 
-    sun->setColor(glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)); 
+    LightObject* sun = new LightObject(solarNode, glm::vec3(0.0f, 0.0, 0.0f), 3); 
+    sun->setColor(glm::vec4(suncolor, 1.0f));
     
     // Mars Node 
     SceneNode* marsNode = new SceneNode(solarNode, glm::vec3(0.0f, 0.0f, 0.0f));

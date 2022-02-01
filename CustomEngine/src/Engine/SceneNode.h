@@ -1,10 +1,12 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "BasicGameObject.h"
 #include "Rendering/ShaderProgram.h"
 
+class LightObject; 
 
 class SceneNode
 {
@@ -14,6 +16,9 @@ private:
     std::vector<SceneNode*> m_children;
     BasicGameObject* m_object; // One gameObject per node 
     //std::vector<BasicGameObject*> m_objects;
+
+    // Light Object data 
+    static std::vector<LightObject*> m_lights; 
 
     // Space  
     glm::vec3 m_origin;
@@ -111,6 +116,7 @@ public:
 
     // Update 
     void Update(float deltatime); 
+    static std::vector<LightObject*> getLights() { return m_lights;  }
 
     // ------------
     // Utilities 

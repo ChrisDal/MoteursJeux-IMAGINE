@@ -9,12 +9,18 @@ uniform vec4 u_acolor;
 
 out vec4 vColor; 
 out vec2 vTextureCoord;
+out vec3 vNormal; 
+out vec4 FragPos; 
 
 void main()
 {
     vColor = u_acolor;
     vTextureCoord = aTextureCoord;
+    // Normal
+    vNormal = vec3(u_atransform * vec4(aNormal, 0.0));
     // Position 
     gl_Position = u_avp * u_atransform * vec4(aPos, 1.0);
+    // Fragment Pos 
+    FragPos = u_atransform * vec4(aPos, 1.0);
     
 }
