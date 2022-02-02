@@ -14,7 +14,7 @@ uniform vec4 u_lightPos;
 void main()
 {
     // normal 
-    vec3 norml = normalize(vec3(vNormal));
+    vec3 norml = normalize(vNormal);
     vec3 lightDir = normalize(vec3(u_lightPos - FragPos));
     
     // Ambient

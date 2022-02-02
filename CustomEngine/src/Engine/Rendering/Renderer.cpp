@@ -154,6 +154,10 @@ void Renderer::Draw(GameObject* gmo, LightObject* lgtobj, Material* mat, int sha
 	SpaceEngine::Transform t_interne = gmo->getTransformation();
 	glm::mat4 modelTransfointern = gmo->getNode()->getMatTotalNodeTransform() * meshobject->getModelView();
 	chosenShader->setMat4("u_atransform", glm::value_ptr(modelTransfointern));
+
+	// set matrix transform for normals 
+	glm::mat4 normTransform = SpaceEngine::getMatNormal(modelTransfointern); 
+	chosenShader->setMat4("u_Ntransform", glm::value_ptr(normTransform)); 
 	
 	// View Proj Matrix 
 	chosenShader->setMat4("u_avp", glm::value_ptr(vpmat));

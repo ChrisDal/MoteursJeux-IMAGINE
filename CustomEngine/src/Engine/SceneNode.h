@@ -8,6 +8,15 @@
 
 class LightObject; 
 
+namespace SpaceEngine {
+
+    // Get Transform Matrix for Normals 
+    static glm::mat4 getMatNormal(const glm::mat4& transform)
+    {
+        return glm::transpose(glm::inverse(transform));
+    }
+}
+
 class SceneNode
 {
 private:

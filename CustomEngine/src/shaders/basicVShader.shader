@@ -5,6 +5,7 @@ layout(location = 2) in vec2 aTextureCoord;
 
 uniform mat4 u_avp;
 uniform mat4 u_atransform;
+uniform mat4 u_Ntransform;
 uniform vec4 u_acolor;
 
 out vec4 vColor; 
@@ -17,7 +18,7 @@ void main()
     vColor = u_acolor;
     vTextureCoord = aTextureCoord;
     // Normal
-    vNormal = vec3(u_atransform * vec4(aNormal, 0.0));
+    vNormal = vec3(u_Ntransform * vec4(aNormal, 0.0));
     // Position 
     gl_Position = u_avp * u_atransform * vec4(aPos, 1.0);
     // Fragment Pos 
