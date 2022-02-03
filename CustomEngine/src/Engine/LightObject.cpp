@@ -122,4 +122,9 @@ void LightObject::initMaterial(Texture* texture, const glm::vec3& color)
 void LightObject::Update(float deltatime)
 {
     // pass 
+    m_position.z += std::sin(0.2f) * deltatime;
+    m_position.x += std::cos(0.2f) * deltatime;
+    this->Rotate(0.5f, 0.0f, 0.0f, true); 
+    
+    
 }

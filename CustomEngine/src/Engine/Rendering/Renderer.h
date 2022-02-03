@@ -55,11 +55,11 @@ public:
 	void Draw(const VertexArrayBuffer& vao, const IndexBuffer& ibo, const ShaderProgram& shader) const;
 	void Draw(const VertexArrayBuffer* vao, const IndexBuffer* ibo, const ShaderProgram* shader) const;
 	void Draw(Mesh* mesh, const ShaderProgram* shader) const;
-	void Draw(GameObject* gmo, LightObject* lgtobj, Material* mat = nullptr, int shadertype = -1) const;
+	void Draw(GameObject* gmo, const glm::vec4& cameraPos, LightObject* lgtobj, Material* mat = nullptr, int shadertype = -1) const;
 	void Draw(LightObject* lgtobj, Material* mat = nullptr, int shadertype = -1) const;
-	void Draw(SceneNode* scene) const;
-	void Draw(SceneNode* scene, LightObject* light) const;
-	void Draw(SceneNode* scene, std::vector<LightObject*> lights) const;
+	void Draw(SceneNode* scene, const glm::vec4& cameraPos) const;				//  Draw Scene With a given CameraPos
+	void Draw(SceneNode* scene, const glm::vec4& cameraPos, LightObject* light) const;
+	void Draw(SceneNode* scene, const glm::vec4& cameraPos, std::vector<LightObject*> lights) const;
 	void Draw(Mesh* mesh, int shaderType) const;
 	
 	// Set View Proj Matrix

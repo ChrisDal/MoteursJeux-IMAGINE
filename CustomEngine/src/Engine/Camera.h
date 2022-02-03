@@ -86,7 +86,7 @@ public:
     // ----------------------------
     // Target 
     // ----------------------------
-    virtual void setTargetPoint(const glm::vec3& target); 
+    virtual void setTargetPoint(const glm::vec3& target, float deltatime);
     glm::vec3 getTargetPoint() const { return m_target;  }
 
     // ----------------------------

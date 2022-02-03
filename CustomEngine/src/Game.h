@@ -52,7 +52,7 @@ public:
 
     // Scene
     SceneNode* m_scene;                     /*!< Current Scene */
-    Camera* m_camera; // owned by scene     /*!< Camera owned by the scene */
+    ThirdPersonCamera* m_camera; // owned by scene     /*!< Camera owned by the scene */
     static float camoffsetx, camoffsety;    /*!< Delta X Y to move camera */
     static glm::vec2 camDeadZone;               /*!< DeadZone Camera */
     BasicGameObject* m_player = nullptr;    /*!< Object Player */

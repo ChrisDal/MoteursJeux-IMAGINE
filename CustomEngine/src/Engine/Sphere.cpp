@@ -29,7 +29,9 @@ void Sphere::init(float radius, const glm::vec3& center)
 				radius * glm::cos(phi) * glm::sin(rho)
 			);
 
-			glm::vec3 normal(glm::normalize(glm::vec3(xyz - center)));
+			// at 0 0 0 
+			//glm::vec3 normal(glm::normalize(glm::vec3(xyz - center)));
+			glm::vec3 normal(glm::normalize(xyz));
 			glm::vec2 uvs(kphi / (float)nphi, krho / (float)nrho);
 
 			this->vertices.push_back(VertexData({ xyz + center , normal, uvs }));
@@ -45,12 +47,12 @@ void Sphere::init(float radius, const glm::vec3& center)
 	// Triangle 1 : A B C 
 	// Triangle 2 : C D A 
 
-	for (unsigned int kphi = 0; kphi < nphi; kphi++)
+	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
 	{
 		for (unsigned int krho = 0; krho < nrho; krho++)
 		{
 			// First Triangle
-			if (kphi != nphi - 1)
+			if (kphi != nphi - 2)
 			{
 				this->indices.push_back(kphi * nrho + krho);
 				this->indices.push_back((kphi + 1) * nrho + krho);

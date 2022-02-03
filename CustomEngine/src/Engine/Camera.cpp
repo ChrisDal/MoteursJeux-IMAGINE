@@ -10,7 +10,7 @@ Camera::Camera()
 	m_projection(1.0f), m_fov(45.f), 
 	m_walking(false), m_yaw(-90.f), m_pitch(0.0f)
 {
-	setTargetPoint(m_target);
+	setTargetPoint(m_target, 0.0f);
 	velocity.setId(getId()); 
 	velocity.setVelocity(0.025f, 0.01f, 0.025f);
 }
@@ -23,7 +23,7 @@ Camera::Camera(SceneNode* parent, const glm::vec3& position,
 	m_projection(1.0f), m_fov(45.f), 
 	m_walking(false), m_yaw(-90.f), m_pitch(0.0f)
 {
-	setTargetPoint(m_target); 
+	setTargetPoint(m_target, 0.0f); 
 	velocity.setId(getId());
 	velocity.setVelocity(0.015f, 0.01f, 0.015f);
 
@@ -80,7 +80,7 @@ void Camera::Update(float deltatime) {
 
 };
 
-void Camera::setTargetPoint(const glm::vec3& target)
+void Camera::setTargetPoint(const glm::vec3& target, float deltatime)
 {
 	m_target = target; 
 
@@ -185,6 +185,6 @@ void Camera::SimulateWalking(float intensity, float dt)
 	{
 		glm::vec3 targetP = m_target + m_up * (cos(2.0f * dt) * intensity / 10.0f) +
 			m_right * (sin(dt) * intensity); 
-		setTargetPoint(targetP);
+		setTargetPoint(targetP, dt);
 	}
 }

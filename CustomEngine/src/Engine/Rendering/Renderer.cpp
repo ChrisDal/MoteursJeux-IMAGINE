@@ -103,7 +103,7 @@ void Renderer::Draw(Mesh* mesh, const ShaderProgram* shader) const
 
 
 // IF no Shader attach to mesh use default shader 
-void Renderer::Draw(GameObject* gmo, LightObject* lgtobj, Material* mat, int shadertype) const
+void Renderer::Draw(GameObject* gmo, const glm::vec4& cameraPos, LightObject* lgtobj, Material* mat, int shadertype) const
 {
 
 	Mesh * meshobject = gmo->getMesh(); 
@@ -151,20 +151,20 @@ void Renderer::Draw(GameObject* gmo, LightObject* lgtobj, Material* mat, int sha
 	// -------------
 
 	// set internal transform matrix
-	SpaceEngine::Transform t_interne = gmo->getTransformation();
+	SpaceEngine::Transform t_interne = gmo->getTransformation(); 
 	glm::mat4 modelTransfointern = gmo->getNode()->getMatTotalNodeTransform() * meshobject->getModelView();
-	chosenShader->setMat4("u_atransform", glm::value_ptr(modelTransfointern));
+	chosenShader->setMat4("u_transform", glm::value_ptr(modelTransfointern));
 
 	// set matrix transform for normals 
 	glm::mat4 normTransform = SpaceEngine::getMatNormal(modelTransfointern); 
 	chosenShader->setMat4("u_Ntransform", glm::value_ptr(normTransform)); 
 	
 	// View Proj Matrix 
-	chosenShader->setMat4("u_avp", glm::value_ptr(vpmat));
-	unsigned int idcount = meshobject->getIndicesCount(); 
+	chosenShader->setMat4("u_viewproj", glm::value_ptr(vpmat));
+	
 
 	glm::vec4 color = meshobject->getColor(); 
-	chosenShader->setUniform4f("u_acolor", color.x, color.y, color.z, color.w);
+	chosenShader->setUniform4f("u_color", color.x, color.y, color.z, color.w);
 
 	// Light Color 
 	if (lgtobj != nullptr) {
@@ -176,7 +176,18 @@ void Renderer::Draw(GameObject* gmo, LightObject* lgtobj, Material* mat, int sha
 		chosenShader->setUniform4f("u_lightPos", 
 			lightpos.x, lightpos.y,
 			lightpos.z, lightpos.w);
+	} 
+	else
+	{
+		chosenShader->setUniform4f("u_lightColor", 
+									1.0f, 1.0f, 1.0f, 1.0f);
+		chosenShader->setUniform4f("u_lightPos", 
+									0.0f, 0.0f, 0.0f, 1.0f);
 	}
+
+	// Camera Position for the view 
+	chosenShader->setUniform4f("u_viewPos", cameraPos); 
+	
 	
 
 	// Texture 
@@ -191,6 +202,7 @@ void Renderer::Draw(GameObject* gmo, LightObject* lgtobj, Material* mat, int sha
 	}
 
 	// DRAW CALL 
+	unsigned int idcount = meshobject->getIndicesCount();
 	GLCall(glDrawElements(meshobject->getPrimitives(), idcount, GL_UNSIGNED_INT, nullptr));
 
 	if (texturebind) { mat->getTexture()->unbind();  }
@@ -247,15 +259,15 @@ void Renderer::Draw(LightObject* lgtobj, Material* mat, int shadertype) const
 
 	// set internal transform matrix
 	SpaceEngine::Transform t_interne = lgtobj->getTransformation();
-	glm::mat4 modelTransfointern = lgtobj->getNode()->getMatTotalNodeTransform() * meshobject->getModelView();
-	chosenShader->setMat4("u_atransform", glm::value_ptr(modelTransfointern));
+	glm::mat4 modelTransfointern = lgtobj->getNode()->getMatTotalNodeTransform()   * meshobject->getModelView();
+	chosenShader->setMat4("u_transform", glm::value_ptr(modelTransfointern));
 
 	// View Proj Matrix 
-	chosenShader->setMat4("u_avp", glm::value_ptr(vpmat));
+	chosenShader->setMat4("u_viewproj", glm::value_ptr(vpmat));
 	unsigned int idcount = meshobject->getIndicesCount();
 
 	glm::vec4 color = meshobject->getColor();
-	chosenShader->setUniform4f("u_acolor", color.x, color.y, color.z, color.w);
+	chosenShader->setUniform4f("u_color", color.x, color.y, color.z, color.w);
 
 	// Texture 
 	bool texturebind = false;
@@ -275,10 +287,11 @@ void Renderer::Draw(LightObject* lgtobj, Material* mat, int shadertype) const
 	chosenShader->unuse(); 
 }
 
-
-void Renderer::Draw(SceneNode* scene) const
+// Draw a scene 
+void Renderer::Draw(SceneNode* scene, const glm::vec4& cameraPos) const
 {
 	std::vector<LightObject*> lights = scene->getLights(); 
+	
 	
 	if (scene->haveGmo()) {
 		BasicGameObject* obj = scene->getObject();
@@ -286,7 +299,7 @@ void Renderer::Draw(SceneNode* scene) const
 		{
 			if ( ! obj->isLight())
 			{
-				this->Draw(static_cast<GameObject*>(obj), lights[0],  nullptr, 1);
+				this->Draw(static_cast<GameObject*>(obj), cameraPos, lights[0],  nullptr, 1);
 			}
 			else
 			{
@@ -298,19 +311,19 @@ void Renderer::Draw(SceneNode* scene) const
 
 	for (int i = 0; i < scene->getChildrenNumber(); i++)
 	{
-		this->Draw(scene->getNode(i), lights[0]);
+		this->Draw(scene->getNode(i), cameraPos, lights[0]);
 	}
 }
 
-void Renderer::Draw(SceneNode* scene, LightObject* light) const
+void Renderer::Draw(SceneNode* scene, const glm::vec4& cameraPos, LightObject* light) const
 {
 	if (scene->haveGmo()) {
 		BasicGameObject* obj = scene->getObject();
 		if (obj->hasMesh())
 		{
-			if (!obj->isLight())
+			if (! obj->isLight())
 			{
-				this->Draw(static_cast<GameObject*>(obj), light, nullptr, 1);
+				this->Draw(static_cast<GameObject*>(obj), cameraPos, light, nullptr, 1);
 			}
 			else
 			{
@@ -322,11 +335,11 @@ void Renderer::Draw(SceneNode* scene, LightObject* light) const
 
 	for (int i = 0; i < scene->getChildrenNumber(); i++)
 	{
-		this->Draw(scene->getNode(i), light);
+		this->Draw(scene->getNode(i), cameraPos, light);
 	}
 }
 
-void Renderer::Draw(SceneNode* scene, std::vector<LightObject*> lights) const
+void Renderer::Draw(SceneNode* scene, const glm::vec4& cameraPos, std::vector<LightObject*> lights) const
 {
 	for (LightObject* light : lights)
 	{

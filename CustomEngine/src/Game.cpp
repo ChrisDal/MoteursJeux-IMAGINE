@@ -293,7 +293,7 @@ void Game::processInput(GLFWwindow* window, bool internal)
         glm::vec4 pos = actor->getWorldPosition();
         std::cout << " Actor : " << pos.x << pos.y << pos.z << "\n";
         glm::vec3 targetActor{ pos.x, pos.y, pos.z };
-        m_camera->setTargetPoint(targetActor);
+        m_camera->setTargetPoint(targetActor, 0.0f);
         m_camera->setWalking(true);
     }
     else
@@ -450,8 +450,8 @@ void Game::RunGameLoop()
         // ------
         
         m_renderer.Clear();
-        // Transformation 
-        m_renderer.Draw(m_scene);
+        // 
+        m_renderer.Draw(m_scene, m_camera->getWorldPosition());
 
 
         // =================================================
@@ -972,7 +972,7 @@ void Game::handleInput(GLFWwindow* window, GameObject* actor, Camera* cam)
     if (actor->velocity.ismoving()) {
         glm::vec4 pos = actor->getWorldPosition();
         glm::vec3 targetActor{ pos.x, pos.y, pos.z };
-        cam->setTargetPoint(targetActor);
+        cam->setTargetPoint(targetActor, 0.0f);
         cam->setWalking(true);
     }
     else
@@ -999,7 +999,7 @@ void Game::setTrackingPoint(GLFWwindow* window, Camera* cam, double& x, double& 
         -direction.y * cam->velocity.vy,
         0.0f);
 
-    cam->setTargetPoint(newTargetPoint);
+    cam->setTargetPoint(newTargetPoint, 0.0f);
 
 }
 
@@ -1070,12 +1070,14 @@ void Game::initScene()
     
     // Ajout Planete + Satellite 
     {
-        SceneNode* planeteNode = this->addPlanet(solarNode, glm::vec3(0.0f, 0.0f, 0.0f),
+        SceneNode* planeteNode = this->addPlanet(solarNode, 
+            glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3(4.0f, 0.0f, 2.0f), 0.6f,
             glm::vec3(0.0f, 23.0f, 0.0f),
             glm::vec3(0.0f, 0.0f, 0.0f));
 
-        SceneNode* satelliteNode = this->addSatellite(planeteNode, glm::vec3(0.0f, 2.0f, 0.0f),
+        SceneNode* satelliteNode = this->addSatellite(planeteNode, 
+            glm::vec3(0.0f, 2.0f, 0.0f),
             0.2f, glm::vec3(0.0f, 15.0f, 0.0f),
             glm::vec3(0.0f, 0.0f, 0.0f));
     }
@@ -1152,7 +1154,7 @@ SceneNode* Game::addSatellite(SceneNode* planetNode, const glm::vec3& satpos,
     // Satellite  Node 
     SceneNode* satNode = new SceneNode(planetNode);
     GameObject* planetSat = new GameObject(satNode, satpos, -1);
-    planetSat->initMesh(3);
+    planetSat->initMesh(0); //satellite in cube
 
     // Add an internal transformation 
     SpaceEngine::Transform transfoSat(glm::vec3(scale, scale, scale),

@@ -152,7 +152,7 @@ void ThirdPersonCamera::setLookAt()
 /// Doesn't take into account rotation and scaling 
 /// </summary>
 /// <returns></returns>
-glm::vec4 ThirdPersonCamera::getWorldPosition()
+/*glm::vec4 ThirdPersonCamera::getWorldPosition()
 {
 	// Get total transformation from parent 
 	glm::mat4 parentTransfo = this->getNode()->getParent()->getMatTotalNodeTransform();
@@ -165,7 +165,7 @@ glm::vec4 ThirdPersonCamera::getWorldPosition()
 
 	return ourworldTransform * glm::vec4(m_position, 1.0f);
 	
-}
+}*/
 
 void ThirdPersonCamera::Update(float deltatime)
 {

@@ -224,12 +224,13 @@ void Mesh::initCapsule(float radius, float distance)
 				radius * glm::cos(phi) * glm::sin(rho)
 			);
 
-			xyz += origin;
+			
 
 			glm::vec3 normal(glm::normalize(glm::vec3(xyz - origin)));
+			//glm::vec3 normal(glm::normalize(xyz));
 			glm::vec2 uvs(kphi / (float)nphi, krho / (float)nrho);
 
-			this->vertices.push_back(VertexData({ xyz , normal, uvs }));
+			this->vertices.push_back(VertexData({ xyz + origin, normal, uvs }));
 
 		}
 	}
@@ -242,12 +243,12 @@ void Mesh::initCapsule(float radius, float distance)
 	// Triangle 1 : A B C 
 	// Triangle 2 : C D A 
 
-	for (unsigned int kphi = 0; kphi < nphi; kphi++)
+	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
 	{
 		for (unsigned int krho = 0; krho < nrho; krho++)
 		{
 			// First Triangle
-			if (kphi != nphi - 1)
+			if (kphi != nphi - 2)
 			{
 				this->indices.push_back(kphi * nrho + krho);
 				this->indices.push_back((kphi + 1) * nrho + krho);
@@ -337,12 +338,12 @@ void Mesh::initSphere(float radius)
 	// Triangle 1 : A B C 
 	// Triangle 2 : C D A 
 
-	for (unsigned int kphi = 0; kphi < nphi; kphi++)
+	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
 	{
 		for (unsigned int krho = 0; krho < nrho; krho++)
 		{
 			// First Triangle
-			if (kphi != nphi - 1)
+			if (kphi != nphi - 2)
 			{
 				this->indices.push_back(kphi * nrho + krho);
 				this->indices.push_back((kphi + 1) * nrho + krho);
