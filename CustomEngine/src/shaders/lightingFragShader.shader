@@ -16,6 +16,7 @@ void main()
 {
     // normal 
     vec3 norml = normalize(vNormal);
+    // Frag => To light 
     vec3 lightDir = normalize(vec3(u_lightPos - FragPos));
     
     // Ambient
@@ -24,17 +25,18 @@ void main()
 
     
     // Diffuse
-    float kd = max(dot(norml, lightDir), 0.0);
-    vec4 diffuse = kd * u_lightColor;
+    float kd = 1.0; 
+    float diff = max(dot(norml, lightDir), 0.0);
+    vec4 diffuse = kd * diff * u_lightColor;
 
 
     // Specular 
     float ks = 0.5;
     int shininess = 32; 
-    vec3 viewDir = normalize(vec3(u_viewPos - FragPos)); 
-    vec3 reflectDir = reflect(-lightDir, norml); 
+    vec3 viewDir = normalize(vec3(u_viewPos - FragPos)); // camera pos
+    vec3 reflectDir = normalize(reflect(-lightDir, norml)); 
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-    vec4 specular = ks * spec * u_lightColor;
+    vec4 specular = ks * spec * vec4(0.1f, 0.1f, 1.0f, 1.0f); // blue
 
     // Total
     FragColor = (ambient + diffuse + specular) *  vColor ;

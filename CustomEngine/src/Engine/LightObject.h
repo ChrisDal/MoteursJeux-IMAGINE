@@ -54,7 +54,7 @@ public:
     void initMaterial(Texture* texture, const glm::vec3& color);
 
     // Rendering
-    Mesh* getMesh() const { return m_mesh; }
+    Mesh* getMesh() const override { return m_mesh; }
     Material* getMaterial() const { return m_mat; }
 
 

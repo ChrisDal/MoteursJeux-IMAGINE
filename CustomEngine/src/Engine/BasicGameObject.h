@@ -11,6 +11,7 @@
 
 
 class SceneNode;
+class Mesh; 
 
 // Game Object empty 
 class BasicGameObject
@@ -76,6 +77,7 @@ public:
     // Print game object informations
     virtual void print() = 0;
     virtual bool hasMesh() { return false;  }
+    virtual Mesh* getMesh() const { return nullptr; };
 
     // ID and tag check
     int getId() const { return m_id; }

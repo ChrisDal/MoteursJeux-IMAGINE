@@ -647,6 +647,7 @@ void Game::RenderDebugMenu() {
     // Other checkbox 
     static bool wireframeMode = false;
     static bool orthoprojection = false;
+    static bool colorChanged = false; 
 
     // ImGui TreeNode
     ImGui::Begin("Inspector");
@@ -812,7 +813,7 @@ void Game::RenderDebugMenu() {
         ImGui::Separator();
 
         ImGui::Text("Color");
-        ImGui::ColorEdit3("GameObject", (float*)&clear_color); // Edit 3 floats representing a color
+        colorChanged = ImGui::ColorEdit3("GameObject", (float*)&suncolor); // Edit 3 floats representing a color
 
     }
 
@@ -837,19 +838,27 @@ void Game::RenderDebugMenu() {
 
 
     // Apply Transformations for selected obj : TRS
-    if (applyTransform[0] && foundObj != nullptr)
+    if (foundObj != nullptr)
     {
-        foundObj->setTranslate(transVec3, true);
-    }
+        if (applyTransform[0])
+        {
+            foundObj->setTranslate(transVec3, true);
+        }
 
-    if (applyTransform[1] && foundObj != nullptr)
-    {
-        foundObj->setRotate(rotVec3, true);
-    }
+        if (applyTransform[1])
+        {
+            foundObj->setRotate(rotVec3, true);
+        }
 
-    if (applyTransform[2] && foundObj != nullptr)
-    {
-        foundObj->setScale(scaleVec3, true);
+        if (applyTransform[2])
+        {
+            foundObj->setScale(scaleVec3, true);
+        }
+
+        if (colorChanged && foundObj->hasMesh())
+        {
+            foundObj->getMesh()->setColor(glm::vec4(suncolor, 1.0f)); 
+        }
     }
     
     // ImGui example menu overlay 
