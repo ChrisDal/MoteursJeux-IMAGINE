@@ -7,8 +7,8 @@
 #include <glm/mat4x4.hpp> // glm::mat4
 
 
-#include "BasicGameObject.h"
-#include "Mesh.h"
+#include "../BasicGameObject.h"
+#include "../Mesh.h"
 
 
 

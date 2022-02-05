@@ -20,7 +20,6 @@
 
 // Geometry
 #include "GeomPhysics.h"
-
 #include "Collider.h"
 
 

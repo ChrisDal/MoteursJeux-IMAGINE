@@ -1,12 +1,4 @@
 #include "Game.h"
-#include "Engine/Transform.h"
-#include "Engine/GameObject.hpp"
-#include "Engine/LightObject.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 
 // GL 3.0 + GLSL 130
 const char* glsl_version = "#version 130";
@@ -1049,7 +1041,7 @@ void Game::initScene()
     
     //GameObject* sun = new GameObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
     //sun->initMesh(3);
-    LightObject* sun = new LightObject(solarNode, glm::vec3(0.0f, 0.0, 0.0f), 3); 
+    LightObject* sun = new LightObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), 3);
     sun->setColor(glm::vec4(suncolor, 1.0f));
     
     // Mars Node 

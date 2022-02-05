@@ -1,5 +1,5 @@
 #include "SceneNode.h"
-#include "LightObject.h"
+#include "Light/LightObject.h"
 
 // static define
 unsigned int SceneNode::nodeNumber = 0;

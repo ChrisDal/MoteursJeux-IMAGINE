@@ -1,6 +1,14 @@
 #version 330 core
+
 out vec4 FragColor;
 
+// store the material properties of the surface
+struct ObjMaterial {
+    vec3 ambient; 
+    vec3 diffuse;
+    vec3 specular; 
+    float shininess; 
+};
 
 in vec4 vColor; 
 in vec2 vTextureCoord;
@@ -11,6 +19,7 @@ in vec4 FragPos;
 uniform vec4 u_lightColor;
 uniform vec4 u_lightPos; 
 uniform vec4 u_viewPos; 
+uniform ObjMaterial u_material; 
 
 void main()
 {

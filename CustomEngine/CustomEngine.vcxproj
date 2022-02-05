@@ -156,7 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\Collider.cpp" />
-    <ClCompile Include="src\Engine\LightObject.cpp" />
+    <ClCompile Include="src\Engine\Light\LightObject.cpp" />
     <ClCompile Include="src\Engine\Sphere.cpp" />
     <ClCompile Include="src\Engine\Components.cpp" />
     <ClCompile Include="src\Engine\BasicGameObject.cpp" />
@@ -191,7 +191,7 @@
   <ItemGroup>
     <ClInclude Include="src\Engine\Collider.h" />
     <ClInclude Include="src\Engine\GeomPhysics.h" />
-    <ClInclude Include="src\Engine\LightObject.h" />
+    <ClInclude Include="src\Engine\Light\LightObject.h" />
     <ClInclude Include="src\Engine\Sphere.h" />
     <ClInclude Include="src\Engine\BasicGameObject.h" />
     <ClInclude Include="src\Engine\Camera.h" />

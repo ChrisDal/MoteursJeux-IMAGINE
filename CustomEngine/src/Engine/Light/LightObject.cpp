@@ -1,6 +1,6 @@
 #pragma once
 #include "LightObject.h"
-#include "Sphere.h"
+#include "../Sphere.h"
 
 LightObject::LightObject(SceneNode* parent, glm::vec3 center, 
                         short int textureId,  std::string filename,

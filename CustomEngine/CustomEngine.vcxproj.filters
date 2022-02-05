@@ -108,7 +108,7 @@
     <ClCompile Include="src\Engine\ThirdPersonCamera.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="src\Engine\LightObject.cpp">
+    <ClCompile Include="src\Engine\Light\LightObject.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1085,7 +1085,7 @@
     <ClInclude Include="src\Engine\ThirdPersonCamera.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="src\Engine\LightObject.h">
+    <ClInclude Include="src\Engine\Light\LightObject.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,6 @@
 #include "Renderer.h"
 #include "../GameObject.hpp"
-#include "../LightObject.h"
+#include "../Light/LightObject.h"
 #include "../SceneNode.h"
 #include <iostream>
 
