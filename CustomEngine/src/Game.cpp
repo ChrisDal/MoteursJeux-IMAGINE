@@ -425,7 +425,8 @@ void Game::RunGameLoop()
             callbackWindows = false; 
         }
         
-        
+        // Set VP Matrix 
+        m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective());
         
         //=================================================
         // Draw here 
@@ -566,24 +567,26 @@ static void displayGraphNode(SceneNode* node, int& selectable)
                 }
 
                 ImGui::Text("Target Point : ( %.1f, %.1f, %.1f )", tpoint.x, tpoint.y, tpoint.z);
-                
-                
             }
-            if (node->getObject()->hasMesh())
+
+            if (dynamic_cast<GameObject*>(node->getObject()))
             {
-                ImGui::SameLine();
-                
-                if (ImGui::SmallButton("Set Red")) {
-                    GameObject* gmo = (GameObject*)node->getObject();
-                    if (gmo->getMesh()->getColor() == Mesh::basicColor)
-                    {
-                        gmo->getMesh()->setColor(1.0f, 0.0f, 0.0f, 1.0f);
+                if (static_cast<GameObject*>(node->getObject())->hasMesh())
+                {
+                    ImGui::SameLine();
+
+                    if (ImGui::SmallButton("Set Red")) {
+                        GameObject* gmo = (GameObject*)node->getObject();
+                        if (gmo->getMesh()->getColor() == Mesh::basicColor)
+                        {
+                            gmo->getMesh()->setColor(1.0f, 0.0f, 0.0f, 1.0f);
+                        }
+                        else
+                        {
+                            gmo->getMesh()->setColor(Mesh::basicColor);
+                        }
+
                     }
-                    else
-                    {
-                        gmo->getMesh()->setColor(Mesh::basicColor);
-                    }
-                    
                 }
             }
             
@@ -643,6 +646,8 @@ void Game::RenderDebugMenu() {
     static glm::vec3 diffuse  = { 0.714f, 0.4284f, 0.18144f };
     static glm::vec3 specular = { 0.393548f, 0.271906f, 0.166721f };
     static float shiny = 0.2f; // shininess to be multiplied by 128
+    static int selected_material = -1;
+    static const std::vector<std::string> matnames = Material::m_defaultnames;
 
     // Other checkbox 
     static bool wireframeMode = false;
@@ -655,12 +660,12 @@ void Game::RenderDebugMenu() {
 
     // Graphe de Scene 
     static int selected = -1;
-    BasicGameObject* foundObj = nullptr;
+    GameObject* foundObj = nullptr;
     DisplayUISceneGraph(m_scene, selected);
 
     if (selected != -1) {
         
-        foundObj = m_scene->getObjectbyID(selected);
+        foundObj = static_cast<GameObject*>(m_scene->getObjectbyID(selected));
 
         if (foundObj != nullptr)
         {
@@ -669,19 +674,20 @@ void Game::RenderDebugMenu() {
             transVec3 = objtransfm[1];
             scaleVec3 = objtransfm[2]; 
 
-            if (foundObj->hasMesh() && foundObj->getMesh()->hasMaterial())
+            if (foundObj)
             {
-                static Material* mati = foundObj->getMesh()->getMat();
-                ambient = mati->m_ambient;
-                diffuse = mati->m_diffuse;
-                specular = mati->m_specular;
-                shiny = mati->m_shininess;
+                if (foundObj->hasMesh() && foundObj->getMesh()->hasMaterial())
+                {
+                    static Material* mati = foundObj->getMesh()->getMat();
+                    ambient  = mati->m_ambient;
+                    diffuse  = mati->m_diffuse;
+                    specular = mati->m_specular;
+                    shiny    = mati->m_shininess;
+                    selected_material = -1; 
+                }
             }
-             
         }
     }
-
-        
 
     ImGui::SetNextTreeNodeOpen(true);
     
@@ -824,21 +830,22 @@ void Game::RenderDebugMenu() {
 
         ImGui::Text("Material");
         ImGui::SameLine();
-        static int selected_material = -1;
-        static const std::vector<std::string> matnames = Material::m_defaultnames; 
+
+        
 
         // Simple selection popup (if you want to show the current selection inside the Button itself,
         // you may want to build a string using the "###" operator to preserve a constant ID with a variable label)
         if (ImGui::SmallButton("Set Material###materialsmb")) {
             ImGui::OpenPopup("materialchoices");
         }
-            
+         
         ImGui::SameLine();
         ImGui::TextUnformatted(selected_material == -1 ? "<Custom>" : matnames[selected_material].c_str());
         if (ImGui::BeginPopup("materialchoices"))
         {
             ImGui::Text("Materials");
             ImGui::Separator();
+            selected_material = -1; 
             for (int i = 0; i < matnames.size(); i++) {
                 if (ImGui::Selectable(matnames[i].c_str())) {
                     selected_material = i;
@@ -850,12 +857,22 @@ void Game::RenderDebugMenu() {
 
         if (selected_material != -1)
         {
-            Material mattoset = Material::m_defaults[selected_material];
-            ambient  = mattoset.m_ambient;
-            diffuse  = mattoset.m_diffuse;
-            specular = mattoset.m_specular;
-            shiny    = mattoset.m_shininess;
+            ambient  = Material::m_defaults[selected_material].m_ambient;
+            diffuse  = Material::m_defaults[selected_material].m_diffuse;
+            specular = Material::m_defaults[selected_material].m_specular;
+            shiny    = Material::m_defaults[selected_material].m_shininess;
             matChanged = true;
+        }
+        else
+        {
+            if (foundObj != nullptr) {
+                Material* mati = foundObj->getMesh()->getMat();
+                ambient = mati->m_ambient;
+                diffuse = mati->m_diffuse;
+                specular = mati->m_specular;
+                shiny = mati->m_shininess;
+            }
+            
         }
 
         // Material Modifications through ui
@@ -865,9 +882,8 @@ void Game::RenderDebugMenu() {
         colorChanged |= ImGui::ColorEdit3("Specular", (float*)&specular); 
         colorChanged |= ImGui::SliderFloat("Shininess", &shiny, 0.0001f, 2.0f, "%.4f"); // shininess
 
-        if (colorChanged) {
-            selected_material = -1; // we modify material manually
-        }
+        // we modify material manually
+        if (colorChanged) { selected_material = -1; }
 
     }
 
@@ -891,9 +907,12 @@ void Game::RenderDebugMenu() {
     ImGui::End();
 
 
-    // Apply Transformations for selected obj : TRS
+    // Apply UI Change 
+    // ---------------
+    
     if (foundObj != nullptr)
     {
+        // Transformations for selected obj : TRS
         if (applyTransform[0])
         {
             foundObj->setTranslate(transVec3, true);
@@ -909,6 +928,7 @@ void Game::RenderDebugMenu() {
             foundObj->setScale(scaleVec3, true);
         }
 
+        // Materials changes 
         if ((colorChanged || matChanged) && foundObj->hasMesh())
         {
             foundObj->getMesh()->setColor(glm::vec4(suncolor, 1.0f)); 
@@ -917,13 +937,34 @@ void Game::RenderDebugMenu() {
             }
         }
     }
+
+    // Rendering Mode 
+    m_renderer.setPolymode(!wireframeMode);
+    // Camera Mode 
+    if (m_camera != nullptr)
+    {
+        if (onChangeCamera) {
+            if (orthoprojection)
+            {
+                m_camera->setPerspective(-1.0f, 1.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, true);
+            }
+            else
+            {
+                m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, false);
+            }
+
+        }
+        
+    }
+
+
     
     // ImGui example menu overlay 
     static bool show_app_simple_overlay = true;
-    const float DISTANCE = 10.0f;
+    static constexpr float DISTANCE = 10.0f;
     static int corner = 3;
     ImGuiIO& io = ImGui::GetIO();
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+    static ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
     if (corner != -1)
     {
         window_flags |= ImGuiWindowFlags_NoMove;
@@ -940,7 +981,8 @@ void Game::RenderDebugMenu() {
         {
             ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
         }
-        else {
+        else 
+        {
             ImGui::Text("Mouse Position: <invalid>");
         }
 
@@ -962,23 +1004,7 @@ void Game::RenderDebugMenu() {
     }
     ImGui::End();
 
-    m_renderer.setPolymode(!wireframeMode);
-
-    if (m_camera != nullptr)
-    {
-        if (onChangeCamera) {
-            if (orthoprojection) 
-            {
-                m_camera->setPerspective(-1.0f, 1.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, true);
-            }
-            else
-            {
-                m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, false);
-            }
-            
-        }
-        m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
-    }
+    
 
 }
 

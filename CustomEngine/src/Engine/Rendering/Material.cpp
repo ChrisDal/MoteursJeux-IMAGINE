@@ -32,6 +32,73 @@ void Material::initDefaultMaterials()
 
 	m_defaultnames.push_back("Jade");
 
+	// obsidian 
+	m_defaults.emplace_back(
+		defaultcolor,
+		glm::vec3(0.05375,0.05,0.06625),
+		glm::vec3(0.18275, 0.17,0.22525),
+		glm::vec3(0.332741,0.328634, 0.346435),
+		0.3
+	);
+
+	m_defaultnames.push_back("Obsidian");
+
+	// pearl
+	m_defaults.emplace_back(
+		defaultcolor,
+		glm::vec3(0.25f, 0.20725f, 0.20725f),
+		glm::vec3(1.0f, 0.829f, 0.829f),
+		glm::vec3(0.296648, 0.296648, 0.296648),
+		0.088f
+	);
+
+	m_defaultnames.push_back("Pearl");
+
+	// ruby
+	m_defaults.emplace_back(
+		defaultcolor,
+		glm::vec3(0.1745f, 0.01175f, 0.01175f),
+		glm::vec3(0.61424f, 0.04136f, 0.04136f),
+		glm::vec3(0.727811f, 0.626959f, 0.626959f),
+		0.6f
+	);
+
+	m_defaultnames.push_back("Ruby");
+
+	// turquoisef
+	m_defaults.emplace_back(
+		defaultcolor,
+		glm::vec3(0.1f, 0.18725f, 0.1745f),
+		glm::vec3(0.396f, 0.74151f, 0.69102f),
+		glm::vec3(0.297254f, 0.30829f, 0.306678f),
+		0.1f
+	);
+
+	m_defaultnames.push_back("Turquoise");
+
+	// Brass
+	m_defaults.emplace_back(
+		defaultcolor,
+		glm::vec3(0.329412f, 0.223529f, 0.027451f),
+		glm::vec3(0.780392f, 0.568627f, 0.113725f),
+		glm::vec3(0.992157f, 0.941176f, 0.807843f),
+		0.21794872f
+	);
+
+	m_defaultnames.push_back("Brass");
+
+	// bronze
+	m_defaults.emplace_back(
+		defaultcolor,
+		glm::vec3(0.2125f, 0.1275f, 0.054f),
+		glm::vec3(0.714f, 0.4284f, 0.18144f),
+		glm::vec3(0.393548f, 0.271906f, 0.166721f),
+		0.2f
+	);
+
+	m_defaultnames.push_back("Bronze");
+
+
 }
 
 Material::Material(Texture* texture, glm::vec3 color)

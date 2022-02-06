@@ -53,7 +53,5 @@ public:
 	static std::vector<Material> m_defaults;
 	static void initDefaultMaterials(); 
 	static std::vector<std::string> m_defaultnames; 
-	
-
 };
 

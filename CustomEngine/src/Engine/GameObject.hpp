@@ -67,7 +67,7 @@ public:
 
     // Print game object informations
     void print() override;
-    virtual bool hasMesh() override { return true; }
+    virtual bool hasMesh() override { return m_mesh != nullptr; }
     virtual bool hasMaterial() const { return m_mat != nullptr;  }
     virtual bool isLight() override { return false; }
 
