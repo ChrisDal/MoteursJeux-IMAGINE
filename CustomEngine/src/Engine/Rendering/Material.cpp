@@ -1,18 +1,45 @@
 #include "Material.h"
 
 
+std::vector<Material> Material::m_defaults = {};
+
+
+void Material::initDefaultMaterials()
+{
+	m_defaults.clear();
+	glm::vec3 defaultcolor = glm::vec3(1.0f);
+
+	// Emerald 
+	m_defaults.emplace_back(
+		defaultcolor,
+		glm::vec3(0.0215, 0.1745, 0.0215),
+		glm::vec3(0.07568, 0.61424, 0.07568),
+		glm::vec3(0.633, 0.727811, 0.633),
+		0.6f
+	);
+	// jade 
+	m_defaults.emplace_back(
+		defaultcolor,
+		glm::vec3(0.135, 0.2225, 0.1575),
+		glm::vec3(0.54, 0.89, 0.63),
+		glm::vec3(0.316228),
+		0.1f
+	);
+
+}
+
 Material::Material(Texture* texture, glm::vec3 color)
 	: m_texture(texture), m_color(color),
 	m_ambient(0.5f), m_diffuse(0.5f), 
-	m_specular(0.1f), m_shininess(16.0f)
+	m_specular(0.1f), m_shininess(0.125f)
 {};
 
 Material::Material()
-	: m_texture(nullptr), m_color(glm::vec3(1.0, 1.0, 1.0)),
-	m_ambient(glm::vec3(0.5f)), 
-	m_diffuse(glm::vec3(0.5f)),
-	m_specular(glm::vec3(0.1f)), 
-	m_shininess(16.0f)
+	: m_texture(nullptr), m_color(glm::vec3(0.8f, 1.0f, 1.0f)),
+	m_ambient(glm::vec3(0.25f)),  // Chrome
+	m_diffuse(glm::vec3(0.4f)),
+	m_specular(glm::vec3(0.774597f)),
+	m_shininess(0.6f)
 {};
 
 
@@ -24,12 +51,13 @@ Material::Material(const glm::vec3& color,
 	: m_ambient(ambient),
 	m_diffuse(diffuse),
 	m_specular(specular),
-	m_shininess(shininess), 
 	m_color(color), 
 	m_texture(nullptr)
 {
-
-}; 
+	setShininess(shininess); 
+}
+Material::~Material()
+{};
 
 void Material::setTexture(const char* filename) {
 	if (m_texture != nullptr) { delete m_texture; }
@@ -45,5 +73,5 @@ void Material::setTexture(Texture* textu) {
 
 void Material::setShininess(const float& shiny)
 {
-	m_shininess = shiny > 0.0f ? shiny : 0.0f; 
+	m_shininess = shiny > 0.0f ? shiny : 1e-4f; ;
 }

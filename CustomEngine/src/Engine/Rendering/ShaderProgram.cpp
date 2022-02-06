@@ -95,6 +95,12 @@ void ShaderProgram::setUniform1i(const char* name, int location) const
 	glUniform1i(this->getUniformLocation(name), location);
 }
 
+void ShaderProgram::setUniform1f(const char* uniformname, float data) const
+{
+	int loc = getUniformLocation(uniformname);
+	glUniform1f(loc, data);
+}
+
 void ShaderProgram::setMat4(const char* mat4name, const GLfloat* data) const
 {
 	int loc = getUniformLocation(mat4name);

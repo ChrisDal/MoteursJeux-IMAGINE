@@ -80,7 +80,7 @@ Game::Game()
     // Renderer Initialisation 
     // -------------------------
 
-    // Shader Program : by Default 
+    // Shader Program : by Default => LIGHT 
     m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::CLASSIC);
 
     // Light Shader 
@@ -98,15 +98,14 @@ Game::Game()
 
     m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::OTHER);
 
-
-
     std::cout << "LIGHT : " << std::endl; 
     std::cout << fragmentsource << std::endl; 
 
+    // Materials
+    Material::initDefaultMaterials();
+
+    // --------------------------------------------
     this->initScene(); 
-	
-
-
 
     // --------------------------------------------
     // Game Player 
@@ -636,10 +635,18 @@ void Game::RenderDebugMenu() {
     static const char* axesnames[3] = { "X", "Y", "Z" }; 
     static bool applyTransform[3] = { false, false, false }; // TRS Modifications have been made
 
+    // Material 
+    static bool colorChanged = false;
+    // Bronze material 
+    static glm::vec3 ambient  = { 0.2125f, 0.1275f, 0.054f };
+    static glm::vec3 diffuse  = { 0.714f, 0.4284f, 0.18144f };
+    static glm::vec3 specular = { 0.393548f, 0.271906f, 0.166721f };
+    static float shiny = 0.2f; // shininess to be multiplied by 128
+
     // Other checkbox 
     static bool wireframeMode = false;
     static bool orthoprojection = false;
-    static bool colorChanged = false; 
+    
 
     // ImGui TreeNode
     ImGui::Begin("Inspector");
@@ -660,6 +667,16 @@ void Game::RenderDebugMenu() {
             rotVec3   = objtransfm[0];
             transVec3 = objtransfm[1];
             scaleVec3 = objtransfm[2]; 
+
+            if (foundObj->getMesh()->hasMaterial())
+            {
+                static Material* mati = foundObj->getMesh()->getMat();
+                ambient = mati->m_ambient;
+                diffuse = mati->m_diffuse;
+                specular = mati->m_specular;
+                shiny = mati->m_shininess;
+            }
+             
         }
     }
 
@@ -804,8 +821,33 @@ void Game::RenderDebugMenu() {
 
         ImGui::Separator();
 
-        ImGui::Text("Color");
-        colorChanged = ImGui::ColorEdit3("GameObject", (float*)&suncolor); // Edit 3 floats representing a color
+        ImGui::Text("Material");
+        ImGui::SameLine();
+        static int selected_fish = -1;
+        const char* names[] = { "Bream", "Haddock", "Mackerel", "Pollock", "Tilefish" };
+        static bool toggles[] = { true, false, false, false, false };
+
+        // Simple selection popup (if you want to show the current selection inside the Button itself,
+        // you may want to build a string using the "###" operator to preserve a constant ID with a variable label)
+        if (ImGui::Button("Select.."))
+            ImGui::OpenPopup("my_select_popup");
+        ImGui::SameLine();
+        ImGui::TextUnformatted(selected_fish == -1 ? "<None>" : names[selected_fish]);
+        if (ImGui::BeginPopup("my_select_popup"))
+        {
+            ImGui::Text("Aquarium");
+            ImGui::Separator();
+            for (int i = 0; i < IM_ARRAYSIZE(names); i++)
+                if (ImGui::Selectable(names[i]))
+                    selected_fish = i;
+            ImGui::EndPopup();
+        }
+
+        colorChanged = ImGui::ColorEdit3("MainColor", (float*)&suncolor); // Edit 3 floats representing a color
+        colorChanged |= ImGui::ColorEdit3("Ambient", (float*)&ambient); // Edit 3 floats representing a color
+        colorChanged |= ImGui::ColorEdit3("Diffuse", (float*)&diffuse); // Edit 3 floats representing a color
+        colorChanged |= ImGui::ColorEdit3("Specular", (float*)&specular); // Edit 3 floats representing a color       
+        colorChanged |= ImGui::SliderFloat("Shininess", &shiny, 0.0f, 2.0f, "%.4f"); // shininess
 
     }
 
@@ -850,6 +892,9 @@ void Game::RenderDebugMenu() {
         if (colorChanged && foundObj->hasMesh())
         {
             foundObj->getMesh()->setColor(glm::vec4(suncolor, 1.0f)); 
+            if (foundObj->getMesh()->hasMaterial()) {
+                foundObj->getMesh()->setMaterial(ambient, diffuse, specular, shiny); 
+            }
         }
     }
     

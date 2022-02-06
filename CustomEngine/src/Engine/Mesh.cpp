@@ -5,18 +5,22 @@ const glm::vec4 Mesh::basicColor = glm::vec4(225.0f / 255.0f, 210.f / 255.0f, 18
 
 Mesh::Mesh()
 	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLE_STRIP), 
-	model_view(glm::mat4(1.0f)), m_color(Mesh::basicColor)
+	model_view(glm::mat4(1.0f)), m_color(Mesh::basicColor), 
+	m_material(new Material())
 {
 	this->clear(); 
+	m_material->setColor(m_color); 
 }
 
 Mesh::Mesh(const char* filename)
 	: m_nVertex(0), indexCount(0), 
 	m_primitives(GL_TRIANGLES), 
 	model_view(glm::mat4(1.0f)), 
-	m_color(Mesh::basicColor)
+	m_color(Mesh::basicColor), 
+	m_material(new Material())
 {
 	this->clear(); 
+	m_material->setColor(m_color);
 	
 	// switch according to type 
 	int typefile = - 1; 
@@ -35,7 +39,8 @@ Mesh::Mesh(const char* filename)
 
 Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
 	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLES),
-	model_view(glm::mat4(1.0f)), m_color(Mesh::basicColor)
+	model_view(glm::mat4(1.0f)), m_color(Mesh::basicColor), 
+	m_material(new Material())
 {
 	this->vertices = vertices; 
 	this->indices = indices; 
@@ -49,6 +54,8 @@ Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, 
 	this->setBbox(); 
 
 	this->setupMesh(); 
+
+	m_material->setColor(m_color);
 }
 
 Mesh::~Mesh()
@@ -57,6 +64,7 @@ Mesh::~Mesh()
 	if (m_vbo != nullptr) { delete m_vbo; }
 	if (m_ibo != nullptr) { delete m_ibo; }
 	if (m_collider != nullptr) { delete m_collider;  }
+	if (m_material != nullptr) { delete m_material;  }
 }
 
 
@@ -746,4 +754,20 @@ void Mesh::setColor(float r, float g, float b, float a)
 		m_color /= 255.0f;
 	}
 
+}
+
+void Mesh::setMaterial(const glm::vec3& amb, const glm::vec3& diff, const glm::vec3& spec, const float& shininess)
+{
+	if (m_material == nullptr)
+	{
+		m_material = new Material(m_color, amb, diff, spec, shininess); 
+	}
+	else
+	{
+		m_material->setColor(m_color); 
+		m_material->m_ambient = amb; 
+		m_material->m_diffuse = diff; 
+		m_material->m_specular = spec; 
+		m_material->setShininess(shininess); 
+	}
 }

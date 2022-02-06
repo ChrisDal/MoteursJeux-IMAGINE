@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <memory>
+
 #include <glm/vec3.hpp>
 #include "Texture.h"
 
@@ -9,6 +12,7 @@ class Material
 private:
 	Texture* m_texture; 
 	glm::vec3 m_color; 
+
 
 public: 
 	// basic data 
@@ -27,6 +31,8 @@ public:
 		const glm::vec3& specular,
 		const float& shininess); 
 
+	~Material(); 
+
 	// Getters and Setters 
 	void setTexture(const char* filename); 
 	void setTexture(Texture* textu); 
@@ -42,6 +48,11 @@ public:
 
 	void setShininess(const float& shiny);
 
+public: 
+	// Material 
+	static std::vector<Material> m_defaults;
+	static void initDefaultMaterials(); 
+	
 
 };
 

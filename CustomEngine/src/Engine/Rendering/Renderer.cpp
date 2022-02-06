@@ -166,6 +166,13 @@ void Renderer::Draw(GameObject* gmo, const glm::vec4& cameraPos, LightObject* lg
 	glm::vec4 color = meshobject->getColor(); 
 	chosenShader->setUniform4f("u_color", color.x, color.y, color.z, color.w);
 
+	// Material
+	Material* material = meshobject->getMat();
+	chosenShader->setUniform3f("u_material.ambient", material->m_ambient); 
+	chosenShader->setUniform3f("u_material.diffuse", material->m_diffuse); 
+	chosenShader->setUniform3f("u_material.specular", material->m_specular); 
+	chosenShader->setUniform1f("u_material.shininess", material->m_shininess); 
+
 	// Light Color 
 	if (lgtobj != nullptr) {
 		glm::vec4 lightcolor = lgtobj->getColor();

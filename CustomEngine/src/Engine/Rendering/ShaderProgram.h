@@ -50,6 +50,8 @@ public:
 	}
 	// Int 
 	void setUniform1i(const char* name, int location) const; 
+	// 1-Float
+	void setUniform1f(const char* uniformname, float data) const;
 	// Matrix 4x4 / Float[16] : column major 
 	void setMat4(const char* mat4name, const GLfloat* data) const; 
 

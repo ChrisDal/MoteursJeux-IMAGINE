@@ -58,9 +58,6 @@ public:
     std::string m_texturedir;           /*!< Texture Directory */
     std::string m_datadir;              /*!< Data Directory */
 
-    // Material 
-    Material material; 
-
     // Renderer 
     Renderer m_renderer;                    /*!< Graphics Renderer */
 
