@@ -637,6 +637,7 @@ void Game::RenderDebugMenu() {
 
     // Material 
     static bool colorChanged = false;
+    static bool matChanged = false;
     // Bronze material 
     static glm::vec3 ambient  = { 0.2125f, 0.1275f, 0.054f };
     static glm::vec3 diffuse  = { 0.714f, 0.4284f, 0.18144f };
@@ -668,7 +669,7 @@ void Game::RenderDebugMenu() {
             transVec3 = objtransfm[1];
             scaleVec3 = objtransfm[2]; 
 
-            if (foundObj->getMesh()->hasMaterial())
+            if (foundObj->hasMesh() && foundObj->getMesh()->hasMaterial())
             {
                 static Material* mati = foundObj->getMesh()->getMat();
                 ambient = mati->m_ambient;
@@ -823,31 +824,50 @@ void Game::RenderDebugMenu() {
 
         ImGui::Text("Material");
         ImGui::SameLine();
-        static int selected_fish = -1;
-        const char* names[] = { "Bream", "Haddock", "Mackerel", "Pollock", "Tilefish" };
-        static bool toggles[] = { true, false, false, false, false };
+        static int selected_material = -1;
+        static const std::vector<std::string> matnames = Material::m_defaultnames; 
 
         // Simple selection popup (if you want to show the current selection inside the Button itself,
         // you may want to build a string using the "###" operator to preserve a constant ID with a variable label)
-        if (ImGui::Button("Select.."))
-            ImGui::OpenPopup("my_select_popup");
+        if (ImGui::SmallButton("Set Material###materialsmb")) {
+            ImGui::OpenPopup("materialchoices");
+        }
+            
         ImGui::SameLine();
-        ImGui::TextUnformatted(selected_fish == -1 ? "<None>" : names[selected_fish]);
-        if (ImGui::BeginPopup("my_select_popup"))
+        ImGui::TextUnformatted(selected_material == -1 ? "<Custom>" : matnames[selected_material].c_str());
+        if (ImGui::BeginPopup("materialchoices"))
         {
-            ImGui::Text("Aquarium");
+            ImGui::Text("Materials");
             ImGui::Separator();
-            for (int i = 0; i < IM_ARRAYSIZE(names); i++)
-                if (ImGui::Selectable(names[i]))
-                    selected_fish = i;
+            for (int i = 0; i < matnames.size(); i++) {
+                if (ImGui::Selectable(matnames[i].c_str())) {
+                    selected_material = i;
+                }
+            }
+                  
             ImGui::EndPopup();
         }
 
-        colorChanged = ImGui::ColorEdit3("MainColor", (float*)&suncolor); // Edit 3 floats representing a color
-        colorChanged |= ImGui::ColorEdit3("Ambient", (float*)&ambient); // Edit 3 floats representing a color
-        colorChanged |= ImGui::ColorEdit3("Diffuse", (float*)&diffuse); // Edit 3 floats representing a color
-        colorChanged |= ImGui::ColorEdit3("Specular", (float*)&specular); // Edit 3 floats representing a color       
-        colorChanged |= ImGui::SliderFloat("Shininess", &shiny, 0.0f, 2.0f, "%.4f"); // shininess
+        if (selected_material != -1)
+        {
+            Material mattoset = Material::m_defaults[selected_material];
+            ambient  = mattoset.m_ambient;
+            diffuse  = mattoset.m_diffuse;
+            specular = mattoset.m_specular;
+            shiny    = mattoset.m_shininess;
+            matChanged = true;
+        }
+
+        // Material Modifications through ui
+        colorChanged  = ImGui::ColorEdit3("MainColor", (float*)&suncolor); 
+        colorChanged |= ImGui::ColorEdit3("Ambient",  (float*)&ambient); 
+        colorChanged |= ImGui::ColorEdit3("Diffuse",  (float*)&diffuse); 
+        colorChanged |= ImGui::ColorEdit3("Specular", (float*)&specular); 
+        colorChanged |= ImGui::SliderFloat("Shininess", &shiny, 0.0001f, 2.0f, "%.4f"); // shininess
+
+        if (colorChanged) {
+            selected_material = -1; // we modify material manually
+        }
 
     }
 
@@ -889,7 +909,7 @@ void Game::RenderDebugMenu() {
             foundObj->setScale(scaleVec3, true);
         }
 
-        if (colorChanged && foundObj->hasMesh())
+        if ((colorChanged || matChanged) && foundObj->hasMesh())
         {
             foundObj->getMesh()->setColor(glm::vec4(suncolor, 1.0f)); 
             if (foundObj->getMesh()->hasMaterial()) {

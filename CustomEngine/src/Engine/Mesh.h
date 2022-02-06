@@ -40,7 +40,7 @@ protected:
 	ShaderProgram* m_shader = nullptr; // if not 
 
 	// Material 
-	Material* m_material; 
+	Material* m_material = nullptr; 
 	glm::vec4 m_color; 
 	
 

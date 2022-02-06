@@ -2,6 +2,7 @@
 
 
 std::vector<Material> Material::m_defaults = {};
+std::vector<std::string> Material::m_defaultnames = {}; 
 
 
 void Material::initDefaultMaterials()
@@ -17,6 +18,9 @@ void Material::initDefaultMaterials()
 		glm::vec3(0.633, 0.727811, 0.633),
 		0.6f
 	);
+
+	m_defaultnames.push_back("Emerald"); 
+
 	// jade 
 	m_defaults.emplace_back(
 		defaultcolor,
@@ -25,6 +29,8 @@ void Material::initDefaultMaterials()
 		glm::vec3(0.316228),
 		0.1f
 	);
+
+	m_defaultnames.push_back("Jade");
 
 }
 

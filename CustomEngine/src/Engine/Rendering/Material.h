@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <memory>
+#include <string>
 
 #include <glm/vec3.hpp>
 #include "Texture.h"
@@ -52,6 +52,7 @@ public:
 	// Material 
 	static std::vector<Material> m_defaults;
 	static void initDefaultMaterials(); 
+	static std::vector<std::string> m_defaultnames; 
 	
 
 };
