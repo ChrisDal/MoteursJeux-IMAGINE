@@ -98,6 +98,46 @@ void Material::initDefaultMaterials()
 
 	m_defaultnames.push_back("Bronze");
 
+	// For Light (explanations from learnopengl.com)
+	// ----------
+	// Ambient : low intensity because we don't want the ambient color to be too dominant
+	// Diffuse : the exact color we'd like a light to have; often a bright white color => here our light temperature K
+	// Specular : usually kept at vec3(1.0) shining at full intensity
+	glm::vec3 mainLightcolor{ 0.8f, 0.9f, 1.0f }; 
+	m_defaults.emplace_back(
+		mainLightcolor,
+		glm::vec3(0.35f),
+		mainLightcolor,
+		glm::vec3(1.0f),
+		0.1f // NA
+	);
+
+	m_defaultnames.push_back("Light-Cold");
+
+	mainLightcolor = glm::vec3(1.0f, 0.8f, 0.8f); 
+	m_defaults.emplace_back(
+		mainLightcolor,
+		glm::vec3(0.35f),
+		mainLightcolor,
+		glm::vec3(1.0f),
+		0.1f // NA
+	);
+
+	m_defaultnames.push_back("Light-Warm");
+
+	mainLightcolor = glm::vec3(1.0f);
+	m_defaults.emplace_back(
+		mainLightcolor,
+		mainLightcolor,
+		mainLightcolor,
+		mainLightcolor,
+		0.1f // NA
+	);
+
+	m_defaultnames.push_back("Light-Default");
+
+
+
 
 }
 
@@ -115,7 +155,14 @@ Material::Material()
 	m_shininess(0.6f)
 {};
 
-
+/// <summary>
+/// Constructor
+/// </summary>
+/// <param name="color"></param>
+/// <param name="ambient"></param>
+/// <param name="diffuse"></param>
+/// <param name="specular"></param>
+/// <param name="shininess"></param>
 Material::Material(const glm::vec3& color,
 	const glm::vec3& ambient,
 	const glm::vec3& diffuse,

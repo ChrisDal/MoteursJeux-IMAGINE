@@ -175,21 +175,19 @@ void Renderer::Draw(GameObject* gmo, const glm::vec4& cameraPos, LightObject* lg
 
 	// Light Color 
 	if (lgtobj != nullptr) {
-		glm::vec4 lightcolor = lgtobj->getColor();
-		chosenShader->setUniform4f("u_lightColor", 
-					lightcolor.r, lightcolor.g, 
-					lightcolor.b, lightcolor.a);
-		glm::vec4 lightpos = lgtobj->getWorldPosition();
-		chosenShader->setUniform4f("u_lightPos", 
-			lightpos.x, lightpos.y,
-			lightpos.z, lightpos.w);
+		chosenShader->setUniform4f("u_light.color", lgtobj->getColor());
+		chosenShader->setUniform4f("u_light.position", lgtobj->getWorldPosition());
+
+		//  Light Material 
+		Material* lightmat = lgtobj->getMaterial(); 
+		chosenShader->setUniform4f("u_light.ambient", glm::vec4(lightmat->m_ambient, 1.0f));
+		chosenShader->setUniform4f("u_light.diffuse", glm::vec4(lightmat->m_diffuse, 1.0f));
+		chosenShader->setUniform4f("u_light.specular",glm::vec4(lightmat->m_specular, 1.0f));
 	} 
 	else
 	{
-		chosenShader->setUniform4f("u_lightColor", 
-									1.0f, 1.0f, 1.0f, 1.0f);
-		chosenShader->setUniform4f("u_lightPos", 
-									0.0f, 0.0f, 0.0f, 1.0f);
+		chosenShader->setUniform4f("u_lightColor", glm::vec4(1.0f)); 
+		chosenShader->setUniform4f("u_lightPos", 0.0f, 0.0f, 0.0f, 1.0f);
 	}
 
 	// Camera Position for the view 
@@ -278,11 +276,18 @@ void Renderer::Draw(LightObject* lgtobj, Material* mat, int shadertype) const
 
 	// Texture 
 	bool texturebind = false;
-	if (mat != nullptr)
+	if (lgtobj->getMaterial() != nullptr)
 	{
-		if (mat->getTexture() != nullptr)
+		//  Light Material 
+		Material* lightmat = lgtobj->getMaterial();
+		/*chosenShader->setUniform4f("u_light.ambient", glm::vec4(lightmat->m_ambient, 1.0f));
+		chosenShader->setUniform4f("u_light.diffuse", glm::vec4(lightmat->m_diffuse, 1.0f));
+		chosenShader->setUniform4f("u_light.specular", glm::vec4(lightmat->m_specular, 1.0f));*/
+		
+		
+		if (lgtobj->getMaterial()->getTexture() != nullptr)
 		{
-			mat->getTexture()->bind(0);
+			lgtobj->getMaterial()->getTexture()->bind(0);
 			texturebind = true;
 		}
 	}

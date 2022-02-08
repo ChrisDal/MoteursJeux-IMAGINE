@@ -8,11 +8,13 @@ LightObject::LightObject(SceneNode* parent, glm::vec3 center,
     : BasicGameObject(parent, center, tag),
     m_mesh(nullptr),
     m_ntexture(textureId),
-    m_filename(filename), m_mat(nullptr)
+    m_filename(filename)
 {
     // by default init a cube 
     initMesh(textureId); 
     m_mesh->setColor(1.0f, 1.0f, 1.0f, 1.0f); 
+
+    m_mat = new Material(Material::m_defaults[10]); 
 
 }
 
@@ -117,6 +119,22 @@ void LightObject::initMesh(const char* filename)
 void LightObject::initMaterial(Texture* texture, const glm::vec3& color)
 {
     m_mat = new Material(texture, color);
+}
+
+void LightObject::setMaterial(const glm::vec3& amb, const glm::vec3& diff, const glm::vec3& spec, const float& shininess)
+{
+    if (m_mat == nullptr)
+    {
+        m_mat = new Material(this->getColor(), amb, diff, spec, shininess);
+    }
+    else
+    {
+        m_mat->setColor(this->getColor()); // Set Mesh Color 
+        m_mat->m_ambient = amb;
+        m_mat->m_diffuse = diff;
+        m_mat->m_specular = spec;
+        m_mat->setShininess(shininess);
+    }
 }
 
 void LightObject::Update(float deltatime)

@@ -17,8 +17,6 @@ class SceneNode;
 class LightObject : public BasicGameObject
 {
 private:
-
-
     // Mesh
     Mesh* m_mesh;
     Material* m_mat;
@@ -40,7 +38,7 @@ public:
     // Print game object informations
     void print() override;
     bool hasMesh() override { return true; }
-    bool hasMaterial() const { return m_mat != nullptr; }
+    virtual bool hasMaterial() const { return m_mat != nullptr; }
     virtual bool isLight() override { return true; }
 
     // Mesh
@@ -56,6 +54,10 @@ public:
     // Rendering
     Mesh* getMesh() const override { return m_mesh; }
     Material* getMaterial() const { return m_mat; }
+    void setMaterial(const glm::vec3& amb, 
+                    const glm::vec3& diff,
+                    const glm::vec3& spec, 
+                    const float& shininess);
 
 
     // Update 

@@ -639,6 +639,7 @@ void Game::RenderDebugMenu() {
     static bool applyTransform[3] = { false, false, false }; // TRS Modifications have been made
 
     // Material 
+    static Material* objMaterial = nullptr; 
     static bool colorChanged = false;
     static bool matChanged = false;
     // Bronze material 
@@ -660,12 +661,12 @@ void Game::RenderDebugMenu() {
 
     // Graphe de Scene 
     static int selected = -1;
-    GameObject* foundObj = nullptr;
+    BasicGameObject* foundObj = nullptr;
     DisplayUISceneGraph(m_scene, selected);
 
     if (selected != -1) {
         
-        foundObj = static_cast<GameObject*>(m_scene->getObjectbyID(selected));
+        foundObj = m_scene->getObjectbyID(selected);
 
         if (foundObj != nullptr)
         {
@@ -674,17 +675,24 @@ void Game::RenderDebugMenu() {
             transVec3 = objtransfm[1];
             scaleVec3 = objtransfm[2]; 
 
-            if (foundObj)
+            // Light 
+            if (foundObj->isLight())
             {
-                if (foundObj->hasMesh() && foundObj->getMesh()->hasMaterial())
-                {
-                    static Material* mati = foundObj->getMesh()->getMat();
-                    ambient  = mati->m_ambient;
-                    diffuse  = mati->m_diffuse;
-                    specular = mati->m_specular;
-                    shiny    = mati->m_shininess;
-                    selected_material = -1; 
-                }
+                objMaterial = dynamic_cast<LightObject*>(foundObj)->getMaterial();
+                ambient  = objMaterial->m_ambient;
+                diffuse  = objMaterial->m_diffuse;
+                specular = objMaterial->m_specular;
+                shiny    = objMaterial->m_shininess;
+            }
+            // GameObject 
+            else if (foundObj->hasMesh() && foundObj->getMesh()->hasMaterial())
+            {
+                objMaterial = foundObj->getMesh()->getMat();
+                ambient  = objMaterial->m_ambient;
+                diffuse  = objMaterial->m_diffuse;
+                specular = objMaterial->m_specular;
+                shiny    = objMaterial->m_shininess;
+                selected_material = -1; 
             }
         }
     }
@@ -845,7 +853,7 @@ void Game::RenderDebugMenu() {
         {
             ImGui::Text("Materials");
             ImGui::Separator();
-            selected_material = -1; 
+            selected_material = -1;
             for (int i = 0; i < matnames.size(); i++) {
                 if (ImGui::Selectable(matnames[i].c_str())) {
                     selected_material = i;
@@ -863,19 +871,13 @@ void Game::RenderDebugMenu() {
             shiny    = Material::m_defaults[selected_material].m_shininess;
             matChanged = true;
         }
-        else
-        {
-            if (foundObj != nullptr) {
-                Material* mati = foundObj->getMesh()->getMat();
-                ambient = mati->m_ambient;
-                diffuse = mati->m_diffuse;
-                specular = mati->m_specular;
-                shiny = mati->m_shininess;
-            }
-            
-        }
+
 
         // Material Modifications through ui
+        // For Light : 
+        // Ambient : low intensity because we don't want the ambient color to be too dominant
+        // Diffuse : the exact color we'd like a light to have; often a bright white color => temperature
+        // Specular : usually kept at vec3(1.0) shining at full intensity
         colorChanged  = ImGui::ColorEdit3("MainColor", (float*)&suncolor); 
         colorChanged |= ImGui::ColorEdit3("Ambient",  (float*)&ambient); 
         colorChanged |= ImGui::ColorEdit3("Diffuse",  (float*)&diffuse); 
@@ -932,7 +934,12 @@ void Game::RenderDebugMenu() {
         if ((colorChanged || matChanged) && foundObj->hasMesh())
         {
             foundObj->getMesh()->setColor(glm::vec4(suncolor, 1.0f)); 
-            if (foundObj->getMesh()->hasMaterial()) {
+            if (foundObj->isLight())
+            {
+                dynamic_cast<LightObject*>(foundObj)->setMaterial(ambient, diffuse, specular, shiny);
+
+            }
+            else if  (foundObj->getMesh()->hasMaterial()) {
                 foundObj->getMesh()->setMaterial(ambient, diffuse, specular, shiny); 
             }
         }
