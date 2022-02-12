@@ -16,7 +16,7 @@ Texture::Texture()
 Texture::Texture(const char* imagepath, unsigned int alphatype)
 	: m_renderId(0)
 {
-	// Generate Texutre buffer 
+	// Generate Texture buffer 
 	glGenTextures(1, &m_renderId);
 	// Set parameters 
 	this->setGenericParameters(); 
@@ -50,6 +50,7 @@ Texture::Texture(const char* imagepath, unsigned int alphatype)
 		std::cout << "[STBI] Load Image Error : " << imagepath << std::endl;
 	}
 }
+
 
 Texture::~Texture()
 {
@@ -89,7 +90,7 @@ void Texture::unbind() const
 
 void Texture::activateTextureUnit(unsigned char unit) const
 {
-	glActiveTexture(GL_TEXTURE0 + unit); 
+	glActiveTexture(GL_TEXTURE0 + unit);
 }
 
 void Texture::setGenericParameters()

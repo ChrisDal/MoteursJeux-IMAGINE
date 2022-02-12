@@ -33,6 +33,7 @@ private:
 	ShaderProgram* m_shaderprog_classic = nullptr ;
 	ShaderProgram* m_shaderprog_phong   = nullptr ;
 	ShaderProgram* m_shaderprog_other   = nullptr ;
+	ShaderProgram* m_shaderprog_texture = nullptr ;
 	
 	// Set the projection view mat 
 	glm::mat4 vpmat; 
@@ -41,7 +42,7 @@ private:
 	GLenum m_polymode;
 
 public: 
-	enum RENDERING_STYLE { CLASSIC = 0, PHONG, OTHER };
+	enum RENDERING_STYLE { CLASSIC = 0, PHONG, OTHER, TEXTURING};
 
 public: 
 

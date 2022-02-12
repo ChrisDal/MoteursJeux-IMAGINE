@@ -369,7 +369,7 @@ void SceneNode::sceneInit(SceneNode* sNode)
 
     // invalid object
     if (sNode->getObject() == nullptr) {
-        std::cout << "Invalid GameObject, Parent Node:" << sNode->getId().c_str();
+        std::cout << "No GameObject, Parent Node:" << sNode->getId().c_str() << std::endl; ;
         return; 
     }
 

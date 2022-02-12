@@ -1517,6 +1517,7 @@
     <None Include="src\shaders\basicfragment.fs" />
     <None Include="src\shaders\lightingFragShader.shader" />
     <None Include="src\shaders\lightSourceShader.shader" />
+    <None Include="src\shaders\textureFragShader.shader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="data\cube.png">

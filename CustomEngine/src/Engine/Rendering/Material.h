@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <string>
 
 #include <glm/vec3.hpp>
@@ -11,6 +12,8 @@ class Material
 {
 private:
 	Texture* m_texture; 
+	std::unique_ptr<Texture> m_text_diffuse;
+	std::unique_ptr<Texture> m_text_specular;
 	glm::vec3 m_color; 
 
 
@@ -30,14 +33,25 @@ public:
 		const glm::vec3& diffuse,
 		const glm::vec3& specular,
 		const float& shininess); 
+	Material(const Material& other); 
 
 	~Material(); 
 
 	// Getters and Setters 
-	void setTexture(const char* filename); 
+	void setTexture(const char* filename);
 	void setTexture(Texture* textu); 
+	void setTextureDiffuse(const char* imagepath, unsigned int alphatype = 0); 
+	void setTextureSpecular(const char* imagepath, unsigned int alphatype = 0); 
+	void bindTextures(unsigned int unit) const; 
+	void unbindTextures() const; 
+
 	Texture* getTexture()  const { return m_texture; }
 	inline bool hasTexture() const {return m_texture != nullptr; }
+	inline bool hasTexturing() const {
+		return m_text_diffuse != nullptr && m_text_specular != nullptr;
+	}
+
+	
 
 	void setColor(const glm::vec3& color) { m_color = color; }
 	glm::vec3 getColor() const { return m_color; }
@@ -53,5 +67,6 @@ public:
 	static std::vector<Material> m_defaults;
 	static void initDefaultMaterials(); 
 	static std::vector<std::string> m_defaultnames; 
+	//enum TextureType { DIFFUSE=0, SPECULAR};
 };
 

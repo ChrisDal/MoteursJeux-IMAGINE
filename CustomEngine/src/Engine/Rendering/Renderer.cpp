@@ -41,6 +41,10 @@ Renderer::~Renderer()
 	if (m_shaderprog_other != nullptr) {
 		delete m_shaderprog_other;
 	}
+
+	if (m_shaderprog_texture != nullptr) {
+		delete m_shaderprog_texture;
+	}
 }
 
 void Renderer::initGraphics() const
@@ -127,15 +131,34 @@ void Renderer::Draw(GameObject* gmo, const glm::vec4& cameraPos, LightObject* lg
 	else
 	{
 		// use default shader or shadertype if given
-		if (m_shaderprog_classic != nullptr)
-		{
-			chosenShader = m_shaderprog_classic; 
+		//const int maxShader = 3; 
+
+		Material* material = meshobject->getMat();
+		// Force Shader Type if texture 
+		if (material != nullptr && material->hasTexturing()) {
+			shadertype = 3; 
 		}
-		else
+		
+
+		switch (shadertype)
 		{
-			std::cout << "[RENDER] ERROR No default Classic Shader set." << std::endl;
-			return; 
+		case(0): chosenShader = m_shaderprog_classic; break; 
+		case(1): chosenShader = m_shaderprog_phong;   break; 
+		case(2): chosenShader = m_shaderprog_other;   break;
+		case(3): chosenShader = m_shaderprog_texture; break;
+		default: 
+			if (m_shaderprog_classic != nullptr)
+			{
+				chosenShader = m_shaderprog_classic;
+			}
+			else
+			{
+				std::cout << "[RENDER] ERROR No default Classic Shader set." << std::endl;
+				return;
+			}
+			break;
 		}
+
 
 	}
 
@@ -166,12 +189,41 @@ void Renderer::Draw(GameObject* gmo, const glm::vec4& cameraPos, LightObject* lg
 	glm::vec4 color = meshobject->getColor(); 
 	chosenShader->setUniform4f("u_color", color.x, color.y, color.z, color.w);
 
-	// Material
+	// Material // Texture 
+	bool texturebind = false;
 	Material* material = meshobject->getMat();
-	chosenShader->setUniform3f("u_material.ambient", material->m_ambient); 
-	chosenShader->setUniform3f("u_material.diffuse", material->m_diffuse); 
-	chosenShader->setUniform3f("u_material.specular", material->m_specular); 
-	chosenShader->setUniform1f("u_material.shininess", material->m_shininess); 
+	
+	if (material != nullptr)
+	{
+		// diffuse spec 
+		if (material->hasTexturing())
+		{
+			// Texture Unit  0 and 1 
+			unsigned int textUnitStart = 0; 
+			chosenShader->setUniform1i("u_material.diffuse", textUnitStart);
+			chosenShader->setUniform1i("u_material.specular", textUnitStart + 1);
+			chosenShader->setUniform1f("u_material.shininess", material->m_shininess);
+			material->bindTextures(textUnitStart);
+			texturebind = true;
+		}
+		// simple texture 
+		// TODO : remove 
+		else if (material->hasTexture())
+		{
+			material->getTexture()->bind(0);
+			
+			texturebind = true;
+		}
+		else
+		{
+			chosenShader->setUniform3f("u_material.ambient", material->m_ambient);
+			chosenShader->setUniform3f("u_material.diffuse", material->m_diffuse);
+			chosenShader->setUniform3f("u_material.specular", material->m_specular);
+			chosenShader->setUniform1f("u_material.shininess", material->m_shininess);
+		}
+	}
+
+	
 
 	// Light Color 
 	if (lgtobj != nullptr) {
@@ -195,22 +247,21 @@ void Renderer::Draw(GameObject* gmo, const glm::vec4& cameraPos, LightObject* lg
 	
 	
 
-	// Texture 
-	bool texturebind = false; 
-	if (mat != nullptr)
-	{
-		if (mat->getTexture() != nullptr)
-		{
-			mat->getTexture()->bind(0); 
-			texturebind = true;
-		}
-	}
+	
 
 	// DRAW CALL 
 	unsigned int idcount = meshobject->getIndicesCount();
 	GLCall(glDrawElements(meshobject->getPrimitives(), idcount, GL_UNSIGNED_INT, nullptr));
 
-	if (texturebind) { mat->getTexture()->unbind();  }
+	if (texturebind) { 
+		if (material->hasTexturing()) {
+			material->unbindTextures(); 
+
+		}
+		else if (material->hasTexture()) {
+			material->getTexture()->unbind(); 
+		}
+	}
 	chosenShader->unuse();
 }
 
@@ -311,11 +362,11 @@ void Renderer::Draw(SceneNode* scene, const glm::vec4& cameraPos) const
 		{
 			if ( ! obj->isLight())
 			{
-				this->Draw(static_cast<GameObject*>(obj), cameraPos, lights[0],  nullptr, 1);
+				this->Draw(static_cast<GameObject*>(obj), cameraPos, lights[0],  nullptr, RENDERING_STYLE::CLASSIC);
 			}
 			else
 			{
-				this->Draw(static_cast<LightObject*>(obj), nullptr, 1);
+				this->Draw(static_cast<LightObject*>(obj), nullptr, RENDERING_STYLE::CLASSIC);
 			}
 		}
 	}
@@ -335,11 +386,11 @@ void Renderer::Draw(SceneNode* scene, const glm::vec4& cameraPos, LightObject* l
 		{
 			if (! obj->isLight())
 			{
-				this->Draw(static_cast<GameObject*>(obj), cameraPos, light, nullptr, 1);
+				this->Draw(static_cast<GameObject*>(obj), cameraPos, light, nullptr, RENDERING_STYLE::CLASSIC);
 			}
 			else
 			{
-				this->Draw(static_cast<LightObject*>(obj), nullptr, 1);
+				this->Draw(static_cast<LightObject*>(obj), nullptr, RENDERING_STYLE::CLASSIC);
 			}
 		}
 	}
@@ -434,6 +485,14 @@ void Renderer::createShaderProg(const std::string& vertexshad, const std::string
 		m_shaderprog_other->bindShaders(&vertexShader, &fragmentShader);
 		m_shaderprog_other->link();
 		break; 
+	case(3): 
+		if (m_shaderprog_texture != nullptr) {
+			delete m_shaderprog_texture;
+		}
+		m_shaderprog_texture = new ShaderProgram();
+		m_shaderprog_texture->bindShaders(&vertexShader, &fragmentShader);
+		m_shaderprog_texture->link();
+		break;
 	default: 
 		if (m_shaderprog_classic != nullptr) {
 			delete m_shaderprog_classic;

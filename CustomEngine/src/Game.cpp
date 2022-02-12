@@ -55,19 +55,15 @@ Game::Game()
     m_renderer.initGraphics(); 
     m_renderer.printOpenGLVersion(); 
     
+    // Textures loading
+    /*boxDiffuse = std::make_unique<Texture>(std::string(m_texturedir + "container2.png").c_str(), 0); 
+    boxSpecular = std::make_unique<Texture>(std::string(m_texturedir + "container2_specular.png").c_str(), 1);*/
+    
+    // Renderer Initialisation 
+    // -------------------------
 
-    /*
-    // texture load 
-    std::string imagecontainer = m_texturedir;
-    imagecontainer += "container.jpg";
-    boxTexture = new Texture(imagecontainer.c_str()); 
-
-    std::string imageface = m_texturedir + std::string("awesomeface.png"); 
-    faceTexture = std::make_unique<Texture>(imageface.c_str(), 1); 
 	
-	*/
-	
-	// Default Shader 
+	// Default Shader :  For GameObject need lightSource 
 	// ---------------
 	// Vertex & Fragment Shader
     std::string vertexsource = m_shaderdir; 
@@ -76,12 +72,9 @@ Game::Game()
     std::string fragmentsource = m_shaderdir; 
     fragmentsource += "lightingFragShader.shader";
 
-
-    // Renderer Initialisation 
-    // -------------------------
-
-    // Shader Program : by Default => LIGHT 
+    // Shader Program : by Default 
     m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::CLASSIC);
+
 
     // Light Shader 
     // ------------
@@ -92,14 +85,23 @@ Game::Game()
 
     m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::PHONG);
 
-
     fragmentsource = m_shaderdir;
     fragmentsource += "lightingFragShader.shader";
 
     m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::OTHER);
 
-    std::cout << "LIGHT : " << std::endl; 
-    std::cout << fragmentsource << std::endl; 
+    std::cout << "LIGHT : " << std::endl;
+    std::cout << fragmentsource << std::endl;
+
+
+
+    // Texture Shader 
+    fragmentsource = m_shaderdir;
+    fragmentsource += "textureFragShader.shader";
+
+    m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::TEXTURING); 
+
+    
 
     // Materials
     Material::initDefaultMaterials();
@@ -117,6 +119,23 @@ Game::Game()
         std::cout << "No player found.\n"; 
     }
     // --------------------------------------------
+
+    int boxId = 2; 
+    GameObject* box = (GameObject*)m_scene->getObjectbyID(boxId); 
+    if (box->getMesh() != nullptr)
+    {
+        Material* matBox = box->getMesh()->getMat();
+        if (matBox != nullptr) {
+            matBox->setTextureDiffuse(std::string(m_texturedir + "container2.png").c_str(), 1); // RGB + Alpha
+            matBox->setTextureSpecular(std::string(m_texturedir + "container2_specular.png").c_str(), 1); // RGB + Alpha
+        }
+        else
+        {
+            std::cout << "Cannot Set Materials \n"; 
+        }
+    }
+    
+
 
 }
 
@@ -298,20 +317,15 @@ void Game::processInput(GLFWwindow* window, bool internal)
 Game::~Game()
 {
     std::cout << "\nGame Destructor\n"; 
-    
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
+
     if (VAO != nullptr){ delete VAO; }
     if (VBO != nullptr){ delete VBO; }
     if (EBO != nullptr) { delete EBO; } 
     if (shaderProgram != nullptr) { delete shaderProgram; }
-    //delete boxTexture;
+
     delete m_scene; 
     
-    
-    
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
+    // glfw: terminate
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

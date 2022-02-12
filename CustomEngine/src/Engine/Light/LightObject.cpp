@@ -140,9 +140,9 @@ void LightObject::setMaterial(const glm::vec3& amb, const glm::vec3& diff, const
 void LightObject::Update(float deltatime)
 {
     // pass 
-    m_position.z += std::sin(0.2f) * deltatime;
+    /*m_position.z += std::sin(0.2f) * deltatime;
     m_position.x += std::cos(0.2f) * deltatime;
-    this->Rotate(0.5f, 0.0f, 0.0f, true); 
+    this->Rotate(0.5f, 0.0f, 0.0f, true); */
     
     
 }

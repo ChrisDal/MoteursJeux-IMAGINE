@@ -176,8 +176,49 @@ Material::Material(const glm::vec3& color,
 {
 	setShininess(shininess); 
 }
+Material::Material(const Material& other)
+{
+	this->m_ambient = other.m_ambient; 
+	this->m_diffuse = other.m_diffuse;
+	this->m_specular = other.m_specular;
+	this->m_shininess = other.m_shininess;
+
+	this->m_color = other.m_color; 
+	this->m_texture = other.m_texture; 
+
+}
 Material::~Material()
-{};
+{
+	if (m_texture != nullptr)
+	{
+		delete m_texture; 
+	}
+}
+
+
+void Material::setTextureDiffuse(const char* imagepath, unsigned int alphatype)
+{
+	if (m_text_diffuse != nullptr)
+	{
+		m_text_diffuse.reset(new Texture(imagepath, alphatype));
+	}
+	else
+	{
+		m_text_diffuse = std::make_unique<Texture>(imagepath, alphatype); 
+	}
+}
+
+void Material::setTextureSpecular(const char* imagepath, unsigned int alphatype)
+{
+	if (m_text_specular != nullptr)
+	{
+		m_text_specular.reset(new Texture(imagepath, alphatype));
+	}
+	else
+	{
+		m_text_specular = std::make_unique<Texture>(imagepath, alphatype);
+	}
+}
 
 void Material::setTexture(const char* filename) {
 	if (m_texture != nullptr) { delete m_texture; }
@@ -189,6 +230,21 @@ void Material::setTexture(Texture* textu) {
 		delete m_texture; 
 	}
 	m_texture = textu; 
+}
+
+
+// bind Texture diffuse and specular
+// From unit unit 
+void Material::bindTextures(unsigned int unit) const
+{
+	m_text_diffuse->bind(unit); 
+	m_text_specular->bind(unit + 1); 
+}
+
+void Material::unbindTextures() const
+{
+	m_text_diffuse->unbind();
+	m_text_specular->unbind();
 }
 
 void Material::setShininess(const float& shiny)

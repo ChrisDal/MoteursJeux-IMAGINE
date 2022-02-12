@@ -52,8 +52,8 @@ public:
 
 
     // Texture 
-    Texture* boxTexture; 
-    std::unique_ptr<Texture> faceTexture;
+    std::unique_ptr<Texture> boxDiffuse;
+    std::unique_ptr<Texture> boxSpecular;
         
     std::string m_texturedir;           /*!< Texture Directory */
     std::string m_datadir;              /*!< Data Directory */
