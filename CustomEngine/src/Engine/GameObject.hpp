@@ -67,8 +67,9 @@ public:
 
     // Print game object informations
     void print() override;
-    bool hasMesh() override { return true; }
-    bool hasMaterial() const { return m_mat != nullptr;  }
+    virtual bool hasMesh() override { return m_mesh != nullptr; }
+    virtual bool hasMaterial() const { return m_mat != nullptr;  }
+    virtual bool isLight() override { return false; }
 
     // Mesh
     void initMesh(int typemesh);
@@ -98,6 +99,23 @@ public:
     //Octree* getOctree() { return m_meshtree; }
 
     glm::vec3 getNearestPos(int x, int y);
+
+    // Operators
+    inline bool operator==(const GameObject* other) {
+        return this->getId() == other->getId();
+    }
+
+    inline bool operator!=(const GameObject* other) {
+        return !(this == other);
+    }
+
+    inline bool operator==(const GameObject other) {
+        return getId() == other.getId();
+    }
+
+    inline bool operator!=(const GameObject other) {
+        return !(*this == other);
+    }
 
 };
 

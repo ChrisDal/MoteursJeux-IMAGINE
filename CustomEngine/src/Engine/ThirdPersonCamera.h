@@ -34,7 +34,7 @@ public :
     // ----------------------------
     // Target 
     // ----------------------------
-    void setTargetPoint(const glm::vec3& target, float deltatime);
+    void setTargetPoint(const glm::vec3& target, float deltatime) override;
     void setTargetObject(GameObject* obj); 
     void setDistanceToTarget(float mindist, float maxdist); 
     void setMaxTowardsAngle(float angledegree); 
@@ -50,7 +50,7 @@ public :
     // Getters 
     // ----------------------------
     glm::mat4 getPerspective() const { return m_projection; }
-    glm::vec4 getWorldPosition() override; 
+    //glm::vec4 getWorldPosition() override;  // same as in parent 
 
 
     // ----------------------------

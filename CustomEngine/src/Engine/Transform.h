@@ -180,10 +180,7 @@ public:
 
 	// use with openGL 
 	inline const GLfloat* getTransformGL() const { return glm::value_ptr(m_transform); }
-
 	
-
-
 };
 
 };

@@ -29,6 +29,8 @@ namespace SpaceEngine {
         transformation[1] = { 0.0f , 1.0f, 0.0f, 0.0f };
         transformation[2] = { 0.0f , 0.0f, 1.0f, 0.0f };
     };
+
+    
 }; 
 
 class Camera : public BasicGameObject
@@ -84,7 +86,7 @@ public:
     // ----------------------------
     // Target 
     // ----------------------------
-    virtual void setTargetPoint(const glm::vec3& target); 
+    virtual void setTargetPoint(const glm::vec3& target, float deltatime);
     glm::vec3 getTargetPoint() const { return m_target;  }
 
     // ----------------------------

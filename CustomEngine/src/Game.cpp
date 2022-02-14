@@ -1,11 +1,4 @@
 #include "Game.h"
-#include "Engine/Transform.h"
-#include "Engine/GameObject.hpp"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 
 // GL 3.0 + GLSL 130
 const char* glsl_version = "#version 130";
@@ -25,6 +18,8 @@ float Game::camoffsety = 0.0f;
 bool processCamera = true; 
 bool cameraRotation = true; 
 bool useInternal = false; 
+
+glm::vec3 suncolor = glm::vec3(1.0f, 1.0f, 1.0f); 
 
 
 
@@ -60,38 +55,59 @@ Game::Game()
     m_renderer.initGraphics(); 
     m_renderer.printOpenGLVersion(); 
     
+    // Textures loading
+    /*boxDiffuse = std::make_unique<Texture>(std::string(m_texturedir + "container2.png").c_str(), 0); 
+    boxSpecular = std::make_unique<Texture>(std::string(m_texturedir + "container2_specular.png").c_str(), 1);*/
+    
+    // Renderer Initialisation 
+    // -------------------------
 
-    /*
-    // texture load 
-    std::string imagecontainer = m_texturedir;
-    imagecontainer += "container.jpg";
-    boxTexture = new Texture(imagecontainer.c_str()); 
-
-    std::string imageface = m_texturedir + std::string("awesomeface.png"); 
-    faceTexture = std::make_unique<Texture>(imageface.c_str(), 1); 
 	
-	*/
-	
-	// Default Shader 
+	// Default Shader :  For GameObject need lightSource 
 	// ---------------
 	// Vertex & Fragment Shader
     std::string vertexsource = m_shaderdir; 
     vertexsource += "basicVShader.shader";
 
     std::string fragmentsource = m_shaderdir; 
-    fragmentsource += "basicFragShader.shader";
-
-    // Renderer Initialisation 
-    // -------------------------
+    fragmentsource += "lightingFragShader.shader";
 
     // Shader Program : by Default 
-    m_renderer.createShaderProg(vertexsource, fragmentsource);
-    std::cout << fragmentsource << std::endl; 
+    m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::CLASSIC);
 
+
+    // Light Shader 
+    // ------------
+    vertexsource = m_shaderdir;
+    vertexsource += "basicVShader.shader";
+    fragmentsource = m_shaderdir;
+    fragmentsource += "lightSourceShader.shader";
+
+    m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::PHONG);
+
+    fragmentsource = m_shaderdir;
+    fragmentsource += "lightingFragShader.shader";
+
+    m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::OTHER);
+
+    std::cout << "LIGHT : " << std::endl;
+    std::cout << fragmentsource << std::endl;
+
+
+
+    // Texture Shader 
+    fragmentsource = m_shaderdir;
+    fragmentsource += "textureFragShader.shader";
+
+    m_renderer.createShaderProg(vertexsource, fragmentsource, Renderer::TEXTURING); 
+
+    
+
+    // Materials
+    Material::initDefaultMaterials();
+
+    // --------------------------------------------
     this->initScene(); 
-	
-
-
 
     // --------------------------------------------
     // Game Player 
@@ -103,6 +119,23 @@ Game::Game()
         std::cout << "No player found.\n"; 
     }
     // --------------------------------------------
+
+    int boxId = 2; 
+    GameObject* box = (GameObject*)m_scene->getObjectbyID(boxId); 
+    if (box->getMesh() != nullptr)
+    {
+        Material* matBox = box->getMesh()->getMat();
+        if (matBox != nullptr) {
+            matBox->setTextureDiffuse(std::string(m_texturedir + "container2.png").c_str(), 1); // RGB + Alpha
+            matBox->setTextureSpecular(std::string(m_texturedir + "container2_specular.png").c_str(), 1); // RGB + Alpha
+        }
+        else
+        {
+            std::cout << "Cannot Set Materials \n"; 
+        }
+    }
+    
+
 
 }
 
@@ -136,9 +169,7 @@ void Game::initWindow()
     glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     glfwSetCursorPosCallback(m_Window, mouse_callback);
 
-    
-
-
+  
 
     // ImGUI 
     // Setup Dear ImGui context
@@ -272,7 +303,7 @@ void Game::processInput(GLFWwindow* window, bool internal)
         glm::vec4 pos = actor->getWorldPosition();
         std::cout << " Actor : " << pos.x << pos.y << pos.z << "\n";
         glm::vec3 targetActor{ pos.x, pos.y, pos.z };
-        m_camera->setTargetPoint(targetActor);
+        m_camera->setTargetPoint(targetActor, 0.0f);
         m_camera->setWalking(true);
     }
     else
@@ -286,20 +317,15 @@ void Game::processInput(GLFWwindow* window, bool internal)
 Game::~Game()
 {
     std::cout << "\nGame Destructor\n"; 
-    
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
+
     if (VAO != nullptr){ delete VAO; }
     if (VBO != nullptr){ delete VBO; }
     if (EBO != nullptr) { delete EBO; } 
     if (shaderProgram != nullptr) { delete shaderProgram; }
-    //delete boxTexture;
+
     delete m_scene; 
     
-    
-    
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
+    // glfw: terminate
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -413,7 +439,8 @@ void Game::RunGameLoop()
             callbackWindows = false; 
         }
         
-        
+        // Set VP Matrix 
+        m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective());
         
         //=================================================
         // Draw here 
@@ -429,8 +456,8 @@ void Game::RunGameLoop()
         // ------
         
         m_renderer.Clear();
-        // Transformation 
-        m_renderer.Draw(m_scene);
+        // 
+        m_renderer.Draw(m_scene, m_camera->getWorldPosition());
 
 
         // =================================================
@@ -441,8 +468,6 @@ void Game::RunGameLoop()
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(m_Window);
         // glfwPoll
-
-
 
     }
 }
@@ -556,24 +581,26 @@ static void displayGraphNode(SceneNode* node, int& selectable)
                 }
 
                 ImGui::Text("Target Point : ( %.1f, %.1f, %.1f )", tpoint.x, tpoint.y, tpoint.z);
-                
-                
             }
-            if (node->getObject()->hasMesh())
+
+            if (dynamic_cast<GameObject*>(node->getObject()))
             {
-                ImGui::SameLine();
-                
-                if (ImGui::SmallButton("Set Red")) {
-                    GameObject* gmo = (GameObject*)node->getObject();
-                    if (gmo->getMesh()->getColor() == Mesh::basicColor)
-                    {
-                        gmo->getMesh()->setColor(1.0f, 0.0f, 0.0f, 1.0f);
+                if (static_cast<GameObject*>(node->getObject())->hasMesh())
+                {
+                    ImGui::SameLine();
+
+                    if (ImGui::SmallButton("Set Red")) {
+                        GameObject* gmo = (GameObject*)node->getObject();
+                        if (gmo->getMesh()->getColor() == Mesh::basicColor)
+                        {
+                            gmo->getMesh()->setColor(1.0f, 0.0f, 0.0f, 1.0f);
+                        }
+                        else
+                        {
+                            gmo->getMesh()->setColor(Mesh::basicColor);
+                        }
+
                     }
-                    else
-                    {
-                        gmo->getMesh()->setColor(Mesh::basicColor);
-                    }
-                    
                 }
             }
             
@@ -625,9 +652,22 @@ void Game::RenderDebugMenu() {
     static const char* axesnames[3] = { "X", "Y", "Z" }; 
     static bool applyTransform[3] = { false, false, false }; // TRS Modifications have been made
 
+    // Material 
+    static Material* objMaterial = nullptr; 
+    static bool colorChanged = false;
+    static bool matChanged = false;
+    // Bronze material 
+    static glm::vec3 ambient  = { 0.2125f, 0.1275f, 0.054f };
+    static glm::vec3 diffuse  = { 0.714f, 0.4284f, 0.18144f };
+    static glm::vec3 specular = { 0.393548f, 0.271906f, 0.166721f };
+    static float shiny = 0.2f; // shininess to be multiplied by 128
+    static int selected_material = -1;
+    static const std::vector<std::string> matnames = Material::m_defaultnames;
+
     // Other checkbox 
     static bool wireframeMode = false;
     static bool orthoprojection = false;
+    
 
     // ImGui TreeNode
     ImGui::Begin("Inspector");
@@ -648,10 +688,28 @@ void Game::RenderDebugMenu() {
             rotVec3   = objtransfm[0];
             transVec3 = objtransfm[1];
             scaleVec3 = objtransfm[2]; 
+
+            // Light 
+            if (foundObj->isLight())
+            {
+                objMaterial = dynamic_cast<LightObject*>(foundObj)->getMaterial();
+                ambient  = objMaterial->m_ambient;
+                diffuse  = objMaterial->m_diffuse;
+                specular = objMaterial->m_specular;
+                shiny    = objMaterial->m_shininess;
+            }
+            // GameObject 
+            else if (foundObj->hasMesh() && foundObj->getMesh()->hasMaterial())
+            {
+                objMaterial = foundObj->getMesh()->getMat();
+                ambient  = objMaterial->m_ambient;
+                diffuse  = objMaterial->m_diffuse;
+                specular = objMaterial->m_specular;
+                shiny    = objMaterial->m_shininess;
+                selected_material = -1; 
+            }
         }
     }
-
-        
 
     ImGui::SetNextTreeNodeOpen(true);
     
@@ -792,8 +850,56 @@ void Game::RenderDebugMenu() {
 
         ImGui::Separator();
 
-        ImGui::Text("Color");
-        ImGui::ColorEdit3("GameObject", (float*)&clear_color); // Edit 3 floats representing a color
+        ImGui::Text("Material");
+        ImGui::SameLine();
+
+        
+
+        // Simple selection popup (if you want to show the current selection inside the Button itself,
+        // you may want to build a string using the "###" operator to preserve a constant ID with a variable label)
+        if (ImGui::SmallButton("Set Material###materialsmb")) {
+            ImGui::OpenPopup("materialchoices");
+        }
+         
+        ImGui::SameLine();
+        ImGui::TextUnformatted(selected_material == -1 ? "<Custom>" : matnames[selected_material].c_str());
+        if (ImGui::BeginPopup("materialchoices"))
+        {
+            ImGui::Text("Materials");
+            ImGui::Separator();
+            selected_material = -1;
+            for (int i = 0; i < matnames.size(); i++) {
+                if (ImGui::Selectable(matnames[i].c_str())) {
+                    selected_material = i;
+                }
+            }
+                  
+            ImGui::EndPopup();
+        }
+
+        if (selected_material != -1)
+        {
+            ambient  = Material::m_defaults[selected_material].m_ambient;
+            diffuse  = Material::m_defaults[selected_material].m_diffuse;
+            specular = Material::m_defaults[selected_material].m_specular;
+            shiny    = Material::m_defaults[selected_material].m_shininess;
+            matChanged = true;
+        }
+
+
+        // Material Modifications through ui
+        // For Light : 
+        // Ambient : low intensity because we don't want the ambient color to be too dominant
+        // Diffuse : the exact color we'd like a light to have; often a bright white color => temperature
+        // Specular : usually kept at vec3(1.0) shining at full intensity
+        colorChanged  = ImGui::ColorEdit3("MainColor", (float*)&suncolor); 
+        colorChanged |= ImGui::ColorEdit3("Ambient",  (float*)&ambient); 
+        colorChanged |= ImGui::ColorEdit3("Diffuse",  (float*)&diffuse); 
+        colorChanged |= ImGui::ColorEdit3("Specular", (float*)&specular); 
+        colorChanged |= ImGui::SliderFloat("Shininess", &shiny, 0.0001f, 2.0f, "%.4f"); // shininess
+
+        // we modify material manually
+        if (colorChanged) { selected_material = -1; }
 
     }
 
@@ -817,28 +923,69 @@ void Game::RenderDebugMenu() {
     ImGui::End();
 
 
-    // Apply Transformations for selected obj : TRS
-    if (applyTransform[0] && foundObj != nullptr)
+    // Apply UI Change 
+    // ---------------
+    
+    if (foundObj != nullptr)
     {
-        foundObj->setTranslate(transVec3, true);
+        // Transformations for selected obj : TRS
+        if (applyTransform[0])
+        {
+            foundObj->setTranslate(transVec3, true);
+        }
+
+        if (applyTransform[1])
+        {
+            foundObj->setRotate(rotVec3, true);
+        }
+
+        if (applyTransform[2])
+        {
+            foundObj->setScale(scaleVec3, true);
+        }
+
+        // Materials changes 
+        if ((colorChanged || matChanged) && foundObj->hasMesh())
+        {
+            foundObj->getMesh()->setColor(glm::vec4(suncolor, 1.0f)); 
+            if (foundObj->isLight())
+            {
+                dynamic_cast<LightObject*>(foundObj)->setMaterial(ambient, diffuse, specular, shiny);
+
+            }
+            else if  (foundObj->getMesh()->hasMaterial()) {
+                foundObj->getMesh()->setMaterial(ambient, diffuse, specular, shiny); 
+            }
+        }
     }
 
-    if (applyTransform[1] && foundObj != nullptr)
+    // Rendering Mode 
+    m_renderer.setPolymode(!wireframeMode);
+    // Camera Mode 
+    if (m_camera != nullptr)
     {
-        foundObj->setRotate(rotVec3, true);
+        if (onChangeCamera) {
+            if (orthoprojection)
+            {
+                m_camera->setPerspective(-1.0f, 1.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, true);
+            }
+            else
+            {
+                m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, false);
+            }
+
+        }
+        
     }
 
-    if (applyTransform[2] && foundObj != nullptr)
-    {
-        foundObj->setScale(scaleVec3, true);
-    }
+
     
     // ImGui example menu overlay 
     static bool show_app_simple_overlay = true;
-    const float DISTANCE = 10.0f;
+    static constexpr float DISTANCE = 10.0f;
     static int corner = 3;
     ImGuiIO& io = ImGui::GetIO();
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+    static ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
     if (corner != -1)
     {
         window_flags |= ImGuiWindowFlags_NoMove;
@@ -855,7 +1002,8 @@ void Game::RenderDebugMenu() {
         {
             ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
         }
-        else {
+        else 
+        {
             ImGui::Text("Mouse Position: <invalid>");
         }
 
@@ -877,23 +1025,7 @@ void Game::RenderDebugMenu() {
     }
     ImGui::End();
 
-    m_renderer.setPolymode(!wireframeMode);
-
-    if (m_camera != nullptr)
-    {
-        if (onChangeCamera) {
-            if (orthoprojection) 
-            {
-                m_camera->setPerspective(-1.0f, 1.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, true);
-            }
-            else
-            {
-                m_camera->setPerspective(0.1f, 100.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, false);
-            }
-            
-        }
-        m_renderer.setviewprojMat(m_camera->getLookAt(), m_camera->getPerspective()); 
-    }
+    
 
 }
 
@@ -953,7 +1085,7 @@ void Game::handleInput(GLFWwindow* window, GameObject* actor, Camera* cam)
     if (actor->velocity.ismoving()) {
         glm::vec4 pos = actor->getWorldPosition();
         glm::vec3 targetActor{ pos.x, pos.y, pos.z };
-        cam->setTargetPoint(targetActor);
+        cam->setTargetPoint(targetActor, 0.0f);
         cam->setWalking(true);
     }
     else
@@ -980,7 +1112,7 @@ void Game::setTrackingPoint(GLFWwindow* window, Camera* cam, double& x, double& 
         -direction.y * cam->velocity.vy,
         0.0f);
 
-    cam->setTargetPoint(newTargetPoint);
+    cam->setTargetPoint(newTargetPoint, 0.0f);
 
 }
 
@@ -1018,8 +1150,11 @@ void Game::initScene()
     
     // Sun Node 
     SceneNode* suNode = new SceneNode(solarNode, glm::vec3(0.0f, 0.0f, 0.0f));
-    GameObject* sun = new GameObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
-    sun->initMesh(3);
+    
+    //GameObject* sun = new GameObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
+    //sun->initMesh(3);
+    LightObject* sun = new LightObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), 3);
+    sun->setColor(glm::vec4(suncolor, 1.0f));
     
     // Mars Node 
     SceneNode* marsNode = new SceneNode(solarNode, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -1048,12 +1183,14 @@ void Game::initScene()
     
     // Ajout Planete + Satellite 
     {
-        SceneNode* planeteNode = this->addPlanet(solarNode, glm::vec3(0.0f, 0.0f, 0.0f),
+        SceneNode* planeteNode = this->addPlanet(solarNode, 
+            glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3(4.0f, 0.0f, 2.0f), 0.6f,
             glm::vec3(0.0f, 23.0f, 0.0f),
             glm::vec3(0.0f, 0.0f, 0.0f));
 
-        SceneNode* satelliteNode = this->addSatellite(planeteNode, glm::vec3(0.0f, 2.0f, 0.0f),
+        SceneNode* satelliteNode = this->addSatellite(planeteNode, 
+            glm::vec3(0.0f, 2.0f, 0.0f),
             0.2f, glm::vec3(0.0f, 15.0f, 0.0f),
             glm::vec3(0.0f, 0.0f, 0.0f));
     }
@@ -1130,7 +1267,7 @@ SceneNode* Game::addSatellite(SceneNode* planetNode, const glm::vec3& satpos,
     // Satellite  Node 
     SceneNode* satNode = new SceneNode(planetNode);
     GameObject* planetSat = new GameObject(satNode, satpos, -1);
-    planetSat->initMesh(3);
+    planetSat->initMesh(0); //satellite in cube
 
     // Add an internal transformation 
     SpaceEngine::Transform transfoSat(glm::vec3(scale, scale, scale),

@@ -10,7 +10,7 @@ private:
 	unsigned int m_renderId; 
 public: 
 	Texture(); 
-	Texture(const char* imagepath, unsigned int alphatype = 0); 
+	Texture(const char* imagepath, unsigned int alphatype = 0);
 	~Texture(); 
 
 	// bind 

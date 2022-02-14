@@ -13,7 +13,7 @@ BasicGameObject::BasicGameObject(SceneNode* parent, glm::vec3 center, std::strin
 	m_parent = parent;
 	// matrice de transformation interne
 	m_internal.setAsIdentity();
-	m_internal.setTranslate(m_position);
+	//m_internal.setTranslate(m_position);
 	m_id = ++g_id;
 }
 
@@ -35,6 +35,7 @@ BasicGameObject::BasicGameObject()
 	: m_tag("Default"), m_internal(SpaceEngine::Transform()), m_parent(nullptr),
 	m_position(glm::vec3(0.0f, 0.0f, 0.0f))
 {
+	m_internal.setAsIdentity();
 }
 
 BasicGameObject::~BasicGameObject()
@@ -86,7 +87,9 @@ void BasicGameObject::applyTransformation()
 
 glm::mat4x4 BasicGameObject::getMatTransformation()
 {
-	return m_internal.getMatrixTransform();
+	glm::mat4 translPos = glm::mat4(1.0f);
+	translPos[3] = glm::vec4(this->Position(), 1.0f);
+	return translPos * m_internal.getMatrixTransform();
 }
 
 glm::mat4x4 BasicGameObject::getWorldMat()
@@ -103,8 +106,7 @@ glm::mat4x4 BasicGameObject::getWorldMat()
 glm::vec4 BasicGameObject::getWorldPosition()
 {
 	glm::vec4 pos = glm::vec4(m_position, 1.0f);
-
-	return this->getTransformationAllIn() * pos; ;
+	return this->getTransformationAllIn() * pos;
 }
 
 glm::mat4x4 BasicGameObject::getTransformationAllIn()

@@ -1,7 +1,9 @@
 #include "SceneNode.h"
+#include "Light/LightObject.h"
 
 // static define
 unsigned int SceneNode::nodeNumber = 0;
+std::vector<LightObject*> SceneNode::m_lights = {}; 
 
 
 // ===================
@@ -255,10 +257,25 @@ void SceneNode::addObject(BasicGameObject* gmo)
 {
     // Node is responsible for gameobject deletion 
     if (m_object != nullptr) {
+        // check if it's a light to remove from light vecotr 
+        if (m_object->isLight())
+        {
+            auto it = std::find(m_lights.begin(), m_lights.end(), m_object); 
+            if (it != m_lights.end())
+            {
+                m_lights.erase(it); 
+            }
+        }
         delete m_object; 
     }
 
     m_object = gmo; 
+
+    // add to lights data 
+    if (gmo->isLight())
+    {
+        m_lights.push_back(static_cast<LightObject*>(gmo));
+    }
 }
 
 
@@ -352,7 +369,7 @@ void SceneNode::sceneInit(SceneNode* sNode)
 
     // invalid object
     if (sNode->getObject() == nullptr) {
-        std::cout << "Invalid GameObject, Parent Node:" << sNode->getId().c_str();
+        std::cout << "No GameObject, Parent Node:" << sNode->getId().c_str() << std::endl; ;
         return; 
     }
 

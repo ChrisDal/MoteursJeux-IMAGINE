@@ -5,18 +5,22 @@ const glm::vec4 Mesh::basicColor = glm::vec4(225.0f / 255.0f, 210.f / 255.0f, 18
 
 Mesh::Mesh()
 	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLE_STRIP), 
-	model_view(glm::mat4(1.0f)), m_color(Mesh::basicColor)
+	model_view(glm::mat4(1.0f)), m_color(Mesh::basicColor), 
+	m_material(new Material())
 {
 	this->clear(); 
+	m_material->setColor(m_color); 
 }
 
 Mesh::Mesh(const char* filename)
 	: m_nVertex(0), indexCount(0), 
 	m_primitives(GL_TRIANGLES), 
 	model_view(glm::mat4(1.0f)), 
-	m_color(Mesh::basicColor)
+	m_color(Mesh::basicColor), 
+	m_material(new Material())
 {
 	this->clear(); 
+	m_material->setColor(m_color);
 	
 	// switch according to type 
 	int typefile = - 1; 
@@ -26,14 +30,17 @@ Mesh::Mesh(const char* filename)
 	}
 	else
 	{
-		std::cout << "Cannot handle this extension file\n" << std::endl; 
+		initCube(); 
+		std::cout << "[ERROR - Mesh] Cannot handle this extension file\n" << std::endl;
+		std::cout << "[ERROR - Mesh] Init Default Cube, error loading file mesh" << std::endl;
 	}
 
 }
 
 Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
 	: m_nVertex(0), indexCount(0), m_primitives(GL_TRIANGLES),
-	model_view(glm::mat4(1.0f)), m_color(Mesh::basicColor)
+	model_view(glm::mat4(1.0f)), m_color(Mesh::basicColor), 
+	m_material(new Material())
 {
 	this->vertices = vertices; 
 	this->indices = indices; 
@@ -47,6 +54,8 @@ Mesh::Mesh(std::vector<VertexData> vertices, std::vector<unsigned int> indices, 
 	this->setBbox(); 
 
 	this->setupMesh(); 
+
+	m_material->setColor(m_color);
 }
 
 Mesh::~Mesh()
@@ -55,6 +64,7 @@ Mesh::~Mesh()
 	if (m_vbo != nullptr) { delete m_vbo; }
 	if (m_ibo != nullptr) { delete m_ibo; }
 	if (m_collider != nullptr) { delete m_collider;  }
+	if (m_material != nullptr) { delete m_material;  }
 }
 
 
@@ -222,12 +232,13 @@ void Mesh::initCapsule(float radius, float distance)
 				radius * glm::cos(phi) * glm::sin(rho)
 			);
 
-			xyz += origin;
+			
 
 			glm::vec3 normal(glm::normalize(glm::vec3(xyz - origin)));
+			//glm::vec3 normal(glm::normalize(xyz));
 			glm::vec2 uvs(kphi / (float)nphi, krho / (float)nrho);
 
-			this->vertices.push_back(VertexData({ xyz , normal, uvs }));
+			this->vertices.push_back(VertexData({ xyz + origin, normal, uvs }));
 
 		}
 	}
@@ -240,12 +251,12 @@ void Mesh::initCapsule(float radius, float distance)
 	// Triangle 1 : A B C 
 	// Triangle 2 : C D A 
 
-	for (unsigned int kphi = 0; kphi < nphi; kphi++)
+	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
 	{
 		for (unsigned int krho = 0; krho < nrho; krho++)
 		{
 			// First Triangle
-			if (kphi != nphi - 1)
+			if (kphi != nphi - 2)
 			{
 				this->indices.push_back(kphi * nrho + krho);
 				this->indices.push_back((kphi + 1) * nrho + krho);
@@ -335,12 +346,12 @@ void Mesh::initSphere(float radius)
 	// Triangle 1 : A B C 
 	// Triangle 2 : C D A 
 
-	for (unsigned int kphi = 0; kphi < nphi; kphi++)
+	for (unsigned int kphi = 0; kphi < nphi - 1; kphi++)
 	{
 		for (unsigned int krho = 0; krho < nrho; krho++)
 		{
 			// First Triangle
-			if (kphi != nphi - 1)
+			if (kphi != nphi - 2)
 			{
 				this->indices.push_back(kphi * nrho + krho);
 				this->indices.push_back((kphi + 1) * nrho + krho);
@@ -380,40 +391,40 @@ void Mesh::initCube()
 	// positions          // normals           // texture coords
 
 	// Vertex data for face 0
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.0f, 0.0f) }));  // v0
-	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 0.0f) })); // v1
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.0f, 0.5f) })); // v2
-	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 0.5f) })); // v3
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec3(0.0f, 0.0, 1.0f), glm::vec2(0.0f, 0.0f) }));  // v0	 
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f,  1.0f), glm::vec3(0.0f, 0.0, 1.0f), glm::vec2(1.0f, 0.0f) })); // v1		
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(0.0f, 0.0, 1.0f), glm::vec2(0.0f, 1.0f) })); // v2	
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3(0.0f, 0.0, 1.0f), glm::vec2(1.0f, 1.0f) })); // v3
 
 	// Vertex data for face 1
-	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.0f, 0.5f) })); // v4
-	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 0.5f) })); // v5
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.0f, 0.0f) })); // v4
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(1.0f, 0.0f) })); // v5
 	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.0f, 1.0f) }));  // v6
-	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.33f, 1.0f) })); // v7
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(1.0f, 1.0f) })); // v7
 
 	// Vertex data for face 2
-	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(0.66f, 0.5f) })); // v8
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(1.0f, 0.5f) })); // v9
-	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(0.66f, 1.0f) })); // v10
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(0.0, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f) })); // v11
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f, -1.0f), glm::vec2(0.0f, 0.0f) })); // v8
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f, -1.0f), glm::vec2(1.0f, 0.0f)})); // v9
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3(0.0, 0.0f, -1.0f), glm::vec2(0.0f, 1.0f) })); // v10
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(0.0, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)})); // v11
 
 	// Vertex data for face 3
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.66f, 0.0f) })); // v12
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(1.0f, 0.0f) })); // v13
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(0.66f, 0.5f) })); // v14
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(1.0f, 0.0, 0.0f), glm::vec2(1.0f, 0.5f) })); // v15
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(-1.0f, 0.0, 0.0f), glm::vec2(0.0f, 0.0f) })); // v12
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec3(-1.0f, 0.0, 0.0f), glm::vec2(1.0f, 0.0f)})); // v13
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(-1.0f, 0.0, 0.0f), glm::vec2(0.0f, 1.0f) })); // v14
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, 0.0, 0.0f), glm::vec2(1.0f, 1.0f)})); // v15
 
 	// Vertex data for face 4
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f,1.0f), glm::vec2(0.33f, 0.0f) })); // v16
-	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f, -1.0f), glm::vec3(0.0, 0.0f,1.0f), glm::vec2(0.66f, 0.0f) })); // v17
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec3(0.0, 0.0f,1.0f), glm::vec2(0.33f, 0.5f) })); // v18
-	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f,  1.0f), glm::vec3(0.0, 0.0f,1.0f), glm::vec2(0.66f, 0.5f) })); // v19
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0, -1.0f, 0.0f), glm::vec2(0.0f, 0.0f) })); // v16
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f, -1.0f), glm::vec3(0.0, -1.0f, 0.0f), glm::vec2(1.0f, 0.0f) })); // v17
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f, -1.0f,  1.0f), glm::vec3(0.0, -1.0f, 0.0f), glm::vec2(0.0f, 1.0f) })); // v18
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f, -1.0f,  1.0f), glm::vec3(0.0, -1.0f, 0.0f), glm::vec2(1.0f, 1.0f) })); // v19
 
 	// Vertex data for face 5
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f,  1.0f),glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.33f, 0.5f) })); // v20
-	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.66f, 0.5f) })); // v21
-	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f),glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.33f, 1.0f) })); // v22
-	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3(0.0, 1.0f, 0.0f),glm::vec2(0.66f, 1.0f) })); // v23
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(0.0, 1.0f, 0.0f), glm::vec2(0.0f, 0.0f) })); // v20
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3(0.0, 1.0f, 0.0f), glm::vec2(1.0f, 0.0f) })); // v21
+	this->vertices.push_back(VertexData({ glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(0.0, 1.0f, 0.0f), glm::vec2(0.0f, 1.0f) })); // v22
+	this->vertices.push_back(VertexData({ glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3(0.0, 1.0f, 0.0f), glm::vec2(1.0f, 1.0f) })); // v23
 
 	// Sommets
 	this->indices =  {
@@ -577,6 +588,10 @@ bool Mesh::loadMesh(const char* filename)
 			
 		}
 	}
+	else
+	{
+		return false; 
+	}
 
 	
 	std::cout << "Total: " << vert.size() << " vertices\n";
@@ -739,4 +754,20 @@ void Mesh::setColor(float r, float g, float b, float a)
 		m_color /= 255.0f;
 	}
 
+}
+
+void Mesh::setMaterial(const glm::vec3& amb, const glm::vec3& diff, const glm::vec3& spec, const float& shininess)
+{
+	if (m_material == nullptr)
+	{
+		m_material = new Material(m_color, amb, diff, spec, shininess); 
+	}
+	else
+	{
+		m_material->setColor(m_color); 
+		m_material->m_ambient = amb; 
+		m_material->m_diffuse = diff; 
+		m_material->m_specular = spec; 
+		m_material->setShininess(shininess); 
+	}
 }

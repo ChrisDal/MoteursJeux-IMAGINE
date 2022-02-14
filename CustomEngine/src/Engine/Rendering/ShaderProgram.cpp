@@ -74,14 +74,31 @@ void ShaderProgram::setUniform4f(const char* uniformname, float x, float y, floa
 	glUniform4f(loc, x, y, z, w); 
 }
 
-void ShaderProgram::setUniform4f(int location, float x, float y, float z, float w)
+void ShaderProgram::setUniform4f(int location, float x, float y, float z, float w) const 
 {
 	glUniform4f(location, x, y, z, w); 
+}
+
+void ShaderProgram::setUniform3f(const char* uniformname, float x, float y, float z) const
+{
+	int loc = getUniformLocation(uniformname);
+	glUniform3f(loc, x, y, z);
+}
+
+void ShaderProgram::setUniform3f(int location, float x, float y, float z) const
+{
+	glUniform3f(location, x, y, z);
 }
 
 void ShaderProgram::setUniform1i(const char* name, int location) const 
 {
 	glUniform1i(this->getUniformLocation(name), location);
+}
+
+void ShaderProgram::setUniform1f(const char* uniformname, float data) const
+{
+	int loc = getUniformLocation(uniformname);
+	glUniform1f(loc, data);
 }
 
 void ShaderProgram::setMat4(const char* mat4name, const GLfloat* data) const

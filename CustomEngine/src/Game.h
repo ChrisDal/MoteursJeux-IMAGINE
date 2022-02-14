@@ -1,22 +1,36 @@
 #pragma once
 
 
+// --------------------------------------
+// Backend / Display
 #include <glad/glad.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui.h>
 #include <GLFW/glfw3.h>
-
+// ---------------------------------- // 
+// STL
 #include <iostream>
 #include <string>
 #include <ctime>
 #include <chrono>
 
-#include "Engine/Rendering/Rendering.h"
+// ---------------------------------- // 
+// GLM 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
+// ---------------------------------- // 
+// Space Engine : Rendering 
+#include "Engine/Rendering/Rendering.h"
+// ---------------------------------- // 
+// Space Engine : Objects 
 #include "Engine/SceneNode.h"
-#include "Engine/Camera.h"
+#include "Engine/GameObject.hpp"
 #include "Engine/ThirdPersonCamera.h"
+#include "Engine/Light/LightObject.h"
+// ---------------------------------- // 
 
 
 /**
@@ -38,21 +52,18 @@ public:
 
 
     // Texture 
-    Texture* boxTexture; 
-    std::unique_ptr<Texture> faceTexture;
+    std::unique_ptr<Texture> boxDiffuse;
+    std::unique_ptr<Texture> boxSpecular;
         
     std::string m_texturedir;           /*!< Texture Directory */
     std::string m_datadir;              /*!< Data Directory */
-
-    // Material 
-    Material material; 
 
     // Renderer 
     Renderer m_renderer;                    /*!< Graphics Renderer */
 
     // Scene
     SceneNode* m_scene;                     /*!< Current Scene */
-    Camera* m_camera; // owned by scene     /*!< Camera owned by the scene */
+    ThirdPersonCamera* m_camera; // owned by scene     /*!< Camera owned by the scene */
     static float camoffsetx, camoffsety;    /*!< Delta X Y to move camera */
     static glm::vec2 camDeadZone;               /*!< DeadZone Camera */
     BasicGameObject* m_player = nullptr;    /*!< Object Player */

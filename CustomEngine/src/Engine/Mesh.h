@@ -6,7 +6,9 @@
 // GLM 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+
 
 // Rendering 
 #include "Rendering/VertexData.h"
@@ -20,7 +22,6 @@
 
 // Geometry
 #include "GeomPhysics.h"
-
 #include "Collider.h"
 
 
@@ -39,7 +40,7 @@ protected:
 	ShaderProgram* m_shader = nullptr; // if not 
 
 	// Material 
-	Material* m_material; 
+	Material* m_material = nullptr; 
 	glm::vec4 m_color; 
 	
 
@@ -129,6 +130,12 @@ public:
 	void setColor(const glm::vec4& color); 
 	void setColor(float r, float g, float b, float a); 
 	glm::vec4 getColor() const { return m_color;  }
+
+	// Material 
+	inline bool hasMaterial() const { return m_material != nullptr;  }
+	void setMaterial(const glm::vec3& amb, const glm::vec3& diff, 
+					const glm::vec3& spec, const float& shininess); 
+	Material* getMat() const { return m_material; }
 
 	static const glm::vec4 basicColor;
 

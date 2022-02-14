@@ -1,10 +1,21 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "BasicGameObject.h"
 #include "Rendering/ShaderProgram.h"
 
+class LightObject; 
+
+namespace SpaceEngine {
+
+    // Get Transform Matrix for Normals 
+    static glm::mat4 getMatNormal(const glm::mat4& transform)
+    {
+        return glm::transpose(glm::inverse(transform));
+    }
+}
 
 class SceneNode
 {
@@ -14,6 +25,9 @@ private:
     std::vector<SceneNode*> m_children;
     BasicGameObject* m_object; // One gameObject per node 
     //std::vector<BasicGameObject*> m_objects;
+
+    // Light Object data 
+    static std::vector<LightObject*> m_lights; 
 
     // Space  
     glm::vec3 m_origin;
@@ -60,10 +74,13 @@ public:
 
     // have a valid game object 
     inline bool haveGmo() const { return m_object != nullptr; }
+
     SceneNode* getNodebyId(const std::string& sId, const int& maxDepth = -1);                 //!< From this node look for node by string ID (down)
     SceneNode* getNodebyId(const int& sId, const int& maxDepth = -1);                         //!< From this node look for node by int ID (down)
 
     SceneNode* getParent() { return m_parent; }
+
+    
 
     
 
@@ -111,6 +128,7 @@ public:
 
     // Update 
     void Update(float deltatime); 
+    static std::vector<LightObject*> getLights() { return m_lights;  }
 
     // ------------
     // Utilities 

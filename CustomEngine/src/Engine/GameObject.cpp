@@ -107,8 +107,14 @@ void GameObject::initMesh(int typemesh)
 
     if (m_filename.empty())
     {
-        if (m_mesh != nullptr) { m_mesh->clear(); }
-        m_mesh = new Mesh(); 
+        if (m_mesh != nullptr) { 
+            m_mesh->clear(); 
+        }
+        else
+        {
+            m_mesh = new Mesh();
+        }
+        
 
         if (m_ntexture > -1 && m_ntexture < 2)
         {
@@ -150,6 +156,7 @@ void GameObject::initMesh(int typemesh)
     }
     else
     {
+        if (m_mesh != nullptr) { delete m_mesh; }
         // load mesh
         m_mesh = new Mesh(m_filename.c_str()); 
         if (!loadMesh(m_filename))
@@ -186,7 +193,12 @@ void GameObject::initMesh(int typemesh)
 }
 void GameObject::initMesh(const char* filename)
 {
-    m_mesh = new Mesh();
+    if (m_mesh != nullptr) { 
+        m_mesh->clear(); 
+    } else {
+        m_mesh = new Mesh();
+    }
+    
     bool loaded = m_mesh->loadMesh(filename);
     if (!loaded)
     {

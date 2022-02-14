@@ -11,6 +11,7 @@
 
 
 class SceneNode;
+class Mesh; 
 
 // Game Object empty 
 class BasicGameObject
@@ -76,6 +77,7 @@ public:
     // Print game object informations
     virtual void print() = 0;
     virtual bool hasMesh() { return false;  }
+    virtual Mesh* getMesh() const { return nullptr; };
 
     // ID and tag check
     int getId() const { return m_id; }
@@ -85,10 +87,10 @@ public:
     bool isMainCamera() { return m_tag.compare("MainCamera") == 0; }
     bool isTerrain() { return m_tag.compare("Terrain") == 0; }
     bool isPlayer() { return m_tag.compare("Player") == 0; }
-    bool isCamera() {
-        // tag contains Camera
-        return m_tag.find("Camera", 0) != std::string::npos; 
-    }
+    bool isCamera() {  return m_tag.find("Camera", 0) != std::string::npos; } // tag contains Camera
+
+    virtual bool isLight() { return m_tag.find("Light", 0) != std::string::npos; }
+   
 
     // Update 
     virtual void Update(float deltatime) = 0; 
@@ -96,7 +98,6 @@ public:
     // Node 
     SceneNode* getNode() { return m_parent; }
 
-
-
+    
 
 };
