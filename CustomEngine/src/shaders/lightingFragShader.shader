@@ -17,6 +17,11 @@ struct Light {
     vec4 ambient;
     vec4 diffuse;
     vec4 specular;
+
+    float m_constant; 
+    float m_linear; 
+    float m_quadratic; 
+    int type; 
 };
 
 in vec4 vColor; 
@@ -32,8 +37,43 @@ void main()
 {
     // normal 
     vec3 norml = normalize(vNormal);
-    // Frag => To light 
-    vec3 lightDir = normalize(vec3(u_light.position - FragPos));
+    vec3 lightDir; 
+    float attenuation; 
+    // 
+    if (u_light.type == 0) {
+
+        // Directional Light
+        lightDir = normalize(-vec3(u_light.position)); // as a direction 
+        attenuation = 1.0f;
+    }
+    else if (u_light.type == 1)
+    {
+        // PointLight
+        lightDir = normalize(vec3(u_light.position - FragPos));
+        float distance = length(vec3(u_light.position - FragPos));
+        attenuation = 1.0 / (u_light.m_constant + u_light.m_linear * distance
+            + u_light.m_quadratic * (distance * distance));
+    }
+    else
+    {
+        lightDir = normalize(vec3(u_light.position - FragPos));
+        attenuation = 1.0f; 
+    }
+    /*if (u_light.position.w == 0.0)
+    {
+        // Directional Light
+        lightDir = normalize(-vec3(u_light.position)); // as a direction 
+        attenuation = 1.0f; 
+
+    }
+    else if (u_light.position.w == 1.0)
+    {
+        // PointLight
+        lightDir = normalize(vec3(u_light.position - FragPos));
+        float distance = length(vec3(u_light.position - FragPos)); 
+        attenuation = 1.0 / (u_light.m_constant + u_light.m_linear * distance 
+            u_light.m_quadratic * (distance * distance))
+    }*/
     
     // Ambient
     vec4 ka = vec4(u_material.ambient, 1.0f);
@@ -54,6 +94,6 @@ void main()
     vec4 specular = ks * spec * u_light.specular;
 
     // Total
-    FragColor = (ambient + diffuse + specular) ;
+    FragColor = (ambient + diffuse + specular) * attenuation ;
     
 }

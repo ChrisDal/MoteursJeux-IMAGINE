@@ -229,12 +229,19 @@ void Renderer::Draw(GameObject* gmo, const glm::vec4& cameraPos, LightObject* lg
 	if (lgtobj != nullptr) {
 		chosenShader->setUniform4f("u_light.color", lgtobj->getColor());
 		chosenShader->setUniform4f("u_light.position", lgtobj->getWorldPosition());
+		chosenShader->setUniform1i("u_light.type", lgtobj->getIntType());
 
 		//  Light Material 
 		Material* lightmat = lgtobj->getMaterial(); 
 		chosenShader->setUniform4f("u_light.ambient", glm::vec4(lightmat->m_ambient, 1.0f));
 		chosenShader->setUniform4f("u_light.diffuse", glm::vec4(lightmat->m_diffuse, 1.0f));
 		chosenShader->setUniform4f("u_light.specular",glm::vec4(lightmat->m_specular, 1.0f));
+
+		// Point light 
+		glm::vec3 lightParameters = lgtobj->getParameters(); 
+		chosenShader->setUniform1f("u_light.m_constant",  lightParameters.x);
+		chosenShader->setUniform1f("u_light.m_linear",    lightParameters.y);
+		chosenShader->setUniform1f("u_light.m_quadratic", lightParameters.z);
 	} 
 	else
 	{
@@ -331,9 +338,9 @@ void Renderer::Draw(LightObject* lgtobj, Material* mat, int shadertype) const
 	{
 		//  Light Material 
 		Material* lightmat = lgtobj->getMaterial();
-		/*chosenShader->setUniform4f("u_light.ambient", glm::vec4(lightmat->m_ambient, 1.0f));
+		chosenShader->setUniform4f("u_light.ambient", glm::vec4(lightmat->m_ambient, 1.0f));
 		chosenShader->setUniform4f("u_light.diffuse", glm::vec4(lightmat->m_diffuse, 1.0f));
-		chosenShader->setUniform4f("u_light.specular", glm::vec4(lightmat->m_specular, 1.0f));*/
+		chosenShader->setUniform4f("u_light.specular", glm::vec4(lightmat->m_specular, 1.0f));
 		
 		
 		if (lgtobj->getMaterial()->getTexture() != nullptr)

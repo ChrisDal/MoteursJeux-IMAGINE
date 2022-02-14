@@ -26,6 +26,23 @@ private:
     //obj file
     std::string m_filename;
 
+
+
+public: 
+    enum class LightType { DIRECTIONAL=0, POINT, SPOT, FLASH };
+
+protected:
+    LightType m_type; 
+    float m_distance; // covered distance by light -1 = inf 
+    // attenuation
+    float m_kc, m_kl, m_kq; 
+    float m_Fatt; 
+
+
+    float processAttenuation(float Kc, float Kl, float Kq, float distance); 
+    void presetParameters(float distance); 
+
+
 public:
     //static int g_id;
 
@@ -59,6 +76,13 @@ public:
                     const glm::vec3& spec, 
                     const float& shininess);
 
+    // Light Type 
+    void setType(LightType type, float distance); 
+    void setType(unsigned int type, float distance); 
+    unsigned int getIntType() const { return static_cast<unsigned int>(m_type);  }
+    LightType getType() const { return m_type;  }
+    inline void setParameters(float kc, float kl, float kq); 
+    glm::vec3 getParameters() const { return glm::vec3(m_kc, m_kl, m_kq); }
 
     // Update 
     void Update(float deltatime) override;

@@ -12,11 +12,17 @@ struct ObjMaterial {
 
 // store the material properties of the Light
 struct Light {
-    vec4 position;
+    vec4 position; // or direction 
     vec4 color;
     vec4 ambient;
     vec4 diffuse;
     vec4 specular;
+
+    float m_constant;
+    float m_linear;
+    float m_quadratic;
+    int type;
+
 };
 
 in vec4 vColor;
@@ -32,8 +38,30 @@ void main()
 {
     // normal 
     vec3 norml = normalize(vNormal);
+
     // Frag => To light 
-    vec3 lightDir = normalize(vec3(u_light.position - FragPos));
+    vec3 lightDir; 
+    float attenuation; 
+    if (u_light.type == 0) {
+
+        // Directional Light
+        lightDir = normalize(-vec3(u_light.position)); // as a direction 
+        attenuation = 1.0f;
+    }
+    else if (u_light.type == 1)
+    {
+        // PointLight
+        lightDir = normalize(vec3(u_light.position - FragPos));
+        float distance = length(vec3(u_light.position - FragPos));
+        attenuation = 1.0 / (u_light.m_constant + u_light.m_linear * distance
+            + u_light.m_quadratic * (distance * distance));
+    }
+    else
+    {
+        lightDir = normalize(vec3(u_light.position - FragPos));
+        attenuation = 1.0f;
+    }
+    
 
     // Ambient
     vec4 ka = texture(u_material.diffuse, vTextureCoord);
@@ -54,7 +82,7 @@ void main()
     vec4 specular =  ks * spec *  u_light.specular;
 
     // Total
-    FragColor = ambient + diffuse + specular;
+    FragColor = (ambient + diffuse + specular) * attenuation;
     FragColor.a = 1.0f; 
 
 }

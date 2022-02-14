@@ -1518,6 +1518,7 @@
     <None Include="src\shaders\lightingFragShader.shader" />
     <None Include="src\shaders\lightSourceShader.shader" />
     <None Include="src\shaders\textureFragShader.shader" />
+    <None Include="src\shaders\textureEmissiveFrag.shader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="data\cube.png">

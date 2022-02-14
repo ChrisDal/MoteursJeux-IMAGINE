@@ -34,7 +34,18 @@ void main()
     // normal 
     vec3 norml = normalize(vNormal);
     // Frag => To light 
-    vec3 lightDir = normalize(vec3(u_light.position - FragPos));
+    vec3 lightDir;
+    if (u_light.position.w == 0.0)
+    {
+        // Directionnal Light
+        lightDir = normalize(-vec3(u_light.position)); // as a direction 
+
+    }
+    else if (u_light.position.w == 1.0)
+    {
+        // PointLight
+        lightDir = normalize(vec3(u_light.position - FragPos));
+    }
 
     // Ambient
     vec4 ka = texture(u_material.diffuse, vTextureCoord);
