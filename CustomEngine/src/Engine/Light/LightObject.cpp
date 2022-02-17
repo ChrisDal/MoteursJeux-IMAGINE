@@ -236,6 +236,23 @@ void LightObject::setType(unsigned int type, float distance)
     m_Fatt = processAttenuation(m_kc, m_kl, m_kq, m_distance);
 }
 
+std::string LightObject::getStringType() const
+{
+    std::string typeString = ""; 
+    switch (m_type)
+    {
+    case(LightType::DIRECTIONAL): typeString = "DIRECTIONAL"; break; 
+    case(LightType::POINT):       typeString = "POINT"; break; 
+    case(LightType::SPOT):        typeString = "SPOT"; break; 
+    case(LightType::FLASH):       typeString = "FLASH"; break; 
+    default: 
+        typeString = "EMPTY"; 
+        break; 
+    }
+
+    return typeString; 
+}
+
 void LightObject::setParameters(float kc, float kl, float kq)
 {
     m_kc = kc; 

@@ -81,6 +81,7 @@ public:
     void setType(unsigned int type, float distance); 
     unsigned int getIntType() const { return static_cast<unsigned int>(m_type);  }
     LightType getType() const { return m_type;  }
+    std::string getStringType() const; 
     inline void setParameters(float kc, float kl, float kq); 
     glm::vec3 getParameters() const { return glm::vec3(m_kc, m_kl, m_kq); }
 

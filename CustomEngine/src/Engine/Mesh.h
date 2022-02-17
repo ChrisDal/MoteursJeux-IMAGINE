@@ -8,6 +8,8 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/gtc/random.hpp>
+
 
 
 // Rendering 
@@ -89,6 +91,7 @@ public:
 	void initPlane() {};
 	void initQuad(); 
 	void initTerrain(const char* filename, int sqrtTerrain=16);
+	void initStarsSky(const std::string& vertexshad, const std::string& fragmentshad, float radius, int starNumber);
 
 
 	bool loadMesh(const char* filename); 

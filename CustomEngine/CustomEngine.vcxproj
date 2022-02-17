@@ -156,6 +156,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\Collider.cpp" />
+    <ClCompile Include="src\Engine\GameObjects\StarBox.cpp">
+      <DeploymentContent>true</DeploymentContent>
+    </ClCompile>
     <ClCompile Include="src\Engine\Light\LightObject.cpp" />
     <ClCompile Include="src\Engine\Sphere.cpp" />
     <ClCompile Include="src\Engine\Components.cpp" />
@@ -190,6 +193,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Engine\Collider.h" />
+    <ClInclude Include="src\Engine\GameObjects\StarBox.h">
+      <DeploymentContent>true</DeploymentContent>
+    </ClInclude>
     <ClInclude Include="src\Engine\GeomPhysics.h" />
     <ClInclude Include="src\Engine\Light\LightObject.h" />
     <ClInclude Include="src\Engine\Sphere.h" />
@@ -711,12 +717,20 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\shaders\starpowder.fs" />
+    <None Include="src\shaders\starFragpowder.shader" />
+    <None Include="src\shaders\starVertexpowder.shader" />
     <None Include="src\shaders\textureEmissiveFrag.shader" />
     <None Include="src\shaders\textureFragShader.shader">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\shaders\starspowder.vs">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

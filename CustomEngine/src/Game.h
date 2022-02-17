@@ -30,6 +30,7 @@
 #include "Engine/GameObject.hpp"
 #include "Engine/ThirdPersonCamera.h"
 #include "Engine/Light/LightObject.h"
+#include "Engine/GameObjects/StarBox.h"
 // ---------------------------------- // 
 
 
@@ -108,6 +109,8 @@ protected :
         const glm::vec3& planetpos,
         float scale = 1.0f, const glm::vec3& rotation = glm::vec3(0.0f, 0.0f, 0.0f),
         const glm::vec3& translation = glm::vec3(0.0f, 0.0f, 0.0f)); 
+
+    void createSpace(SceneNode* node, float radius, int starsNumbers); 
 
 private:
     void processInput(GLFWwindow* window, bool internal=false);      //!< Process Keyboard Inputs 

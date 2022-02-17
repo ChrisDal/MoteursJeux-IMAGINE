@@ -18,8 +18,8 @@ class SceneNode;
 
 class GameObject : public BasicGameObject
 {
-private:
 
+protected:
 
     // Mesh
     Mesh* m_mesh; 
