@@ -107,7 +107,11 @@ Game::Game()
     Material::initDefaultMaterials();
 
     // --------------------------------------------
+    // Scene Creation 
+    // ---------------
     this->initScene(); 
+    
+    
 
     // --------------------------------------------
     // Game Player 
@@ -903,6 +907,21 @@ void Game::RenderDebugMenu() {
 
     }
 
+    if (foundObj != nullptr && foundObj->isLight() && ImGui::CollapsingHeader("Light Parameters"))
+    {
+        
+        LightObject* lobj = dynamic_cast<LightObject*>(foundObj); 
+        static int int_value = lobj->getIntType();
+        std::string dataLight = lobj->getStringType(); 
+        static const char* format = dataLight.c_str();
+        if (ImGui::SliderInt("LightType##paramsLight0", &int_value, 0, 4, format))
+        {
+            // pass 
+        }
+
+
+    }
+
     ImGui::SetNextTreeNodeOpen(true);
     static bool onChangeCamera; 
     if (ImGui::CollapsingHeader("Divers"))
@@ -1155,6 +1174,7 @@ void Game::initScene()
     //sun->initMesh(3);
     LightObject* sun = new LightObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), 3);
     sun->setColor(glm::vec4(suncolor, 1.0f));
+    sun->setType(LightObject::LightType::POINT, 320.0f); 
     
     // Mars Node 
     SceneNode* marsNode = new SceneNode(solarNode, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -1164,6 +1184,9 @@ void Game::initScene()
     transfolune.setHomogenousScale(0.35f); 
     transfolune.setRotation(0.0f, 0.0f, 0.0f);
     mars->addTransformation(transfolune, true);
+
+    // Sky 
+    createSpace(solarNode, 20.0f, 200);
 
     // MarsSat  Node 
     SceneNode* marsSatNode = new SceneNode(marsNode);
@@ -1195,8 +1218,13 @@ void Game::initScene()
             glm::vec3(0.0f, 0.0f, 0.0f));
     }
 
+    // -------------------------------------------
+    m_scene->print();
+    m_scene->sceneInit(m_scene);
+
+    /* -------------------------------------------------------------------
     // Venus Node 
-    /*SceneNode* venusNode = new SceneNode(suNode, glm::vec3(0.0f, 0.0f, 0.0f));
+    SceneNode* venusNode = new SceneNode(suNode, glm::vec3(0.0f, 0.0f, 0.0f));
     GameObject* venus = new GameObject(venusNode, glm::vec3(5.0f, 0.0, 0.0f), -1);
     venus->initMesh(3);
     SpaceEngine::Transform transfonus;
@@ -1211,10 +1239,10 @@ void Game::initScene()
     SpaceEngine::Transform transfovenusSat;
     transfovenusSat.setHomogenousScale(0.2f);
     transfovenusSat.setRotation(0.0f, 0.0f, 15.0f);
-    venusSat->addTransformation(transfovenusSat, true);*/
+    venusSat->addTransformation(transfovenusSat, true);
 
 
-    /*GameObject* other = new GameObject(etape1, glm::vec3(0.0, 0.0, 0.0), -1);
+    GameObject* other = new GameObject(etape1, glm::vec3(0.0, 0.0, 0.0), -1);
     std::string meshfilepath = m_datadir;
     meshfilepath += "\\models\\cube.obj";
     other->initMesh(meshfilepath.c_str());
@@ -1230,13 +1258,13 @@ void Game::initScene()
 
     GameObject* ground = new GameObject(m_scene, glm::vec3(0.0, -2.0, 0.0),
                                         -1, "", "Terrain");
-    ground->initMesh(1); */
+    ground->initMesh(1);
 
 
+    */ 
+    
 
-    // -------------------------------------------
-    m_scene->print();
-    m_scene->sceneInit(m_scene);
+
 }
 
 
@@ -1257,6 +1285,22 @@ SceneNode* Game::addPlanet(SceneNode* root, const glm::vec3& nodepos,
     planet->addTransformation(transfoplanet, true);
 
     return planetNode; 
+}
+
+void Game::createSpace(SceneNode* node, float radius, int starsNumbers)
+{
+    // Vertex & Fragment Shader
+    std::string vertexsource = m_shaderdir;
+    vertexsource += "starVertexpowder.shader";
+
+    std::string fragmentsource = m_shaderdir;
+    fragmentsource += "starFragpowder.shader";
+
+    // Venus Node 
+    SceneNode* spacebox = new SceneNode(node, glm::vec3(0.0f));
+    StarBox* spacegmo = new StarBox(spacebox, glm::vec3(0.0f), "StarBox", radius, starsNumbers);
+    spacegmo->initMesh(vertexsource, fragmentsource);
+
 }
 
 

@@ -90,6 +90,7 @@ public:
     bool isCamera() {  return m_tag.find("Camera", 0) != std::string::npos; } // tag contains Camera
 
     virtual bool isLight() { return m_tag.find("Light", 0) != std::string::npos; }
+    virtual bool isStarsSky() { return m_tag.find("StarBox", 0) != std::string::npos;  }
    
 
     // Update 

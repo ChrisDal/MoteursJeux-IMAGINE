@@ -65,6 +65,7 @@ Mesh::~Mesh()
 	if (m_ibo != nullptr) { delete m_ibo; }
 	if (m_collider != nullptr) { delete m_collider;  }
 	if (m_material != nullptr) { delete m_material;  }
+	if (m_shader != nullptr) { delete m_shader;  }
 }
 
 
@@ -171,6 +172,61 @@ void Mesh::initTerrain(const char* filename, int sqrtTerrain)
 	setPrimitives(GL_TRIANGLE_STRIP);
 
 	setupMesh();
+}
+
+void Mesh::initStarsSky(const std::string& vertexshad, const std::string& fragmentshad, float radius, int starNumber)
+{
+	this->clear();
+	this->vertices.reserve(starNumber); 
+	this->indices.reserve(starNumber); 
+
+	// Create a sphere with 
+	for (int k = 0; k < starNumber; k++)
+	{
+		this->vertices.push_back(VertexData({ 
+									glm::ballRand(radius) ,
+									glm::vec3(0.8f, 0.8f, 1.0f),
+									glm::vec2(0.0,0.0) 
+			}) );
+
+		this->indices.push_back(k); 
+	}
+
+	// set pointers
+	m_pvertices = &this->vertices[0];
+	m_pindices = (GLushort*)&this->indices[0];
+
+	m_nVertex = static_cast<unsigned int>(this->vertices.size());
+	indexCount = static_cast<unsigned int>(this->indices.size());
+
+	setPrimitives(GL_POINTS);
+
+	// Setup Mesh 
+	setupMesh(); 
+
+	// Set Shaders
+	// -----------
+	if (m_shader != nullptr) {
+		delete m_shader; 
+	}
+
+	// vertex & fragment shader
+	Shader vertexShader = Shader(vertexshad.c_str(), GL_VERTEX_SHADER);
+	Shader fragmentShader = Shader(fragmentshad.c_str(), GL_FRAGMENT_SHADER);
+
+	bool isvalid = vertexShader.checkValidity();
+	isvalid &= fragmentShader.checkValidity();
+
+	if ( !isvalid ) { 
+		std::cout << "[Stars Sky] : Shaders invalids.\n"; 
+		return; 
+	}
+
+	// Shader Prog
+	m_shader = new ShaderProgram(); 
+	m_shader->bindShaders(&vertexShader, &fragmentShader);
+	m_shader->link();
+
 }
 
 void Mesh::initQuad()

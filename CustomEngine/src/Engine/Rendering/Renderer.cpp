@@ -1,7 +1,8 @@
 #include "Renderer.h"
+#include "../GameObjects/StarBox.h"
 #include "../GameObject.hpp"
 #include "../Light/LightObject.h"
-#include "../SceneNode.h"
+#include "../ThirdPersonCamera.h"
 #include <iostream>
 
 void GLClearError()
@@ -21,6 +22,8 @@ bool GLLogCall(const char* function, const char* file, int line)
 	return true;
 };
 
+
+glm::vec4 Renderer::m_clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f); 
 
 Renderer::Renderer(float _w, float _h)
 	: m_id(0), vpmat(glm::mat4(1.0f)), m_polymode(GL_FILL)
@@ -50,7 +53,7 @@ Renderer::~Renderer()
 void Renderer::initGraphics() const
 {
 	// On init Black Frame 
-	GLCall(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+	GLCall(glClearColor(0.2f, 0.1f, 0.3f, 1.0f));
 	
 	// Enable back face culling
 	//GLCall(glEnable(GL_CULL_FACE));
@@ -61,14 +64,17 @@ void Renderer::initGraphics() const
 	// GL_FRONT_AND_BACK for front- and back-facing polygons
 	// GL_FILL : The interior of the polygon is filled
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, m_polymode));
-	
-	
+
+	// Points 
+	GLCall(glEnable(GL_PROGRAM_POINT_SIZE));
+	GLCall(glPointSize(2));
 
 }
 
 void Renderer::Clear() const
 {
-	GLCall(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+	GLCall(glClearColor(m_clearColor.r, m_clearColor.g, 
+			m_clearColor.b, m_clearColor.a));
 
 	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 	// GL_FRONT_AND_BACK for front- and back-facing polygons
@@ -101,6 +107,10 @@ void Renderer::Draw(Mesh* mesh, const ShaderProgram* shader) const
 
 	shader->use();
 	mesh->bindBuffers(); 
+	unsigned int idcount = mesh->getIndicesCount();
+	
+	//GLCall(glDrawArrays(GL_LINES, 0, idcount));
+	//GLCall(glDrawArrays(GL_POINTS, 0, idcount));
 
 	GLCall(glDrawElements(mesh->getPrimitives(), mesh->getIndicesCount(), GL_UNSIGNED_INT, nullptr));
 }
@@ -369,7 +379,15 @@ void Renderer::Draw(SceneNode* scene, const glm::vec4& cameraPos) const
 		{
 			if ( ! obj->isLight())
 			{
-				this->Draw(static_cast<GameObject*>(obj), cameraPos, lights[0],  nullptr, RENDERING_STYLE::CLASSIC);
+				if (obj->isStarsSky())
+				{
+					this->Draw(static_cast<StarBox*>(obj)); 
+				}
+				else
+				{
+					this->Draw(static_cast<GameObject*>(obj),					cameraPos, lights[0], nullptr,					RENDERING_STYLE::CLASSIC);
+				}
+				
 			}
 			else
 			{
@@ -391,15 +409,24 @@ void Renderer::Draw(SceneNode* scene, const glm::vec4& cameraPos, LightObject* l
 		BasicGameObject* obj = scene->getObject();
 		if (obj->hasMesh())
 		{
-			if (! obj->isLight())
+			// StarBox
+			if (obj->isStarsSky())
 			{
-				this->Draw(static_cast<GameObject*>(obj), cameraPos, light, nullptr, RENDERING_STYLE::CLASSIC);
+				this->Draw(static_cast<StarBox*>(obj));
 			}
-			else
+			// Light
+			else if (obj->isLight())
 			{
 				this->Draw(static_cast<LightObject*>(obj), nullptr, RENDERING_STYLE::CLASSIC);
 			}
+			// GameObject
+			else
+			{
+				this->Draw(static_cast<GameObject*>(obj), cameraPos, light, nullptr, RENDERING_STYLE::CLASSIC);
+			}
+		
 		}
+		
 	}
 
 
@@ -432,6 +459,37 @@ void Renderer::Draw(Mesh* mesh, int shaderType) const
 	}
 	
 	this->Draw(mesh, chosenShader); 
+}
+
+void Renderer::Draw(StarBox* sbox) const
+{
+	Mesh* mesh = sbox->getMesh(); 
+	// choose shader in shader list 
+	const ShaderProgram* chosenShader = mesh->getShader(); 
+
+	chosenShader->use();
+
+	// ------------
+	// Bind buffers
+	// -------------
+	mesh->bindBuffers();
+
+	// ------------
+	// Set Uniforms 
+	// -------------
+
+	// set internal transform matrix
+	SpaceEngine::Transform t_interne = sbox->getTransformation();
+	glm::mat4 modelTransfointern = sbox->getNode()->getMatTotalNodeTransform() * mesh->getModelView();
+	chosenShader->setMat4("u_transform", glm::value_ptr(modelTransfointern));
+
+	// View Proj Matrix 
+	chosenShader->setMat4("u_viewproj", glm::value_ptr(vpmat));
+
+	GLCall(glDrawElements(mesh->getPrimitives(), mesh->getIndicesCount(), GL_UNSIGNED_INT, nullptr));
+
+	chosenShader->unuse(); 
+
 }
 
 

@@ -111,6 +111,9 @@
     <ClCompile Include="src\Engine\Light\LightObject.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="src\Engine\GameObjects\StarBox.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependencies\include\imgui\imconfig.h">
@@ -1088,6 +1091,9 @@
     <ClInclude Include="src\Engine\Light\LightObject.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="src\Engine\GameObjects\StarBox.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="dependencies\lib\glfw3.lib" />
@@ -1519,6 +1525,10 @@
     <None Include="src\shaders\lightSourceShader.shader" />
     <None Include="src\shaders\textureFragShader.shader" />
     <None Include="src\shaders\textureEmissiveFrag.shader" />
+    <None Include="src\shaders\starpowder.fs" />
+    <None Include="src\shaders\starspowder.vs" />
+    <None Include="src\shaders\starFragpowder.shader" />
+    <None Include="src\shaders\starVertexpowder.shader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="data\cube.png">

@@ -19,6 +19,7 @@
 
 class GameObject; 
 class LightObject; 
+class StarBox; 
 class SceneNode; 
 
 void GLClearError();
@@ -43,6 +44,7 @@ private:
 
 public: 
 	enum RENDERING_STYLE { CLASSIC = 0, PHONG, OTHER, TEXTURING};
+	static glm::vec4 m_clearColor;
 
 public: 
 
@@ -62,6 +64,7 @@ public:
 	void Draw(SceneNode* scene, const glm::vec4& cameraPos, LightObject* light) const;
 	void Draw(SceneNode* scene, const glm::vec4& cameraPos, std::vector<LightObject*> lights) const;
 	void Draw(Mesh* mesh, int shaderType) const;
+	void Draw(StarBox* sbox) const; 
 	
 	// Set View Proj Matrix
 	void setviewprojMat(const glm::mat4& camView, const glm::mat4& camProj); 

@@ -1,4 +1,7 @@
 ### Current State 
+- Lights (Directionnal and Point)
+- Simple Materials 
+- Space Background 
 
 - Scene Graph
 - Can use widgets (DragFloat) to act on gameobject (internal matrix transform)
