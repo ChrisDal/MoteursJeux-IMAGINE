@@ -1169,9 +1169,6 @@ void Game::initScene()
     
     // Sun Node 
     SceneNode* suNode = new SceneNode(solarNode, glm::vec3(0.0f, 0.0f, 0.0f));
-    
-    //GameObject* sun = new GameObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), -1);
-    //sun->initMesh(3);
     LightObject* sun = new LightObject(suNode, glm::vec3(0.0f, 0.0, 0.0f), 3);
     sun->setColor(glm::vec4(suncolor, 1.0f));
     sun->setType(LightObject::LightType::POINT, 320.0f); 

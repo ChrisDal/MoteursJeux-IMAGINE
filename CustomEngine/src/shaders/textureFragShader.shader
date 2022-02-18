@@ -77,8 +77,9 @@ void main()
     // Specular 
     vec4 ks = texture(u_material.specular, vTextureCoord);
     vec3 viewDir = normalize(vec3(u_viewPos - FragPos)); // camera pos
+    float filterSpec = dot(lightDir, norml) > 0.0f ? 1.0f : 0.0f; // Remove spec behind obj
     vec3 reflectDir = normalize(reflect(-lightDir, norml));
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_material.shininess * 128);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0) * filterSpec, u_material.shininess * 128);
     vec4 specular =  ks * spec *  u_light.specular;
 
     // Total

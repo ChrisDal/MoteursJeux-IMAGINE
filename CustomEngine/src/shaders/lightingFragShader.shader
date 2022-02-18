@@ -33,6 +33,7 @@ uniform vec4 u_viewPos;
 uniform ObjMaterial u_material; 
 uniform Light u_light;
 
+
 void main()
 {
     // normal 
@@ -59,21 +60,6 @@ void main()
         lightDir = normalize(vec3(u_light.position - FragPos));
         attenuation = 1.0f; 
     }
-    /*if (u_light.position.w == 0.0)
-    {
-        // Directional Light
-        lightDir = normalize(-vec3(u_light.position)); // as a direction 
-        attenuation = 1.0f; 
-
-    }
-    else if (u_light.position.w == 1.0)
-    {
-        // PointLight
-        lightDir = normalize(vec3(u_light.position - FragPos));
-        float distance = length(vec3(u_light.position - FragPos)); 
-        attenuation = 1.0 / (u_light.m_constant + u_light.m_linear * distance 
-            u_light.m_quadratic * (distance * distance))
-    }*/
     
     // Ambient
     vec4 ka = vec4(u_material.ambient, 1.0f);
@@ -89,11 +75,15 @@ void main()
     // Specular 
     vec4 ks = vec4(u_material.specular, 1.0f);
     vec3 viewDir = normalize(vec3(u_viewPos - FragPos)); // camera pos
-    vec3 reflectDir = normalize(reflect(-lightDir, norml)); 
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_material.shininess * 128 );
+    float filterSpec = dot(lightDir, norml) > 0.0f ? 1.0f : 0.0f ; // Remove spec behind obj
+    
+    vec3 reflectDir = reflect(-lightDir, norml); 
+    float coeffks = max(dot(viewDir, reflectDir), 0.0f) * filterSpec;
+    float spec = pow(coeffks, u_material.shininess * 128 );
     vec4 specular = ks * spec * u_light.specular;
 
     // Total
     FragColor = (ambient + diffuse + specular) * attenuation ;
+    FragColor.a = 1.0f; 
     
 }
